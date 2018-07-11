@@ -142,9 +142,9 @@ if __name__ == '__main__':
 		worker = SpecificWorker(mprx)
 		worker.setParams(parameters)
 
-	adapter = ic.createObjectAdapter('CommonBehavior')
-	adapter.add(CommonBehaviorI(worker), ic.stringToIdentity('commonbehavior'))
-	adapter.activate()
+		adapter = ic.createObjectAdapter('CommonBehavior')
+		adapter.add(CommonBehaviorI(worker), ic.stringToIdentity('commonbehavior'))
+		adapter.activate()
 
 
 	signal.signal(signal.SIGINT, signal.SIG_DFL)

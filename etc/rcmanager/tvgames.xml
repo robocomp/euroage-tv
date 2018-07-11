@@ -26,6 +26,7 @@
 
  <node alias="handDetection" endpoint="handdetection:tcp -h localhost -p 21222">
   <dependence alias="cameraSimple" />
+  <dependence alias="RGBD" />
   <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/handDetection" />
   <upCommand command="rcremote localhost handDetection /home/robolab/robocomp/components/robocomp-robolab/components/handDetection python src/handDetection.py /home/robolab/robocomp/components/robocomp-robolab/components/handDetection/etc/config" />
   <downCommand command="pkill -9 -f handDetection" />
@@ -46,5 +47,17 @@
   <radius value="10.0" />
   <color value="#FF3333" />
  </node>
+
+<node alias="RGBD" endpoint="rgbd:tcp -h localhost -p 10096">
+  <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/openni2RGBD/" />
+  <upCommand command="rcremote localhost RGBD /home/robolab/robocomp/components/robocomp-robolab/components/openni2RGBD/ .bin/openNI2RGBD etc/config" />
+  <downCommand command="pkill -9 -f openNI2RGBD" />
+  <configFile path="" />
+  <xpos value="15.4033641021" />
+  <ypos value="300.1669464297" />
+  <radius value="10.0" />
+  <color value="#FF3333" />
+ </node>
+
 
 </rcmanager>

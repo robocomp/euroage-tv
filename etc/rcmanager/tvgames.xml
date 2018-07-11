@@ -3,7 +3,7 @@
 <rcmanager>
 
  <generalInformation>
-  <editor path="kate" dock="false" />
+  <editor path="gedit" dock="false" />
   <timeouts fixed="1000.0" blink="300.0" />
   <clicks switch="2.0" interval="400.0" />
   <graph alpha="80.0" active="true" scale="200.0" />
@@ -14,8 +14,8 @@
  <node alias="tvGames" endpoint="commonbehavior:tcp -h localhost -p 10006">
   <dependence alias="handDetection" />
   <dependence alias="cameraSimple" />
-  <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/handDetection" />
-  <upCommand command="rcremote localhost tvGames /home/robolab/robocomp/components/robocomp-robolab/components/handDetection python src/tvgames.py /home/robolab/robocomp/components/robocomp-robolab/components/handDetection/etc/config" />
+  <workingDir path="/home/robolab/robocomp/components/euroage-tv/components/tvGames/" />
+  <upCommand command="rcremote localhost tvGames /home/robolab/robocomp/components/euroage-tv/components/tvGames/ python src/tvgames.py /home/robolab/robocomp/components/euroage-tv/components/tvGames/etc/config" />
   <downCommand command="pkill -9 -f tvgames.py" />
   <configFile path="" />
   <xpos value="-66.2796772287" />
@@ -37,10 +37,9 @@
  </node>
 
 <node alias="cameraSimple" endpoint="camerasimple:tcp -p 10005">
-  <dependence alias="cameraSimple" />
   <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/camerasimple" />
   <upCommand command="rcremote localhost cameraSimple /home/robolab/robocomp/components/robocomp-robolab/components/camerasimple python src/camerasimple.py /home/robolab/robocomp/components/robocomp-robolab/components/camerasimple/etc/config" />
-  <downCommand command="killall -9 camerasimple.py" />
+  <downCommand command="pkill -9 -f camerasimple" />
   <configFile path="" />
   <xpos value="15.4033641021" />
   <ypos value="300.1669464297" />

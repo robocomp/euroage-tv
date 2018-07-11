@@ -1,0 +1,6 @@
+
+components/tvGames/\.idea/
+
+*.new
+
+*.pyc

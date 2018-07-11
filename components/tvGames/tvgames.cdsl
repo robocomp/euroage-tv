@@ -1,0 +1,14 @@
+import "HandDetection.idsl";
+import "CameraSimple.idsl";
+import "CommonBehavior.idsl";
+
+Component tvgames
+{
+	Communications
+	{
+		requires HandDetection, CameraSimple;
+        implements CommonBehavior;
+	};
+	language Python;
+};
+

@@ -54,12 +54,18 @@ class SpecificWorker(GenericWorker):
     def compute(self):
         start = time.time()
         try:
-            image = self.camerasimple_proxy.getImage()
+            # image = self.camerasimple_proxy.getImage()
+            # frame = np.fromstring(image.image, dtype=np.uint8)
+            # frame = frame.reshape(image.width, image.height, image.depth)
+
+            color, _, _, _ = self.rgbd_proxy.getData()
+            frame = np.fromstring(color, dtype=np.uint8)
+            frame = frame.reshape(480, 640, 3)
+
         except Ice.Exception, e:
             traceback.print_exc()
             print e
-        frame = np.fromstring(image.image, dtype=np.uint8)
-        frame = frame.reshape(image.width,image.height, image.depth)
+            return False
         to_show = frame.copy()
         if self.state == "None":
             try:

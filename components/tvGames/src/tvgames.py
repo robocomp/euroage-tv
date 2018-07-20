@@ -68,6 +68,7 @@ from specificworker import *
 class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 	def __init__(self, _handler):
 		self.handler = _handler
+		# self.communicator = _communicator
 	def getFreq(self, current = None):
 		self.handler.getFreq()
 	def setFreq(self, freq, current = None):
@@ -104,6 +105,23 @@ if __name__ == '__main__':
 	parameters = {}
 	for i in ic.getProperties():
 		parameters[str(i)] = str(ic.getProperties().getProperty(i))
+
+	# Remote object connection for RGBD
+	try:
+		proxyString = ic.getProperties().getProperty('RGBDProxy')
+		try:
+			basePrx = ic.stringToProxy(proxyString)
+			rgbd_proxy = RGBDPrx.checkedCast(basePrx)
+			mprx["RGBDProxy"] = rgbd_proxy
+		except Ice.Exception:
+			print 'Cannot connect to the remote object (RGBD)', proxyString
+			#traceback.print_exc()
+			status = 1
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get RGBDProxy property.'
+		status = 1
+
 
 	# Remote object connection for CameraSimple
 	try:
@@ -142,9 +160,9 @@ if __name__ == '__main__':
 		worker = SpecificWorker(mprx)
 		worker.setParams(parameters)
 
-		adapter = ic.createObjectAdapter('CommonBehavior')
-		adapter.add(CommonBehaviorI(worker), ic.stringToIdentity('commonbehavior'))
-		adapter.activate()
+	adapter = ic.createObjectAdapter('CommonBehavior')
+	adapter.add(CommonBehaviorI(worker), ic.stringToIdentity('commonbehavior'))
+	adapter.activate()
 
 
 	signal.signal(signal.SIGINT, signal.SIG_DFL)

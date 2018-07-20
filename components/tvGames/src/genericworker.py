@@ -66,6 +66,42 @@ if not ice_CameraSimple:
 	print 'Couln\'t load CameraSimple'
 	sys.exit(-1)
 from RoboCompCameraSimple import *
+ice_RGBD = False
+for p in icePaths:
+	if os.path.isfile(p+'/RGBD.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"RGBD.ice"
+		Ice.loadSlice(wholeStr)
+		ice_RGBD = True
+		break
+if not ice_RGBD:
+	print 'Couln\'t load RGBD'
+	sys.exit(-1)
+from RoboCompRGBD import *
+ice_JointMotor = False
+for p in icePaths:
+	if os.path.isfile(p+'/JointMotor.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"JointMotor.ice"
+		Ice.loadSlice(wholeStr)
+		ice_JointMotor = True
+		break
+if not ice_JointMotor:
+	print 'Couln\'t load JointMotor'
+	sys.exit(-1)
+from RoboCompJointMotor import *
+ice_GenericBase = False
+for p in icePaths:
+	if os.path.isfile(p+'/GenericBase.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"GenericBase.ice"
+		Ice.loadSlice(wholeStr)
+		ice_GenericBase = True
+		break
+if not ice_GenericBase:
+	print 'Couln\'t load GenericBase'
+	sys.exit(-1)
+from RoboCompGenericBase import *
 ice_CommonBehavior = False
 for p in icePaths:
 	if os.path.isfile(p+'/CommonBehavior.ice'):
@@ -92,6 +128,7 @@ class GenericWorker(QtCore.QObject):
 
 
 		self.camerasimple_proxy = mprx["CameraSimpleProxy"]
+		self.rgbd_proxy = mprx["RGBDProxy"]
 		self.handdetection_proxy = mprx["HandDetectionProxy"]
 
 

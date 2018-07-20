@@ -65,6 +65,18 @@ if not ice_CameraSimple:
 	print 'Couldn\'t load CameraSimple'
 	sys.exit(-1)
 from RoboCompCameraSimple import *
+ice_RGBD = False
+for p in icePaths:
+	if os.path.isfile(p+'/RGBD.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"RGBD.ice"
+		Ice.loadSlice(wholeStr)
+		ice_RGBD = True
+		break
+if not ice_RGBD:
+	print 'Couldn\'t load RGBD'
+	sys.exit(-1)
+from RoboCompRGBD import *
 ice_CommonBehavior = False
 for p in icePaths:
 	if os.path.isfile(p+'/CommonBehavior.ice'):

@@ -50,10 +50,10 @@
  </node>
 
 <node alias="RGBD" endpoint="rgbd:tcp -h localhost -p 10096">
-  <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/openni2RGBD/" />
-  <upCommand command="rcremote localhost RGBD /home/robolab/robocomp/components/robocomp-robolab/components/openni2RGBD/ ./bin/openNI2RGBD etc/config" />
-  <downCommand command="pkill -9 -f openNI2RGBD" />
-  <configFile path="" />
+  <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/astraRGBD" />
+  <upCommand command="rcremote localhost RGBD /home/robolab/robocomp/components/robocomp-robolab/components/astraRGBD ./bin/astraRGBD etc/config" />
+  <downCommand command="pkill -9 -f astraRGBD" />
+  <configFile path="etc/config" />
   <xpos value="200.4033641021" />
   <ypos value="300.1669464297" />
   <radius value="10.0" />

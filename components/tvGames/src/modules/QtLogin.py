@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import re
-import signal
-import sqlite3
-import sys
+import json
 import os
+import signal
+import sys
+from pprint import pprint
 
 import passwordmeter
 from PyQt4.QtCore import QObject, pyqtSignal, pyqtWrapperType
 from PyQt4.QtGui import QWidget, QLabel, QGroupBox, QPushButton, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication
-from PyQt4.QtSql import QSqlDatabase, QSqlQuery
-import json
-from pprint import pprint
 from passlib.hash import pbkdf2_sha256
 
 FILE_PATH = os.path.abspath(__file__)

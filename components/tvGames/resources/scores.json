@@ -7,10 +7,10 @@
       "Selecciona la imagen":
       {
         "Times": 13,
-        "Time played": 1890,
+        "Seconds played": 1890,
         "Last time": 123213213123,
         "Best Score": 5731,
-        "Last Score": 2300
+        "Last Scores": [2300, 1000, 5000, 127, 48]
 
       }
     }
@@ -23,20 +23,19 @@
       "Selecciona la imagen":
       {
         "Times": 13,
-        "Time played": 1890,
+        "Seconds played": 1890,
         "Last time": 123213213123,
         "Best Score": 5731,
-        "Last Score": 2300
+        "Last Scores": [2300, 1000, 5000, 127, 48]
 
       },
       "Escoge tu ropa":
       {
         "Times": 2,
-        "Time played": 30,
+        "Seconds played": 30,
         "Last time": 121313213123,
         "Best Score": 299,
-        "Last Score": 150
-
+        "Last Scores": [2300, 1000, 5000, 127, 48]
       }
     }
   }

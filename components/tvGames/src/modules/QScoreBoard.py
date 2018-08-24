@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import json
 import os
 import sys
-from pprint import pprint
+import time
 
-from PyQt4.QtCore import QAbstractTableModel, QString, Qt, QVariant, QStringList
-from PyQt4.QtGui import QApplication, QTableView, QWidget, QVBoxLayout, QComboBox, QHBoxLayout
+from PyQt4.QtCore import QAbstractTableModel, Qt, QVariant, QStringList
+from PyQt4.QtGui import QApplication, QTableView, QWidget, QVBoxLayout, QComboBox, QHBoxLayout, QHeaderView
 
 """
 {
@@ -61,13 +62,14 @@ class QScoreBoardTableModel(QAbstractTableModel):
 		self.players_index = []
 		self.header = ["Name", "Best Score", "Times played", "Total time played"]
 		# TODO: set to None
-		self.current_game = "Escoge tu ropa"
+		self.current_game = ""
+		self.headers = []
 
 	def rowCount(self, index=None):
 		return len(self.scores)
 
 	def columnCount(self, index=None):
-		return 2
+		return len(self.headers)
 
 	def data(self, index, role=None):
 		if not index.isValid():
@@ -80,9 +82,56 @@ class QScoreBoardTableModel(QAbstractTableModel):
 
 			if column == 0:
 				return QVariant(str(self.scores[player]["Nick"]))
-			elif column == 1:
+			else:
 				if self.current_game in self.scores[player]["Games"]:
-					return QVariant(str(self.scores[player]["Games"][self.current_game]["Best Score"]))
+					header = self.headers[column]
+					value = self.scores[player]["Games"][self.current_game][header]
+					if header == "Last time":
+						value = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(value)))
+					if header == "Seconds played":
+						seconds = abs(int(value))
+						format_string = u""
+						time_values = []
+						s= seconds
+						if seconds > 31557600:
+							format_string += u"%d años "
+							years, seconds = divmod(seconds, 31557600)
+							time_values.append(years)
+						if seconds > 604800:
+							format_string += u"%d semanas "
+							weeks, seconds = divmod(seconds, 604800)
+							time_values.append(weeks)
+						if seconds > 86400:
+							format_string += u"%d dias "
+							days, seconds = divmod(seconds, 86400)
+							time_values.append(days)
+						if seconds>3600:
+							format_string += u"%d horas "
+							hours, seconds = divmod(seconds, 3600)
+							time_values.append(hours)
+						if seconds > 60:
+							format_string += u"%d min "
+							minutes, seconds = divmod(seconds, 60)
+							time_values.append(minutes)
+
+						format_string += u"%d seg"
+						time_values.append(seconds)
+
+						# time_delta = datetime.timedelta(seconds=666)
+						# format_string =  u"%S seg"
+						# if int(value) > 60:
+						# 	format_string =  u"%M min "+format_string
+						# if int(value) > 3600:
+						# 	format_string = u"%H horas " + format_string
+						# if int(value) > 86400:
+						# 	format_string = u"%D dias " + format_string
+						# # if int(value) > 2629746:
+						# # 	format_string = u"% días " + format_string
+						# if int(value) > 31557600:
+						# 	format_string = u"%Y anos " + format_string
+						value = str(format_string%tuple(time_values))
+						# value = time.strftime(format_string, time.gmtime(int(value)))
+					return QVariant(str(value))
 				else:
 					return QVariant(str("---"))
 		return QVariant()
@@ -94,6 +143,7 @@ class QScoreBoardTableModel(QAbstractTableModel):
 					self.beginResetModel()
 					self.scores = json.load(f)
 					self.players_index = list(enumerate(self.scores.keys()))
+					self.get_headers_from_scores()
 					self.endResetModel()
 					# pprint(self.scores)
 				except Exception as e:
@@ -106,13 +156,34 @@ class QScoreBoardTableModel(QAbstractTableModel):
 				print "No json format"
 
 	def get_available_games(self):
-		available_games = []
+		available_games = ["---"]
 		if len(self.scores) > 0:
 			for player in self.scores.keys():
 				for game in self.scores[player]["Games"].keys():
 					if game not in available_games:
 						available_games.append(game)
 		return available_games
+
+	def get_headers_from_scores(self):
+		self.headers = ["Nick"]
+		other_headers = []
+		if len(self.scores) > 0:
+			for player in self.scores.keys():
+				for game in self.scores[player]["Games"].keys():
+					for header in self.scores[player]["Games"][game].keys():
+						if header not in other_headers:
+							other_headers.append(header)
+		self.headers.extend(sorted(other_headers))
+
+	def headerData(self, col, orientation, role):
+		if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+			return QVariant(self.headers[col])
+		return QVariant()
+
+	def set_current_game(self, game_name):
+		self.beginResetModel()
+		self.current_game = game_name
+		self.endResetModel()
 
 
 
@@ -122,12 +193,14 @@ class QScoreBoard(QWidget):
 		self.main_layout = QVBoxLayout()
 		self.setLayout(self.main_layout)
 		self.view = QTableView()
+		self.view.horizontalHeader().setResizeMode(QHeaderView.Stretch)
 		self.games_combo_layout = QHBoxLayout()
 		self.games_combobox = QComboBox()
 		self.model = QScoreBoardTableModel()
 		self.model.load_scores_from_json('resources/scores.json')
 		games = self.model.get_available_games()
 		self.games_combobox.addItems(QStringList(games))
+		self.games_combobox.currentIndexChanged.connect(self.current_game_changed)
 		self.view.setModel(self.model)
 		# try some sorting
 		self.view.setSortingEnabled(True)
@@ -139,6 +212,9 @@ class QScoreBoard(QWidget):
 		self.games_combo_layout.addWidget(self.games_combobox)
 		self.main_layout.addLayout(self.games_combo_layout)
 
+	def current_game_changed(self, qt_string):
+		current_game = unicode(self.games_combobox.currentText())
+		self.model.set_current_game(current_game)
 
 
 

@@ -1,0 +1,7 @@
+module RoboCompTvGames
+{
+  interface TvGames
+  {
+    void launchGame(string name);
+  };
+};

@@ -4,3 +4,5 @@ components/tvGames/\.idea/
 *.new
 
 *.pyc
+
+components/tvGamesAdmin/\.idea/

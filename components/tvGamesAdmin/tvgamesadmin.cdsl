@@ -1,0 +1,11 @@
+import "TvGames.idsl";
+
+Component TvGamesAdmin
+{
+	Communications
+	{
+		implements TvGames;
+	};
+	language Python;
+};
+

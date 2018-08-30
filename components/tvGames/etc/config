@@ -1,11 +1,12 @@
 # Endpoints for implemented interfaces
 CommonBehavior.Endpoints=tcp -p 10006
+TvGames.Endpoints=tcp -p 10007
+
 
 # Proxies for required interfaces
 CameraSimpleProxy = camerasimple:tcp -h localhost -p 10005
-HandDetectionProxy = handdetection:tcp -h localhost -p 21222
 RGBDProxy = rgbd:tcp -h localhost -p 10096
-
+HandDetectionProxy = handdetection:tcp -h localhost -p 21222
 
 
 

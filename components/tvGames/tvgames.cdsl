@@ -2,14 +2,17 @@ import "HandDetection.idsl";
 import "CameraSimple.idsl";
 import "RGBD.idsl";
 import "CommonBehavior.idsl";
+import "TvGames.idsl";
 
 Component tvgames
 {
 	Communications
 	{
 		requires HandDetection, CameraSimple, RGBD;
-        implements CommonBehavior;
+        implements CommonBehavior, TvGames;
+
 	};
 	language Python;
+	gui Qt(QWidget);
 };
 

@@ -23,12 +23,14 @@ import numpy as np
 from PySide import QtGui, QtCore
 from genericworker import *
 import cv2
+from modules.QtLogin import QLoginWidget
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
 # sys.path.append('/opt/robocomp/lib')
 # import librobocomp_qmat
 # import librobocomp_osgviewer
 # import librobocomp_innermodel
+
 
 class SpecificWorker(GenericWorker):
     def __init__(self, proxy_map):
@@ -40,7 +42,9 @@ class SpecificWorker(GenericWorker):
         self.expected_hands = 0
         self.hands = []
         self.font = cv2.FONT_HERSHEY_SIMPLEX
-
+        self.current_state = "starting"
+        self.login_widget = QLoginWidget()
+        self.hide()
 
     def setParams(self, params):
         #try:
@@ -53,56 +57,63 @@ class SpecificWorker(GenericWorker):
     @QtCore.Slot()
     def compute(self):
         start = time.time()
-        try:
-            # image = self.camerasimple_proxy.getImage()
-            # frame = np.fromstring(image.image, dtype=np.uint8)
-            # frame = frame.reshape(image.width, image.height, image.depth)
+        if self.current_state == "starting":
+            self.current_state = "waiting_login"
+            self.login_widget.setWindowTitle("Ingrese usuario")
+            self.login_widget.show()
 
-            color, _, _, _ = self.rgbd_proxy.getData()
-            frame = np.fromstring(color, dtype=np.uint8)
-            frame = frame.reshape(480, 640, 3)
-
-        except Ice.Exception, e:
-            traceback.print_exc()
-            print e
-            return False
-        to_show = frame.copy()
-        if self.state == "None":
+        elif self.current_state == "waiting_login":
+            print "Waiting login"
+        elif self.current_state == "game":
             try:
-                current_hand_count = self.handdetection_proxy.getHandsCount()
+                # image = self.camerasimple_proxy.getImage()
+                # frame = np.fromstring(image.image, dtype=np.uint8)
+                # frame = frame.reshape(image.width, image.height, image.depth)
 
-                if current_hand_count < 1:
-                    try:
-                        search_roi_class = TRoi()
-                        search_roi_class.y = 480 / 2 - 100
-                        search_roi_class.x = 640 / 2 - 100
-                        search_roi_class.w = 200
-                        search_roi_class.h =200
-                        search_roi =(search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
-
-                        to_show = self.draw_initial_masked_frame(to_show, search_roi)
-                        self.expected_hands = self.handdetection_proxy.addNewHand(1, search_roi_class)
-                    except Ice.Exception, e:
-                        traceback.print_exc()
-                        print e
-                elif current_hand_count >=  self.expected_hands:
-                    self.state = "tracking"
+                color, _, _, _ = self.rgbd_proxy.getData()
+                frame = np.fromstring(color, dtype=np.uint8)
+                frame = frame.reshape(480, 640, 3)
             except Ice.Exception, e:
                 traceback.print_exc()
                 print e
-        elif self.state == "tracking":
-            try:
-                self.hands = self.handdetection_proxy.getHands()
-                for hand in self.hands:
-                    to_show = self.draw_hand_overlay(to_show,hand)
-            except Ice.Exception, e:
-                traceback.print_exc()
-                print e
-        cv2.imshow("tvGame visualization", to_show)
-        cv2.waitKey(1)
-        print "SpecificWorker.compute... in state %s with %d hands" % (self.state, len(self.hands))
+                return False
+            to_show = frame.copy()
+            if self.state == "None":
+                try:
+                    current_hand_count = self.handdetection_proxy.getHandsCount()
 
-        return True
+                    if current_hand_count < 1:
+                        try:
+                            search_roi_class = TRoi()
+                            search_roi_class.y = 480 / 2 - 100
+                            search_roi_class.x = 640 / 2 - 100
+                            search_roi_class.w = 200
+                            search_roi_class.h =200
+                            search_roi =(search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
+
+                            to_show = self.draw_initial_masked_frame(to_show, search_roi)
+                            self.expected_hands = self.handdetection_proxy.addNewHand(1, search_roi_class)
+                        except Ice.Exception, e:
+                            traceback.print_exc()
+                            print e
+                    elif current_hand_count >=  self.expected_hands:
+                        self.state = "tracking"
+                except Ice.Exception, e:
+                    traceback.print_exc()
+                    print e
+            elif self.state == "tracking":
+                try:
+                    self.hands = self.handdetection_proxy.getHands()
+                    for hand in self.hands:
+                        to_show = self.draw_hand_overlay(to_show,hand)
+                except Ice.Exception, e:
+                    traceback.print_exc()
+                    print e
+            cv2.imshow("tvGame visualization", to_show)
+            cv2.waitKey(1)
+            print "SpecificWorker.compute... in state %s with %d hands" % (self.state, len(self.hands))
+
+            return True
 
     def draw_initial_masked_frame(self, frame, search_roi):
         masked_frame = np.zeros(frame.shape, dtype="uint8")
@@ -233,3 +244,12 @@ class SpecificWorker(GenericWorker):
         # implementCODE
         #
         return ret
+
+    #
+    # launchGame
+    #
+    def launchGame(self, name):
+        #
+        #implementCODE
+        #
+        pass

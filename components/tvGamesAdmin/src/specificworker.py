@@ -62,13 +62,3 @@ class SpecificWorker(GenericWorker):
 
 		return True
 
-
-	#
-	# launchGame
-	#
-	def launchGame(self, name):
-		#
-		#implementCODE
-		#
-		pass
-

@@ -89,6 +89,18 @@ if not ice_CommonBehavior:
 	print 'Couldn\'t load CommonBehavior'
 	sys.exit(-1)
 from RoboCompCommonBehavior import *
+ice_TvGames = False
+for p in icePaths:
+	if os.path.isfile(p+'/TvGames.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"TvGames.ice"
+		Ice.loadSlice(wholeStr)
+		ice_TvGames = True
+		break
+if not ice_TvGames:
+	print 'Couldn\'t load TvGames'
+	sys.exit(-1)
+from RoboCompTvGames import *
 
 class CommonBehaviorI(CommonBehavior):
 	def __init__(self, worker):

@@ -56,7 +56,6 @@ if not ice_TvGames:
 from RoboCompTvGames import *
 
 
-from tvgamesI import *
 
 
 class GenericWorker(QtCore.QObject):
@@ -67,6 +66,7 @@ class GenericWorker(QtCore.QObject):
 		super(GenericWorker, self).__init__()
 
 
+		self.tvgames_proxy = mprx["TvGamesProxy"]
 
 
 		self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)

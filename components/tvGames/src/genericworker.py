@@ -114,12 +114,31 @@ if not ice_CommonBehavior:
 	print 'Couln\'t load CommonBehavior'
 	sys.exit(-1)
 from RoboCompCommonBehavior import *
+ice_TvGames = False
+for p in icePaths:
+	if os.path.isfile(p+'/TvGames.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"TvGames.ice"
+		Ice.loadSlice(wholeStr)
+		ice_TvGames = True
+		break
+if not ice_TvGames:
+	print 'Couln\'t load TvGames'
+	sys.exit(-1)
+from RoboCompTvGames import *
 
 
 from commonbehaviorI import *
+from tvgamesI import *
+
+try:
+	from ui_mainUI import *
+except:
+	print "Can't import UI file. Did you run 'make'?"
+	sys.exit(-1)
 
 
-class GenericWorker(QtCore.QObject):
+class GenericWorker(QtGui.QWidget):
 	kill = QtCore.Signal()
 
 
@@ -130,6 +149,9 @@ class GenericWorker(QtCore.QObject):
 		self.camerasimple_proxy = mprx["CameraSimpleProxy"]
 		self.rgbd_proxy = mprx["RGBDProxy"]
 		self.handdetection_proxy = mprx["HandDetectionProxy"]
+		self.ui = Ui_guiDlg()
+		self.ui.setupUi(self)
+		self.show()
 
 
 		self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)

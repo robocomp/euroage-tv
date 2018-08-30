@@ -105,14 +105,26 @@ if __name__ == '__main__':
 	parameters = {}
 	for i in ic.getProperties():
 		parameters[str(i)] = str(ic.getProperties().getProperty(i))
+
+	# Remote object connection for TvGames
+	try:
+		proxyString = ic.getProperties().getProperty('TvGamesProxy')
+		try:
+			basePrx = ic.stringToProxy(proxyString)
+			tvgames_proxy = TvGamesPrx.checkedCast(basePrx)
+			mprx["TvGamesProxy"] = tvgames_proxy
+		except Ice.Exception:
+			print 'Cannot connect to the remote object (TvGames)', proxyString
+			#traceback.print_exc()
+			status = 1
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get TvGamesProxy property.'
+		status = 1
+
 	if status == 0:
 		worker = SpecificWorker(mprx)
 		worker.setParams(parameters)
-
-	adapter = ic.createObjectAdapter('TvGames')
-	adapter.add(TvGamesI(worker), ic.stringToIdentity('tvgames'))
-	adapter.activate()
-
 
 	signal.signal(signal.SIGINT, signal.SIG_DFL)
 	app.exec_()

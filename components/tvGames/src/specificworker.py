@@ -24,6 +24,8 @@ from PySide import QtGui, QtCore
 from genericworker import *
 import cv2
 from modules.QtLogin import QLoginWidget
+from modules.QTestingWidget import QTestingWidget
+
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
 # sys.path.append('/opt/robocomp/lib')
@@ -38,18 +40,22 @@ class SpecificWorker(GenericWorker):
         self.timer.timeout.connect(self.compute)
         self.Period = 20
         self.timer.start(self.Period)
-        self.state = "None"
         self.expected_hands = 0
         self.hands = []
         self.font = cv2.FONT_HERSHEY_SIMPLEX
-        self.current_state = "starting"
+        self.current_state = "game_getting_player"
         self.login_widget = QLoginWidget()
+        self.login_widget.login_executed.connect(self.login_executed)
         self.hide()
+        self.debug = True
+        if self.debug:
+            self.testing_widget = QTestingWidget()
+            self.start_testing_widget()
 
     def setParams(self, params):
-        #try:
+        # try:
         #	self.innermodel = InnerModel(params["InnerModelPath"])
-        #except:
+        # except:
         #	traceback.print_exc()
         #	print "Error reading config params"
         return True
@@ -64,7 +70,7 @@ class SpecificWorker(GenericWorker):
 
         elif self.current_state == "waiting_login":
             print "Waiting login"
-        elif self.current_state == "game":
+        elif "game" in self.current_state:
             try:
                 # image = self.camerasimple_proxy.getImage()
                 # frame = np.fromstring(image.image, dtype=np.uint8)
@@ -78,42 +84,64 @@ class SpecificWorker(GenericWorker):
                 print e
                 return False
             to_show = frame.copy()
-            if self.state == "None":
+            if self.current_state == "game_getting_player":
                 try:
                     current_hand_count = self.handdetection_proxy.getHandsCount()
 
-                    if current_hand_count < 1:
+                    if current_hand_count < self.expected_hands:
                         try:
                             search_roi_class = TRoi()
                             search_roi_class.y = 480 / 2 - 100
                             search_roi_class.x = 640 / 2 - 100
                             search_roi_class.w = 200
-                            search_roi_class.h =200
-                            search_roi =(search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
+                            search_roi_class.h = 200
+                            search_roi = (
+                                search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
 
                             to_show = self.draw_initial_masked_frame(to_show, search_roi)
                             self.expected_hands = self.handdetection_proxy.addNewHand(1, search_roi_class)
                         except Ice.Exception, e:
                             traceback.print_exc()
                             print e
-                    elif current_hand_count >=  self.expected_hands:
-                        self.state = "tracking"
+
+                    elif current_hand_count >= self.expected_hands and self.expected_hands > 0:
+                        self.current_state = "game_tracking"
                 except Ice.Exception, e:
                     traceback.print_exc()
                     print e
-            elif self.state == "tracking":
+            elif self.current_state == "game_tracking":
                 try:
                     self.hands = self.handdetection_proxy.getHands()
                     for hand in self.hands:
-                        to_show = self.draw_hand_overlay(to_show,hand)
+                        to_show = self.draw_hand_overlay(to_show, hand)
                 except Ice.Exception, e:
                     traceback.print_exc()
                     print e
-            cv2.imshow("tvGame visualization", to_show)
+            if self.debug:
+                cv2.imshow("DEBUG: tvGame visualization", to_show)
             cv2.waitKey(1)
-            print "SpecificWorker.compute... in state %s with %d hands" % (self.state, len(self.hands))
+            print "SpecificWorker.compute... in state %s with %d hands" % (self.current_state, len(self.hands))
 
             return True
+
+    def login_executed(self, accepted):
+        if accepted:
+            self.current_state = "game_getting_player"
+            self.login_widget.hide()
+
+    def start_testing_widget(self):
+        self.testing_widget.add_player_button.clicked.connect(self.add_new_player)
+        self.testing_widget.show()
+
+    def add_new_player(self):
+        self.expected_hands += 1
+
+    def remove_one_player(self):
+        self.expected_hands -= 1
+
+    #### FOR TESTING PORPOSE ONLY
+
+    #### FOR TESTING PORPOSE ONLY
 
     def draw_initial_masked_frame(self, frame, search_roi):
         masked_frame = np.zeros(frame.shape, dtype="uint8")
@@ -128,7 +156,6 @@ class SpecificWorker(GenericWorker):
         beta = (1.0 - alpha)
         masked_frame = cv2.addWeighted(frame, alpha, masked_frame, beta, 0.0)
         return masked_frame
-
 
     def draw_hand_overlay(self, frame, hand):
         if hand.detected:
@@ -151,7 +178,7 @@ class SpecificWorker(GenericWorker):
             cv2.drawContours(frame, [np.array(hand.contour, dtype=int)], -1, (255, 255, 255), 2)
 
         points = np.array(hand.positions)
-        cv2.polylines(img=frame, pts=np.int32([points]), isClosed=False, color=(255,0,200))
+        cv2.polylines(img=frame, pts=np.int32([points]), isClosed=False, color=(255, 0, 200))
         tail_length = 15
         if len(points) > tail_length:
             for i in np.arange(1, tail_length):
@@ -165,7 +192,7 @@ class SpecificWorker(GenericWorker):
             cv2.putText(frame, 'Center', tuple(hand.centerMass), self.font, 0.5, (255, 255, 255), 1)
 
         hand_string = "hand %d %s: D=%s|T=%s|L=%s" % (
-        hand.id, str(hand.centerMass), str(hand.detected), str(hand.tracked), str(hand.truthValue))
+            hand.id, str(hand.centerMass), str(hand.detected), str(hand.tracked), str(hand.truthValue))
         cv2.putText(frame, hand_string, (10, 30 + 15 * int(hand.id)), self.font, 0.5, (255, 255, 255), 1)
         return frame
 
@@ -250,6 +277,6 @@ class SpecificWorker(GenericWorker):
     #
     def launchGame(self, name):
         #
-        #implementCODE
+        # implementCODE
         #
         pass

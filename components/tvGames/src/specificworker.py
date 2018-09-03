@@ -23,6 +23,8 @@ import numpy as np
 from PySide import QtGui, QtCore
 from genericworker import *
 import cv2
+
+from modules.QImageWidget import QImageWidget
 from modules.QtLogin import QLoginWidget
 from modules.QTestingWidget import QTestingWidget
 
@@ -40,7 +42,7 @@ class SpecificWorker(GenericWorker):
         self.timer.timeout.connect(self.compute)
         self.Period = 20
         self.timer.start(self.Period)
-        self.expected_hands = 0
+        self.expected_hands = None
         self.hands = []
         self.font = cv2.FONT_HERSHEY_SIMPLEX
         self.current_state = "game_getting_player"
@@ -48,6 +50,7 @@ class SpecificWorker(GenericWorker):
         self.login_widget.login_executed.connect(self.login_executed)
         self.hide()
         self.debug = True
+        self.tv_image = QImageWidget()
         if self.debug:
             self.testing_widget = QTestingWidget()
             self.start_testing_widget()
@@ -76,51 +79,70 @@ class SpecificWorker(GenericWorker):
                 # frame = np.fromstring(image.image, dtype=np.uint8)
                 # frame = frame.reshape(image.width, image.height, image.depth)
 
-                color, _, _, _ = self.rgbd_proxy.getData()
+                color, depth, _, _ = self.rgbd_proxy.getData()
                 frame = np.fromstring(color, dtype=np.uint8)
-                frame = frame.reshape(480, 640, 3)
+                color_image = frame.reshape(480, 640, 3)
+                depth = np.array(depth, dtype=np.uint8)
+                depth_gray_image = depth.reshape(480, 640)
             except Ice.Exception, e:
                 traceback.print_exc()
                 print e
                 return False
-            to_show = frame.copy()
+            depth_gray_image = cv2.flip(depth_gray_image, 0)
+            color_image = cv2.flip(color_image, 0)
+            admin_image = color_image.copy()
             if self.current_state == "game_getting_player":
-                try:
-                    current_hand_count = self.handdetection_proxy.getHandsCount()
+                self.tv_image.show_on_second_screen()
+                if self.expected_hands is not None:
+                    if self.debug:
+                        print "Waiting to get %s players"%(self.expected_hands)
+                    try:
+                        current_hand_count = self.handdetection_proxy.getHandsCount()
 
-                    if current_hand_count < self.expected_hands:
-                        try:
-                            search_roi_class = TRoi()
-                            search_roi_class.y = 480 / 2 - 100
-                            search_roi_class.x = 640 / 2 - 100
-                            search_roi_class.w = 200
-                            search_roi_class.h = 200
-                            search_roi = (
-                                search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
+                        if current_hand_count < self.expected_hands:
+                            try:
+                                search_roi_class = TRoi()
+                                search_roi_class.y = 480 / 2 - 100
+                                search_roi_class.x = 640 / 2 - 100
+                                search_roi_class.w = 200
+                                search_roi_class.h = 200
+                                search_roi = (
+                                    search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
 
-                            to_show = self.draw_initial_masked_frame(to_show, search_roi)
-                            self.expected_hands = self.handdetection_proxy.addNewHand(1, search_roi_class)
-                        except Ice.Exception, e:
-                            traceback.print_exc()
-                            print e
+                                depth_rgb_image = cv2.cvtColor(depth_gray_image, cv2.COLOR_GRAY2BGR)
+                                # admin_image = self.draw_initial_masked_frame(color_image, search_roi)
+                                game_image = self.draw_initial_masked_frame(depth_rgb_image, search_roi)
+                                self.tv_image.set_opencv_image(game_image, False)
+                                self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands, search_roi_class)
+                            except Ice.Exception, e:
+                                traceback.print_exc()
+                                print e
 
-                    elif current_hand_count >= self.expected_hands and self.expected_hands > 0:
-                        self.current_state = "game_tracking"
-                except Ice.Exception, e:
-                    traceback.print_exc()
-                    print e
+                        elif current_hand_count >= self.expected_hands and self.expected_hands > 0:
+                            self.current_state = "game_tracking"
+                    except Ice.Exception, e:
+                        traceback.print_exc()
+                        print e
+                else:
+                    if self.debug:
+                        print "No player expected"
             elif self.current_state == "game_tracking":
                 try:
                     self.hands = self.handdetection_proxy.getHands()
+                    if len(self.hands) < self.expected_hands:
+                        print "Hand Lost recovering hand"
+                        self.current_state = "game_getting_player"
+                    if self.debug:
+                        print "Debug: Traking %d hands"%(len(self.hands))
                     for hand in self.hands:
-                        to_show = self.draw_hand_overlay(to_show, hand)
+                        admin_image = self.draw_hand_overlay(admin_image, hand)
                 except Ice.Exception, e:
                     traceback.print_exc()
                     print e
             if self.debug:
-                cv2.imshow("DEBUG: tvGame visualization", to_show)
+                cv2.imshow("DEBUG: tvGame: camera view", admin_image)
             cv2.waitKey(1)
-            print "SpecificWorker.compute... in state %s with %d hands" % (self.current_state, len(self.hands))
+            # print "SpecificWorker.compute... in state %s with %d hands" % (self.current_state, len(self.hands))
 
             return True
 
@@ -134,10 +156,16 @@ class SpecificWorker(GenericWorker):
         self.testing_widget.show()
 
     def add_new_player(self):
-        self.expected_hands += 1
+        if self.expected_hands is None:
+            self.expected_hands = 1
+        else:
+            self.expected_hands += 1
 
     def remove_one_player(self):
-        self.expected_hands -= 1
+        if self.expected_hands == 1:
+            self.expected_hands = None
+        else:
+            self.expected_hands -= 1
 
     #### FOR TESTING PORPOSE ONLY
 

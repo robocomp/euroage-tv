@@ -1,0 +1,27 @@
+{
+  "Image1":
+  {
+    "path": "resources/1.jpg",
+    "name": "cepillo",
+    "category": "aseo"
+  },
+  "Image2":
+  {
+    "path": "resources/2.jpg",
+    "name": "pasta de dientes",
+    "category": "aseo"
+  }
+  ,
+  "Image3":
+  {
+    "path": "resources/3.jpg",
+    "name": "boca",
+    "category": "aseo"
+  },
+  "Image4":
+  {
+    "path": "resources/4.jpg",
+    "name": "Martillo",
+    "category": "herramientas"
+  }
+}

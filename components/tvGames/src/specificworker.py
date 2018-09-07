@@ -21,8 +21,12 @@ import sys, os, traceback, time
 
 import numpy as np
 from PySide import QtGui, QtCore
+
+from PyQt4.QtGui import QApplication
+
 from genericworker import *
 import cv2
+from libs.apriltag import Detector
 
 from modules.QImageWidget import QImageWidget
 from modules.QtLogin import QLoginWidget
@@ -40,20 +44,39 @@ class SpecificWorker(GenericWorker):
     def __init__(self, proxy_map):
         super(SpecificWorker, self).__init__(proxy_map)
         self.timer.timeout.connect(self.compute)
-        self.Period = 20
-        self.timer.start(self.Period)
         self.expected_hands = None
         self.hands = []
         self.font = cv2.FONT_HERSHEY_SIMPLEX
-        self.current_state = "game_getting_player"
+        self.current_state = "calibrating"
         self.login_widget = QLoginWidget()
         self.login_widget.login_executed.connect(self.login_executed)
         self.hide()
         self.debug = True
         self.tv_image = QImageWidget()
+        self.apriltag_detector = Detector()
+        self.calibration_state = 0
+        self.calibration_image= []
+        self.calibration_image[:] = (255, 255, 255)
+        self.april_0 = cv2.imread('resources/april_0.png')
+        self.april_0 = cv2.resize(self.april_0, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
+        self.april_1 = cv2.imread('resources/april_1.png')
+        self.april_1 = cv2.resize(self.april_1, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
+        self.april_2 = cv2.imread('resources/april_2.png')
+        self.april_2 = cv2.resize(self.april_2, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
+        self.april_3 = cv2.imread('resources/april_3.png')
+        self.april_3 = cv2.resize(self.april_3, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
+        rec = QApplication.desktop().screenGeometry()
+        self.screen_height = rec.height()
+        self.screen_width = rec.width()
+        self.calibration_image = np.array(np.zeros((self.screen_height, self.screen_width, 3)), dtype=np.uint8)
         if self.debug:
             self.testing_widget = QTestingWidget()
             self.start_testing_widget()
+            self.tv_image.show_on_second_screen()
+        self.Period = 20
+        self.timer.start(self.Period)
+
+
 
     def setParams(self, params):
         # try:
@@ -70,9 +93,22 @@ class SpecificWorker(GenericWorker):
             self.current_state = "waiting_login"
             self.login_widget.setWindowTitle("Ingrese usuario")
             self.login_widget.show()
-
         elif self.current_state == "waiting_login":
             print "Waiting login"
+        elif self.current_state == "calibrating":
+            print "State: calibrating"
+            print "Calibrating state %d"%(self.calibration_state)
+            color, depth, _, _ = self.rgbd_proxy.getData()
+            frame = np.fromstring(color, dtype=np.uint8)
+            color_image = frame.reshape(480, 640, 3)
+            admin_image = color_image.copy()
+            self.calibrate(color_image)
+            if self.calibration_state == 4:
+                self.current_state == "game_getting_player"
+            self.tv_image.set_opencv_image(self.calibration_image, False)
+            if self.debug:
+                cv2.imshow("DEBUG: tvGame: camera view", admin_image)
+            cv2.waitKey(1)
         elif "game" in self.current_state:
             try:
                 # image = self.camerasimple_proxy.getImage()
@@ -146,9 +182,76 @@ class SpecificWorker(GenericWorker):
 
             return True
 
+    def calibrate(self, rgb_image):
+        if self.calibration_state > 4 or self.calibration_state < 0:
+            return
+
+        if self.calibration_state == 0:
+            self.calibration_image[:] = (255, 255, 255)
+            self.calibration_image = self.copyRoi(self.calibration_image, self.april_0, 10, 10)
+            gray = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2GRAY)
+            cv2.imshow("test", self.april_1)
+            detections, dimg = self.apriltag_detector.detect(gray, return_image=True)
+            print len(detections)
+            if len(detections) == 1:
+                if detections[0].tag_id == 0:
+                    self.origPts.append([5, 5])
+                    self.refPts.append([detections[0].corners[0][0] - 2,
+                                        detections[0].corners[0][1] - 2])
+                    self.calibration_state = 1
+                    self.calibration_image[:] = (255, 255, 255)
+                    cv2.waitKey(1000)
+        elif self.calibration_state == 1:
+            self.copyRoi(self.calibration_image, self.april_1, self.H - self.april_1.shape[0] - 10, 10)
+            gray = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2GRAY)
+            detections, dimg = self.apriltag_detector.detect(gray, return_image=True)
+            if len(detections) == 1:
+                if detections[0].tag_id == 1:
+                    self.origPts.append([5, self.H])
+                    self.refPts.append([detections[0].corners[3][0] - 2,
+                                        detections[0].corners[3][1] + 2])
+                    self.calibration_state = 2
+                    self.calibration_image[:] = (255, 255, 255)
+                    cv2.waitKey(1000)
+        elif self.calibration_state == 2:
+            self.copyRoi(self.calibration_image, self.april_2, 10, self.W - self.april_2.shape[1] - 10)
+            gray = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2GRAY)
+            detections, dimg = self.apriltag_detector.detect(gray, return_image=True)
+            if len(detections) == 1:
+                if detections[0].tag_id == 2:
+                    self.origPts.append([self.W, 5])
+                    self.refPts.append([detections[0].corners[1][0] + 2,
+                                        detections[0].corners[1][1] - 2])
+                    self.calibration_state = 3
+                    self.calibration_image[:] = (255, 255, 255)
+                    cv2.waitKey(1000)
+        elif self.calibration_state == 3:
+            self.copyRoi(self.calibration_image, self.april_3, self.H - self.april_3.shape[0] - 10,
+                         self.W - self.april_3.shape[1] - 10)
+            gray = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2GRAY)
+            detections, dimg = self.apriltag_detector.detect(gray, return_image=True)
+            if len(detections) == 1:
+                if detections[0].tag_id == 3:
+                    self.origPts.append([self.W, self.H])
+                    self.refPts.append([detections[0].corners[2][0] + 2,
+                                        detections[0].corners[2][1] + 2])
+                    self.calibration_state = 4
+        elif self.calibration_state == 4:
+            print "Calibration ended"
+            return
+
+    def copyRoi(self, bigImage, small, row, col):
+        # initial number of rows and columns
+        rows = small.shape[0]
+        cols = small.shape[1]
+        bigImage[row:row + rows, col:col + cols, :] = small[:rows, :cols, :]
+        return bigImage
+
+
     def login_executed(self, accepted):
         if accepted:
-            self.current_state = "game_getting_player"
+            self.current_state = "calibrating"
+            self.tv_image.show_on_second_screen()
             self.login_widget.hide()
 
     def start_testing_widget(self):

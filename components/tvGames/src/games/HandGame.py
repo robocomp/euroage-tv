@@ -38,6 +38,80 @@ class HandGame(QMainWindow):
         self.tv_widget = QImageWidget()
         # self.tv_widget.show_on_second_screen()
         self.tv_widget.show()
+        self.calibration_state = 0
+
+    def calibrate(self, color_image):
+        if self.calibration_state > 4 or self.calibration_state < 0:
+            return
+        self.refImage[:] = (255, 255, 255)
+        april_0 = cv2.imread('resources/april_0.png')
+        april_0 = cv2.resize(april_0, None, fx=0.2, fy=0.2, interpolation=cv2.INTER_CUBIC)
+        april_1 = cv2.imread('resources/april_1.png')
+        april_1 = cv2.resize(april_1, None, fx=0.2, fy=0.2, interpolation=cv2.INTER_CUBIC)
+        april_2 = cv2.imread('resources/april_2.png')
+        april_2 = cv2.resize(april_2, None, fx=0.2, fy=0.2, interpolation=cv2.INTER_CUBIC)
+        april_3 = cv2.imread('resources/april_3.png')
+        april_3 = cv2.resize(april_3, None, fx=0.2, fy=0.2, interpolation=cv2.INTER_CUBIC)
+        cv2.setWindowProperty("image", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        while True:
+            if self.calibration_state == 0:
+                self.copyRoi(self.refImage, self.april_0, 10, 10)
+                gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
+                detections, dimg = self.detector.detect(gray, return_image=True)
+                if len(detections) == 1:
+                    if detections[0].tag_id == 0:
+                        self.origPts.append([5, 5])
+                        self.refPts.append([detections[0].corners[0][0] - 2,
+                                            detections[0].corners[0][1] - 2])
+                        self.calibration_state = 1
+                        self.refImage[:] = (255, 255, 255)
+                        cv2.waitKey(1000)
+            elif self.calibration_state == 1:
+                self.copyRoi(self.refImage, self.april_1, self.H - self.april_1.shape[0] - 10, 10)
+                ret, rgbImage = self.capture.read()
+                gray = cv2.cvtColor(rgbImage, cv2.COLOR_BGR2GRAY)
+                detections, dimg = self.detector.detect(gray, return_image=True)
+                if len(detections) == 1:
+                    if detections[0].tag_id == 1:
+                        self.origPts.append([5, self.H])
+                        self.refPts.append([detections[0].corners[3][0] - 2,
+                                            detections[0].corners[3][1] + 2])
+                        self.calibration_state = 2
+                        self.refImage[:] = (255, 255, 255)
+                        cv2.waitKey(1000)
+            elif self.calibration_state == 2:
+                self.copyRoi(self.refImage, self.april_2, 10, self.W - self.april_2.shape[1] - 10)
+                ret, rgbImage = self.capture.read()
+                gray = cv2.cvtColor(rgbImage, cv2.COLOR_BGR2GRAY)
+                detections, dimg = self.detector.detect(gray, return_image=True)
+                if len(detections) == 1:
+                    if detections[0].tag_id == 2:
+                        self.origPts.append([self.W, 5])
+                        self.refPts.append([detections[0].corners[1][0] + 2,
+                                            detections[0].corners[1][1] - 2])
+                        self.calibration_state = 3
+                        self.refImage[:] = (255, 255, 255)
+                        cv2.waitKey(1000)
+            elif self.calibration_state == 3:
+                self.copyRoi(self.refImage, self.april_3, self.H - self.april_3.shape[0] - 10,
+                             self.W - self.april_3.shape[1] - 10)
+                ret, rgbImage = self.capture.read()
+                gray = cv2.cvtColor(rgbImage, cv2.COLOR_BGR2GRAY)
+                detections, dimg = self.detector.detect(gray, return_image=True)
+                if len(detections) == 1:
+                    if detections[0].tag_id == 3:
+                        self.origPts.append([self.W, self.H])
+                        self.refPts.append([detections[0].corners[2][0] + 2,
+                                            detections[0].corners[2][1] + 2])
+                        self.calibration_state = 4
+            elif self.calibration_state == 4:
+                print
+                "Calibration ended"
+                break
+            cv2.imshow("image", self.refImage)
+            rgbImage = cv2.cvtColor(rgbImage, cv2.COLOR_BGR2RGB)
+            cv2.imshow("camera", rgbImage)
+            k = cv2.waitKey(1)
 
 
 

@@ -3,12 +3,13 @@ import "CameraSimple.idsl";
 import "RGBD.idsl";
 import "CommonBehavior.idsl";
 import "TvGames.idsl";
+import "GetAprilTags.idsl";
 
 Component tvgames
 {
 	Communications
 	{
-		requires HandDetection, CameraSimple, RGBD;
+		requires HandDetection, CameraSimple, RGBD, GetAprilTags;
         implements CommonBehavior, TvGames;
 
 	};

@@ -68,7 +68,6 @@ from specificworker import *
 class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 	def __init__(self, _handler):
 		self.handler = _handler
-		# self.communicator = _communicator
 	def getFreq(self, current = None):
 		self.handler.getFreq()
 	def setFreq(self, freq, current = None):
@@ -82,7 +81,7 @@ class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 		self.handler.killYourSelf()
 	def getAttrList(self, current = None):
 		try:
-			return None #self.handler.getAttrList(self.communicator)
+			return self.handler.getAttrList()
 		except:
 			print 'Problem getting getAttrList'
 			traceback.print_exc()
@@ -106,20 +105,37 @@ if __name__ == '__main__':
 	for i in ic.getProperties():
 		parameters[str(i)] = str(ic.getProperties().getProperty(i))
 
-	# Remote object connection for HandDetection
+	# Remote object connection for GetAprilTags
 	try:
-		proxyString = ic.getProperties().getProperty('HandDetectionProxy')
+		proxyString = ic.getProperties().getProperty('GetAprilTagsProxy')
 		try:
 			basePrx = ic.stringToProxy(proxyString)
-			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
-			mprx["HandDetectionProxy"] = handdetection_proxy
+			getapriltags_proxy = GetAprilTagsPrx.checkedCast(basePrx)
+			mprx["GetAprilTagsProxy"] = getapriltags_proxy
 		except Ice.Exception:
-			print 'Cannot connect to the remote object (HandDetection)', proxyString
+			print 'Cannot connect to the remote object (GetAprilTags)', proxyString
 			#traceback.print_exc()
 			status = 1
 	except Ice.Exception, e:
 		print e
-		print 'Cannot get HandDetectionProxy property.'
+		print 'Cannot get GetAprilTagsProxy property.'
+		status = 1
+
+
+	# Remote object connection for RGBD
+	try:
+		proxyString = ic.getProperties().getProperty('RGBDProxy')
+		try:
+			basePrx = ic.stringToProxy(proxyString)
+			rgbd_proxy = RGBDPrx.checkedCast(basePrx)
+			mprx["RGBDProxy"] = rgbd_proxy
+		except Ice.Exception:
+			print 'Cannot connect to the remote object (RGBD)', proxyString
+			#traceback.print_exc()
+			status = 1
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get RGBDProxy property.'
 		status = 1
 
 
@@ -140,20 +156,20 @@ if __name__ == '__main__':
 		status = 1
 
 
-	# Remote object connection for RGBD
+	# Remote object connection for HandDetection
 	try:
-		proxyString = ic.getProperties().getProperty('RGBDProxy')
+		proxyString = ic.getProperties().getProperty('HandDetectionProxy')
 		try:
 			basePrx = ic.stringToProxy(proxyString)
-			rgbd_proxy = RGBDPrx.checkedCast(basePrx)
-			mprx["RGBDProxy"] = rgbd_proxy
+			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
+			mprx["HandDetectionProxy"] = handdetection_proxy
 		except Ice.Exception:
-			print 'Cannot connect to the remote object (RGBD)', proxyString
+			print 'Cannot connect to the remote object (HandDetection)', proxyString
 			#traceback.print_exc()
 			status = 1
 	except Ice.Exception, e:
 		print e
-		print 'Cannot get RGBDProxy property.'
+		print 'Cannot get HandDetectionProxy property.'
 		status = 1
 
 	if status == 0:

@@ -4,11 +4,10 @@ TvGames.Endpoints=tcp -p 10007
 
 
 # Proxies for required interfaces
+GetAprilTagsProxy = getapriltags:tcp -h localhost -p 14310
 HandDetectionProxy = handdetection:tcp -h localhost -p 21222
-CameraSimpleProxy = camerasimple:tcp -h localhost -p 10005
 RGBDProxy = rgbd:tcp -h localhost -p 10096
-AprilTagsProxy = apriltags:tcp -h localhost -p 14310
-
+CameraSimpleProxy = camerasimple:tcp -h localhost -p 10005
 
 
 # This property is used by the clients to connect to IceStorm.

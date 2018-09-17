@@ -126,6 +126,18 @@ if not ice_TvGames:
 	print 'Couln\'t load TvGames'
 	sys.exit(-1)
 from RoboCompTvGames import *
+ice_GetAprilTags = False
+for p in icePaths:
+	if os.path.isfile(p+'/GetAprilTags.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"GetAprilTags.ice"
+		Ice.loadSlice(wholeStr)
+		ice_GetAprilTags = True
+		break
+if not ice_GetAprilTags:
+	print 'Couln\'t load GetAprilTags'
+	sys.exit(-1)
+from RoboCompGetAprilTags import *
 
 
 from commonbehaviorI import *
@@ -146,9 +158,10 @@ class GenericWorker(QtGui.QWidget):
 		super(GenericWorker, self).__init__()
 
 
-		self.camerasimple_proxy = mprx["CameraSimpleProxy"]
 		self.rgbd_proxy = mprx["RGBDProxy"]
 		self.handdetection_proxy = mprx["HandDetectionProxy"]
+		self.getapriltags_proxy = mprx["GetAprilTagsProxy"]
+		self.camerasimple_proxy = mprx["CameraSimpleProxy"]
 		self.ui = Ui_guiDlg()
 		self.ui.setupUi(self)
 		self.show()

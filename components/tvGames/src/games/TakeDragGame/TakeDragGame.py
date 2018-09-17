@@ -87,6 +87,8 @@ class TakeDragGame(QWidget):
         self.dot1 = QGraphicsTextItem(':')
         self.animations = []
         self.digits = []
+        self.background_from_pixmap = None
+        self.background_to_pixmap = None
         self.main_layout = QHBoxLayout()
         self.setLayout(self.main_layout)
         self.scene = QGraphicsScene()
@@ -100,6 +102,7 @@ class TakeDragGame(QWidget):
         self.view.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.image_bank = None
         self.create_and_add_images()
+
 
         # self.scene.setBackgroundBrush(QBrush(Qt.red, Qt.SolidPattern))
 
@@ -115,7 +118,7 @@ class TakeDragGame(QWidget):
         if self.image_bank is not None:
             for image_id in self.image_bank.keys():
                 if "clothes" in self.image_bank[image_id]["categories"]:
-                    image_path = self.image_bank[image_id]["path"]
+                    image_path = os.path.join(CURRENT_PATH,self.image_bank[image_id]["path"])
                     new_image = DraggableItem(image_path, self.background_from_image)
                     new_image.moved_signal.moved.connect(self.item_moved)
                     self.image_bank[image_id]["widget"] = new_image
@@ -153,23 +156,27 @@ class TakeDragGame(QWidget):
     def add_background_from_image(self, ):
         assert self.image_bank is not None, "Images need to be loaded before calling this method (try load_images_json_file)"
         if "Background from" in self.image_bank:
-            background_from_pixmap = QPixmap(self.image_bank["Background from"]["path"])
-            self.background_from_image = QGraphicsPixmapItem(background_from_pixmap)
+            full_path = os.path.join(CURRENT_PATH,self.image_bank["Background from"]["path"])
+            self.background_from_pixmap = QPixmap(full_path)
+            self.background_from_image = QGraphicsPixmapItem(self.background_from_pixmap)
+            # self.background_from_image.setPixmap(self.background_from_pixmap)
             self.scene.addItem(self.background_from_image)
             self.background_from_image.setZValue(2)
 
     def add_background_to_image(self, ):
         assert self.image_bank is not None, "Images need to be loaded before calling this method (try load_images_json_file)"
         if "Background to" in self.image_bank:
-            background_to_pixmap = QPixmap(self.image_bank["Background to"]["path"])
-            self.background_to_image = QGraphicsPixmapItem(background_to_pixmap)
+            full_path = os.path.join(CURRENT_PATH,self.image_bank["Background to"]["path"])
+            self.background_to_pixmap = QPixmap(full_path)
+            self.background_to_image = QGraphicsPixmapItem(self.background_to_pixmap)
             self.scene.addItem(self.background_to_image)
             self.background_to_image.setZValue(2)
 
     def resizeEvent(self, event):
         view_size = self.view.size()
         new_background_height = (1.5 / 4.) * view_size.height()
-        background_to_pixmap = QPixmap(self.image_bank["Background to"]["path"])
+        full_path = os.path.join(CURRENT_PATH, self.image_bank["Background to"]["path"])
+        background_to_pixmap = QPixmap(full_path)
         background_to_pixmap = background_to_pixmap.scaled(new_background_height, new_background_height,
                                                            Qt.KeepAspectRatio)
         if not self.background_to_image:
@@ -186,7 +193,8 @@ class TakeDragGame(QWidget):
 
         #####################
         new_background_height = (2.2 / 4.) * view_size.height()
-        background_from_pixmap = QPixmap(self.image_bank["Background from"]["path"])
+        full_path = os.path.join(CURRENT_PATH, self.image_bank["Background from"]["path"])
+        background_from_pixmap = QPixmap(full_path)
         background_from_pixmap = background_from_pixmap.scaled(new_background_height, new_background_height,
                                                                Qt.KeepAspectRatio)
         if not self.background_to_image:

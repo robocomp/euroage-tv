@@ -4,9 +4,10 @@ TvGames.Endpoints=tcp -p 10007
 
 
 # Proxies for required interfaces
+HandDetectionProxy = handdetection:tcp -h localhost -p 21222
 CameraSimpleProxy = camerasimple:tcp -h localhost -p 10005
 RGBDProxy = rgbd:tcp -h localhost -p 10096
-HandDetectionProxy = handdetection:tcp -h localhost -p 21222
+AprilTagsProxy = apriltags:tcp -h localhost -p 14310
 
 
 

@@ -199,7 +199,8 @@ class ChooseImageGame(QWidget):
              os.path.join(CURRENT_PATH, 'resources/3.jpg'),
              os.path.join(CURRENT_PATH, 'resources/4.jpg')]
         )
-        self.set_winner_image_by_name(str(randint(1, 4)))
+        self.set_winner_image_by_name(4)
+        # self.set_winner_image_by_name(str(randint(1, 4)))
 
     def set_winner_image_by_name(self, name):
         image_grid_coords = self.image_grid_by_name[str(name)]

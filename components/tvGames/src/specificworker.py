@@ -51,10 +51,11 @@ class SpecificWorker(GenericWorker):
 		self.debug = True
 		self.tv_image = QImageWidget()
 		self.calibration_state = 0
-		self.calibration_image= []
-		self.calibration_image[:] = (255, 255, 255)
+		self.calibration_image = []
 		self.origPts = []
 		self.refPts = []
+		# Used to put the apriltag marks more and more inside the screen
+		self.tv_reduction = 0
 		self.april_0 = cv2.imread('resources/april_0.png')
 		self.april_0 = cv2.resize(self.april_0, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
 		self.april_1 = cv2.imread('resources/april_1.png')
@@ -63,18 +64,20 @@ class SpecificWorker(GenericWorker):
 		self.april_2 = cv2.resize(self.april_2, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
 		self.april_3 = cv2.imread('resources/april_3.png')
 		self.april_3 = cv2.resize(self.april_3, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
-		rec = QApplication.desktop().screenGeometry()
-		self.screen_height = rec.height()
-		self.screen_width = rec.width()
+		# rec = QApplication.desktop().screenGeometry()
+		# self.screen_width = rec.width()
+		# self.screen_height = rec.height()
+		# TODO: would be the size of the second screen
+		self.screen_height = 740
+		self.screen_width = 1360
 		self.calibration_image = np.array(np.zeros((self.screen_height, self.screen_width, 3)), dtype=np.uint8)
+		self.calibration_image[:] = (255, 255, 255)
 		if self.debug:
 			self.testing_widget = QTestingWidget()
 			self.start_testing_widget()
 			self.tv_image.show_on_second_screen()
 		self.Period = 20
 		self.timer.start(self.Period)
-
-
 
 	def setParams(self, params):
 		# try:
@@ -95,9 +98,12 @@ class SpecificWorker(GenericWorker):
 			print "Waiting login"
 		elif self.current_state == "calibrating":
 			self.tv_image.show_on_second_screen()
-			self.calibration_image = cv2.resize(self.calibration_image, None, fx=(self.calibration_image.shape[0]/self.tv_image.height()), fy=(self.calibration_image.shape[1]/self.tv_image.width()), interpolation=cv2.INTER_CUBIC)
+			# self.calibration_image = cv2.resize(self.calibration_image, None,
+			# 									fx=(self.calibration_image.shape[0] / self.tv_image.height()),
+			# 									fy=(self.calibration_image.shape[1] / self.tv_image.width()),
+			# 									interpolation=cv2.INTER_CUBIC)
 			print "State: calibrating"
-			print "Calibrating state %d"%(self.calibration_state)
+			print "Calibrating state %d" % (self.calibration_state)
 			tags = self.getapriltags_proxy.checkMarcas()
 
 			self.calibrate(tags)
@@ -130,7 +136,7 @@ class SpecificWorker(GenericWorker):
 				self.tv_image.show_on_second_screen()
 				if self.expected_hands is not None:
 					if self.debug:
-						print "Waiting to get %s players"%(self.expected_hands)
+						print "Waiting to get %s players" % (self.expected_hands)
 					try:
 						current_hand_count = self.handdetection_proxy.getHandsCount()
 
@@ -148,7 +154,8 @@ class SpecificWorker(GenericWorker):
 								# admin_image = self.draw_initial_masked_frame(color_image, search_roi)
 								game_image = self.draw_initial_masked_frame(depth_rgb_image, search_roi)
 								self.tv_image.set_opencv_image(game_image, False)
-								self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands, search_roi_class)
+								self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands,
+																						  search_roi_class)
 							except Ice.Exception, e:
 								traceback.print_exc()
 								print e
@@ -168,7 +175,7 @@ class SpecificWorker(GenericWorker):
 						print "Hand Lost recovering hand"
 						self.current_state = "game_getting_player"
 					if self.debug:
-						print "Debug: Traking %d hands"%(len(self.hands))
+						print "Debug: Traking %d hands" % (len(self.hands))
 					for hand in self.hands:
 						masked_frame = np.zeros(frame.shape, dtype="uint8")
 						tv_image = masked_frame[::] = 255
@@ -186,12 +193,13 @@ class SpecificWorker(GenericWorker):
 			return True
 
 	def calibrate(self, tags):
+
 		if self.calibration_state > 4 or self.calibration_state < 0:
 			return
 		detections = tags
 		if self.calibration_state == 0:
 			self.calibration_image[:] = (255, 255, 255)
-			self.calibration_image = self.copyRoi(self.calibration_image, self.april_0, 10, 10)
+			self.calibration_image = self.copyRoi(self.calibration_image, self.april_0, self.tv_reduction, self.tv_reduction)
 			if len(detections) == 1:
 				if detections[0].id == 0:
 					self.origPts.append([5, 5])
@@ -200,32 +208,41 @@ class SpecificWorker(GenericWorker):
 					self.calibration_state = 1
 					self.calibration_image[:] = (255, 255, 255)
 					cv2.waitKey(1000)
+					self.tv_reduction = 0
+			else:
+				self.tv_reduction+=1
 		elif self.calibration_state == 1:
-			self.copyRoi(self.calibration_image, self.april_1, self.tv_image.height() - self.april_1.shape[0] - 400, 10)
+			self.copyRoi(self.calibration_image, self.april_1, self.screen_height - self.april_1.shape[0] -self.tv_reduction, self.tv_reduction)
 			if len(detections) == 1:
 				if detections[0].id == 1:
-					self.origPts.append([5, self.H])
+					self.origPts.append([5, self.screen_width])
 					self.refPts.append([detections[0].tx - 2,
 										detections[0].ty + 2])
 					self.calibration_state = 2
 					self.calibration_image[:] = (255, 255, 255)
 					cv2.waitKey(1000)
+					self.tv_reduction = 0
+			else:
+				self.tv_reduction+=1
 		elif self.calibration_state == 2:
-			self.copyRoi(self.calibration_image, self.april_2, 10, self.screen_width - self.april_2.shape[1] - 10)
+			self.copyRoi(self.calibration_image, self.april_2, 10, self.screen_width - self.april_2.shape[1] - self.tv_reduction)
 			if len(detections) == 1:
 				if detections[0].id == 2:
-					self.origPts.append([self.W, 5])
+					self.origPts.append([self.screen_width, 5])
 					self.refPts.append([detections[0].tx + 2,
 										detections[0].ty - 2])
 					self.calibration_state = 3
 					self.calibration_image[:] = (255, 255, 255)
 					cv2.waitKey(1000)
+					self.tv_reduction = 0
+			else:
+				self.tv_reduction += 1
 		elif self.calibration_state == 3:
-			self.copyRoi(self.calibration_image, self.april_3, self.screen_height - self.april_3.shape[0] - 10,
-						 self.screen_width - self.april_3.shape[1] - 10)
+			self.copyRoi(self.calibration_image, self.april_3, self.screen_height - self.april_3.shape[0] - self.tv_reduction,
+						 self.screen_width - self.april_3.shape[1] - self.tv_reduction)
 			if len(detections) == 1:
 				if detections[0].id == 3:
-					self.origPts.append([self.W, self.H])
+					self.origPts.append([self.screen_width, self.screen_height])
 					self.refPts.append([detections[0].tx + 2,
 										detections[0].ty + 2])
 					self.calibration_state = 4
@@ -239,7 +256,6 @@ class SpecificWorker(GenericWorker):
 		cols = small.shape[1]
 		bigImage[row:row + rows, col:col + cols, :] = small[:rows, :cols, :]
 		return bigImage
-
 
 	def login_executed(self, accepted):
 		if accepted:

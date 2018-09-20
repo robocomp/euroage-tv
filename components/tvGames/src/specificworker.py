@@ -22,11 +22,10 @@ import traceback
 
 import cv2
 import numpy as np
-from PyQt4.QtGui import QApplication
 
 from genericworker import *
+from modules.AdminInterface import AdminInterface
 from modules.QImageWidget import QImageWidget
-from modules.QTestingWidget import QTestingWidget
 from modules.QtLogin import QLoginWidget
 
 
@@ -47,6 +46,10 @@ class SpecificWorker(GenericWorker):
 		self.current_state = "calibrating"
 		self.login_widget = QLoginWidget()
 		self.login_widget.login_executed.connect(self.login_executed)
+		self.admin_interface = AdminInterface()
+		self.admin_interface.add_player_button.clicked.connect(self.add_new_player)
+		self.admin_interface.remove_player_button.clicked.connect(self.remove_player)
+		self.admin_interface.show()
 		self.hide()
 		self.debug = True
 		self.tv_image = QImageWidget()
@@ -75,8 +78,6 @@ class SpecificWorker(GenericWorker):
 		self.calibration_image = np.array(np.zeros((self.screen_height, self.screen_width, 3)), dtype=np.uint8)
 		self.calibration_image[:] = (255, 255, 255)
 		if self.debug:
-			self.testing_widget = QTestingWidget()
-			self.init_testing_widget()
 			self.tv_image.show_on_second_screen()
 		self.Period = 20
 		self.timer.start(self.Period)
@@ -185,19 +186,20 @@ class SpecificWorker(GenericWorker):
 						self.current_state = "game_getting_player"
 					if self.debug:
 						print "Debug: Traking %d hands" % (len(self.hands))
+					tv_image = np.zeros(color_image.shape, dtype="uint8")
+					tv_image[::] = 255
 					for hand in self.hands:
-						tv_image = np.zeros(color_image.shape, dtype="uint8")
-						tv_image[::] = 255
+
 						admin_image = self.draw_hand_overlay(admin_image, hand)
 						tv_image = self.draw_hand_overlay(tv_image, hand)
-						if self.screen_factor != 1:
-							tv_image = cv2.resize(tv_image, None, fx=self.screen_factor, fy=self.screen_factor, interpolation=cv2.INTER_CUBIC)
-						self.tv_image.set_opencv_image(tv_image, False)
+					if self.screen_factor != 1:
+						tv_image = cv2.resize(tv_image, None, fx=self.screen_factor, fy=self.screen_factor, interpolation=cv2.INTER_CUBIC)
+					self.tv_image.set_opencv_image(tv_image, False)
 				except Ice.Exception, e:
 					traceback.print_exc()
 					print e
-			if self.debug:
-				cv2.imshow("DEBUG: tvGame: camera view", admin_image)
+			# if self.debug:
+			self.admin_interface.update_admin_image(admin_image)
 			cv2.waitKey(1)
 			# print "SpecificWorker.compute... in state %s with %d hands" % (self.current_state, len(self.hands))
 
@@ -280,21 +282,24 @@ class SpecificWorker(GenericWorker):
 			self.tv_image.show_on_second_screen()
 			self.login_widget.hide()
 
-	def init_testing_widget(self):
-		self.testing_widget.add_player_button.clicked.connect(self.add_new_player)
-		self.testing_widget.show()
 
 	def add_new_player(self):
 		if self.expected_hands is None:
 			self.expected_hands = 1
 		else:
 			self.expected_hands += 1
+		self.admin_interface.players_lcd.display(self.expected_hands)
+		self.admin_interface.remove_player_button.setEnabled(True)
 
-	def remove_one_player(self):
-		if self.expected_hands == 1:
-			self.expected_hands = None
-		else:
-			self.expected_hands -= 1
+	def remove_player(self):
+		if self.expected_hands is not None:
+			if self.expected_hands > 0:
+				self.expected_hands -= 1
+			else:
+				self.expected_hands = 0
+				self.admin_interface.remove_player_button.setEnabled(False)
+		self.admin_interface.players_lcd.display(self.expected_hands)
+
 
 	#### FOR TESTING PORPOSE ONLY
 

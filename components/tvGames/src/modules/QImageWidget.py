@@ -1,7 +1,7 @@
 import cv2
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QWidget, QHBoxLayout, QLabel, QPixmap, QImage, QApplication
+from PySide.QtCore import Qt
+from PySide.QtGui import QWidget, QHBoxLayout, QLabel, QPixmap, QImage, QApplication
 
 
 class QImageWidget(QWidget):
@@ -16,6 +16,7 @@ class QImageWidget(QWidget):
         self.setContentsMargins(0, 0, 0, 0)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setAlignment(Qt.AlignCenter)
+        self.image = None
 
     def set_opencv_image(self, raw_image, BGR=True):
         if raw_image is not None:
@@ -27,6 +28,10 @@ class QImageWidget(QWidget):
                                 QImage.Format_RGB888)
             self.pixmap = QPixmap(self.image)
             self.label.setPixmap(self.pixmap)
+            self.image = raw_image
+
+    def get_raw_image(self):
+        return self.image
 
     def show_on_second_screen(self):
         desktop_widget = QApplication.desktop()

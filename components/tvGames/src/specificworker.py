@@ -26,8 +26,10 @@ from PyQt4.QtGui import QApplication
 
 from genericworker import *
 from modules.AdminInterface import AdminInterface
+from modules.HandMouse import HandMouse, MultiHandMouses
 from modules.QImageWidget import QImageWidget
 from modules.QtLogin import QLoginWidget
+from modules.CalibrationStateMachine import CalibrationStateMachine
 
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
@@ -35,6 +37,8 @@ from modules.QtLogin import QLoginWidget
 # import librobocomp_qmat
 # import librobocomp_osgviewer
 # import librobocomp_innermodel
+
+
 
 
 class SpecificWorker(GenericWorker):
@@ -56,37 +60,27 @@ class SpecificWorker(GenericWorker):
 		self.tv_image = QImageWidget()
 		self.tv_image.mouse_pressed.connect(self.mouse_pressed_on_tv)
 		self.tv_image.mouse_released.connect(self.mouse_released_on_tv)
-		self.calibration_state = 0
-		self.calibration_image = []
-		self.origPts = []
-		self.refPts = []
 		self.mouse_grab = False
 		# Used to put the apriltag marks more and more inside the screen
-		self.tv_reduction = 0
-		self.april_0 = cv2.imread('resources/april_0.png')
-		self.april_0 = cv2.resize(self.april_0, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
-		self.april_1 = cv2.imread('resources/april_1.png')
-		self.april_1 = cv2.resize(self.april_1, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
-		self.april_2 = cv2.imread('resources/april_2.png')
-		self.april_2 = cv2.resize(self.april_2, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
-		self.april_3 = cv2.imread('resources/april_3.png')
-		self.april_3 = cv2.resize(self.april_3, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_CUBIC)
+
 		# Size of second screen
 		rec = QApplication.desktop().screenGeometry(1)
 		self.screen_width = rec.width() - 20
 		self.screen_height = rec.height() - 20
+		self.calibrator = CalibrationStateMachine(self.screen_width, self.screen_height)
 		# TODO: would be the size of the second screen
 		# self.screen_height = 740
 		# self.screen_width = 1360
 		self.screen_factor = 1
-
-		self.calibration_image = np.array(np.zeros((self.screen_height, self.screen_width, 3)), dtype=np.uint8)
-		self.calibration_image[:] = (255, 255, 255)
+		self.tv_canvas = []
 		if self.debug:
 			self.tv_image.show_on_second_screen()
 		self.Period = 20
 		self.timer.start(self.Period)
 		self.hand_track = []
+		self.hand_mouses = MultiHandMouses()
+
+
 
 	def mouse_pressed_on_tv(self):
 		self.mouse_grab = True
@@ -119,14 +113,13 @@ class SpecificWorker(GenericWorker):
 			# 									fx=(self.calibration_image.shape[0] / self.tv_image.height()),
 			# 									fy=(self.calibration_image.shape[1] / self.tv_image.width()),
 			# 									interpolation=cv2.INTER_CUBIC)
-			self.admin_interface.statusBar().showMessage("State: calibrating")
-			self.admin_interface.statusBar().showMessage("Calibrating state %d" % (self.calibration_state))
+			self.admin_interface.statusBar().showMessage("State: Calibrating. Calibrating state %d" % self.calibrator.state)
 			tags = self.getapriltags_proxy.checkMarcas()
 
-			self.calibrate(tags)
-			if self.calibration_state == 4:
+			calibration_ended = self.calibrator.update(tags)
+			if calibration_ended:
 				self.current_state = "game_getting_player"
-			self.tv_image.set_opencv_image(self.calibration_image, False)
+			self.tv_image.set_opencv_image(self.calibrator.image, False)
 			# if self.debug:
 			# 	admin_image = self.calibration_image.copy()
 			# 	cv2.imshow("DEBUG: tvGame: camera view", admin_image)
@@ -149,7 +142,11 @@ class SpecificWorker(GenericWorker):
 			depth_gray_image = cv2.flip(depth_gray_image, 0)
 			color_image = cv2.flip(color_image, 0)
 			admin_image = color_image.copy()
-			admin_image = cv2.warpPerspective(admin_image, self.homography, (self.screen_width, self.screen_height))
+			# admin_image = cv2.warpPerspective(admin_image, self.homography, (self.screen_width, self.screen_height))
+			self.screen_factor = self.screen_height / float(color_image.shape[0])
+
+				# self.tv_canvas = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
+				# 						interpolation=cv2.INTER_CUBIC)
 			if self.current_state == "game_getting_player":
 				self.tv_image.show_on_second_screen()
 				if self.expected_hands is not None:
@@ -172,7 +169,6 @@ class SpecificWorker(GenericWorker):
 								depth_rgb_image = cv2.cvtColor(depth_gray_image, cv2.COLOR_GRAY2BGR)
 								# admin_image = self.draw_initial_masked_frame(color_image, search_roi)
 								game_image = self.draw_initial_masked_frame(depth_rgb_image, search_roi)
-								self.screen_factor = self.screen_height / float(game_image.shape[0])
 								game_image = cv2.resize(game_image, None, fx=self.screen_factor, fy=self.screen_factor,
 														interpolation=cv2.INTER_CUBIC)
 								self.tv_image.set_opencv_image(game_image, False)
@@ -184,6 +180,8 @@ class SpecificWorker(GenericWorker):
 
 						elif current_hand_count >= self.expected_hands and self.expected_hands > 0:
 							self.current_state = "game_tracking"
+							self.tv_canvas = np.zeros(color_image.shape, dtype="uint8")
+							self.tv_canvas[::] = 255
 					except Ice.Exception, e:
 						traceback.print_exc()
 						print e
@@ -201,33 +199,46 @@ class SpecificWorker(GenericWorker):
 				try:
 					self.hands = self.handdetection_proxy.getHands()
 					if len(self.hands) < self.expected_hands:
-						self.admin_interface.statusBar().showMessage("Hand Lost recovering hand")
+						self.admin_interface.statusBar().showMessage("Hand Lost. recovering hand")
 						self.current_state = "game_getting_player"
 						self.hand_track = []
 					if self.debug:
 						self.admin_interface.statusBar().showMessage("Debug: Traking %d hands" % (len(self.hands)))
-					tv_image = np.zeros(color_image.shape, dtype="uint8")
-					tv_image[::] = 255
+					tv_overlay = np.zeros(color_image.shape, dtype="uint8")
+					tv_overlay[::] = 255
 					for hand in self.hands:
 						if hand.centerMass:
 							new_point = self.toHomogeneous(hand.centerMass)
-							new_point = np.dot(self.homography, new_point)
-							if self.mouse_grab:
+							new_point = np.dot(self.calibrator.homography, new_point)
+							tv_overlay = self.draw_pointer(tv_overlay, hand.centerMass)
+
+							self.hand_mouses.add_state(hand.id, hand.centerMass, hand.detected)
+							if self.hand_mouses.is_closed(hand.id):
 								# sould be done for each hand
 								self.hand_track.append(hand.centerMass)
-						admin_image = self.draw_hand_overlay(admin_image, hand)
-						# tv_image = self.draw_hand_overlay(tv_image, hand)
+							else:
+								self.hand_track= []
+
+						admin_image = self.draw_hand_full_overlay(admin_image, hand)
+						# tv_overlay = self.draw_hand_overlay(tv_overlay, hand)
 						# Not working currently
-						# tv_image = self.draw_pointer(tv_image, new_point[:2])
+						# tv_overlay = self.draw_pointer(tv_overlay, new_point[:2])
 						# zero_point = self.toHomogeneous([0,0])
 						# zero_point = np.dot(self.homography, zero_point)
-						# tv_image = self.draw_pointer(tv_image, zero_point[:2])
+						# tv_overlay = self.draw_pointer(tv_overlay, zero_point[:2])
+						self.tv_canvas = self.draw_hand_track(self.tv_canvas)
 
-						tv_image = self.draw_hand_track(tv_image)
 					if self.screen_factor != 1:
-						tv_image = cv2.resize(tv_image, None, fx=self.screen_factor, fy=self.screen_factor,
+						tv_overlay = cv2.resize(tv_overlay, None, fx=self.screen_factor, fy=self.screen_factor,
 											  interpolation=cv2.INTER_CUBIC)
-					self.tv_image.set_opencv_image(tv_image, False)
+						asdf = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
+											  interpolation=cv2.INTER_CUBIC)
+					tv_overlay = cv2.cvtColor(tv_overlay, cv2.COLOR_RGB2RGBA)
+					tv_overlay[np.all(tv_overlay == [0, 0, 0, 255], axis=2)] = [0, 0, 0, 0]
+					asdf = cv2.cvtColor(asdf, cv2.COLOR_RGB2RGBA)
+					mixed = cv2.addWeighted(asdf, 0.4, tv_overlay, 0.1, 0)
+					mixed =cv2.cvtColor(mixed, cv2.COLOR_RGBA2RGB)
+					self.tv_image.set_opencv_image(mixed, False)
 				except Ice.Exception, e:
 					traceback.print_exc()
 					print e
@@ -243,82 +254,7 @@ class SpecificWorker(GenericWorker):
 		ret[-1][0] = 1.
 		return ret
 
-	def calibrate(self, tags):
-		if self.calibration_state > 4 or self.calibration_state < 0:
-			return
-		detections = tags
-		if self.calibration_state == 0:
-			self.calibration_image[:] = (255, 255, 255)
-			try:
-				self.calibration_image = self.copyRoi(self.calibration_image, self.april_0, self.tv_reduction,
-													  self.tv_reduction)
-			except:
-				print("Calibration failed")
-				self.calibration_state = -1
-			if len(detections) == 1:
-				if detections[0].id == 0:
-					self.origPts.append([5, 5])
-					self.refPts.append([detections[0].tx - 2,
-										detections[0].ty - 2])
-					self.calibration_state = 1
-					self.calibration_image[:] = (255, 255, 255)
-					cv2.waitKey(1000)
-					self.tv_reduction = 0
-			else:
-				self.tv_reduction += 1
-		elif self.calibration_state == 1:
-			self.calibration_image[:] = (255, 255, 255)
-			self.copyRoi(self.calibration_image, self.april_1,
-						 self.screen_height - self.april_1.shape[0] - self.tv_reduction, self.tv_reduction)
-			if len(detections) == 1:
-				if detections[0].id == 1:
-					self.origPts.append([5, self.screen_width])
-					self.refPts.append([detections[0].tx - 2,
-										detections[0].ty + 2])
-					self.calibration_state = 2
-					self.calibration_image[:] = (255, 255, 255)
-					cv2.waitKey(1000)
-					self.tv_reduction = 0
-			else:
-				self.tv_reduction += 1
-		elif self.calibration_state == 2:
-			self.calibration_image[:] = (255, 255, 255)
-			self.copyRoi(self.calibration_image, self.april_2, self.tv_reduction,
-						 self.screen_width - self.april_2.shape[1] - self.tv_reduction)
-			if len(detections) == 1:
-				if detections[0].id == 2:
-					self.origPts.append([self.screen_width, 5])
-					self.refPts.append([detections[0].tx + 2,
-										detections[0].ty - 2])
-					self.calibration_state = 3
-					self.calibration_image[:] = (255, 255, 255)
-					cv2.waitKey(1000)
-					self.tv_reduction = 0
-			else:
-				self.tv_reduction += 1
-		elif self.calibration_state == 3:
-			self.calibration_image[:] = (255, 255, 255)
-			self.copyRoi(self.calibration_image, self.april_3,
-						 self.screen_height - self.april_3.shape[0] - self.tv_reduction,
-						 self.screen_width - self.april_3.shape[1] - self.tv_reduction)
-			if len(detections) == 1:
-				if detections[0].id == 3:
-					self.origPts.append([self.screen_width, self.screen_height])
-					self.refPts.append([detections[0].tx + 2,
-										detections[0].ty + 2])
-					self.calibration_state = 4
-					self.calibration_image[:] = (255, 255, 255)
-					self.homography, _ = cv2.findHomography(np.array(self.refPts), np.array(self.origPts))
-					self.admin_interface.statusBar().showMessage("Calibration ended")
-			else:
-				self.tv_reduction += 1
 
-	def copyRoi(self, bigImage, small, row, col):
-		# initial number of rows and columns
-		rows = small.shape[0]
-		cols = small.shape[1]
-		bigImage[row:row + rows, col:col + cols, :] = small[:rows, :cols, :]
-		return bigImage
 
 	def login_executed(self, accepted):
 		if accepted:
@@ -361,7 +297,7 @@ class SpecificWorker(GenericWorker):
 		masked_frame = cv2.addWeighted(frame, alpha, masked_frame, beta, 0.0)
 		return masked_frame
 
-	def draw_hand_overlay(self, frame, hand):
+	def draw_hand_full_overlay(self, frame, hand):
 		if hand.detected:
 			for finger_number, fingertip in enumerate(hand.fingertips):
 				cv2.circle(frame, tuple(fingertip), 10, [255, 100, 255], 3)

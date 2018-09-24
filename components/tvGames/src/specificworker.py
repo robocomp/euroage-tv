@@ -142,7 +142,7 @@ class SpecificWorker(GenericWorker):
 			depth_gray_image = cv2.flip(depth_gray_image, 0)
 			color_image = cv2.flip(color_image, 0)
 			admin_image = color_image.copy()
-			# admin_image = cv2.warpPerspective(admin_image, self.homography, (self.screen_width, self.screen_height))
+			admin_image = cv2.warpPerspective(admin_image, self.calibrator.homography, (self.screen_width, self.screen_height))
 			self.screen_factor = self.screen_height / float(color_image.shape[0])
 
 				# self.tv_canvas = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
@@ -210,22 +210,24 @@ class SpecificWorker(GenericWorker):
 						if hand.centerMass:
 							new_point = self.toHomogeneous(hand.centerMass)
 							new_point = np.dot(self.calibrator.homography, new_point)
+							new_point = self.fromHomogeneus(new_point)
 							tv_overlay = self.draw_pointer(tv_overlay, hand.centerMass)
 
 							self.hand_mouses.add_state(hand.id, hand.centerMass, hand.detected)
 							if self.hand_mouses.is_closed(hand.id):
-								# sould be done for each hand
-								self.hand_track.append(hand.centerMass)
+								if self.hand_mouses.is_valid(hand.id):
+									self.hand_track.append(hand.centerMass)
 							else:
-								self.hand_track= []
+								self.hand_track = []
 
-						admin_image = self.draw_hand_full_overlay(admin_image, hand)
+						# admin_image = self.draw_hand_full_overlay(admin_image, hand)
 						# tv_overlay = self.draw_hand_overlay(tv_overlay, hand)
 						# Not working currently
-						# tv_overlay = self.draw_pointer(tv_overlay, new_point[:2])
-						# zero_point = self.toHomogeneous([0,0])
-						# zero_point = np.dot(self.homography, zero_point)
-						# tv_overlay = self.draw_pointer(tv_overlay, zero_point[:2])
+						# tv_overlay = self.draw_pointer(tv_overlay, hand.centerMass[:2])
+						# zero_point = self.toHomogeneous([100,100])
+						# zero_point = np.dot(self.calibrator.homography, zero_point)
+						# zero_point = self.fromHomogeneus(zero_point)
+						# tv_overlay = self.draw_pointer(tv_overlay, zero_point, [0,0,255])
 						self.tv_canvas = self.draw_hand_track(self.tv_canvas)
 
 					if self.screen_factor != 1:
@@ -253,6 +255,9 @@ class SpecificWorker(GenericWorker):
 		ret = np.resize(p, (len(p) + 1, 1))
 		ret[-1][0] = 1.
 		return ret
+
+	def fromHomogeneus(self, p):
+		return np.true_divide(p[:-1] , p[-1])
 
 
 

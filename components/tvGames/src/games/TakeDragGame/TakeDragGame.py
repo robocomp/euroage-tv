@@ -102,6 +102,7 @@ class TakeDragGame(QWidget):
         self.view.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.image_bank = None
         self.create_and_add_images()
+        self._dragging = False
 
 
         # self.scene.setBackgroundBrush(QBrush(Qt.red, Qt.SolidPattern))
@@ -111,22 +112,7 @@ class TakeDragGame(QWidget):
         # self.animator.timeout.connect(self.animate)
         # self.animate()
 
-    def create_and_add_images(self):
-        self.load_images_json_file()
-        self.add_background_to_image()
-        self.add_background_from_image()
-        if self.image_bank is not None:
-            for image_id in self.image_bank.keys():
-                if "clothes" in self.image_bank[image_id]["categories"]:
-                    image_path = os.path.join(CURRENT_PATH,self.image_bank[image_id]["path"])
-                    new_image = DraggableItem(image_path, self.background_from_image)
-                    new_image.moved_signal.moved.connect(self.item_moved)
-                    self.image_bank[image_id]["widget"] = new_image
-                    newpos_x = self.background_from_image.boundingRect().width() / 2 - new_image.boundingRect().width() / 2
-                    newpos_y = self.background_from_image.boundingRect().height() / 2 - new_image.boundingRect().height() / 2
-                    new_image.setPos(newpos_x, newpos_y)
-                    # self.scene.addItem(new_image)
-                    new_image.setZValue(30)
+
 
     def item_moved(self, pos):
         widget = self.sender().get_parent()
@@ -147,6 +133,27 @@ class TakeDragGame(QWidget):
             # self.background_from_image.stackBefore(self.background_to_image)
             widget.setPos(newpos_x, newpos_y)
 
+    def drag_to(self, previous_position, next_position):
+        self._dragging = True
+
+        pass
+
+    def create_and_add_images(self):
+        self.load_images_json_file()
+        self.add_background_to_image()
+        self.add_background_from_image()
+        if self.image_bank is not None:
+            for image_id in self.image_bank.keys():
+                if "clothes" in self.image_bank[image_id]["categories"]:
+                    image_path = os.path.join(CURRENT_PATH, self.image_bank[image_id]["path"])
+                    new_image = DraggableItem(image_path, self.background_from_image)
+                    new_image.moved_signal.moved.connect(self.item_moved)
+                    self.image_bank[image_id]["widget"] = new_image
+                    newpos_x = self.background_from_image.boundingRect().width() / 2 - new_image.boundingRect().width() / 2
+                    newpos_y = self.background_from_image.boundingRect().height() / 2 - new_image.boundingRect().height() / 2
+                    new_image.setPos(newpos_x, newpos_y)
+                    # self.scene.addItem(new_image)
+                    new_image.setZValue(30)
 
 
     def load_images_json_file(self):

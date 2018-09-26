@@ -24,6 +24,7 @@ import cv2
 import numpy as np
 from PyQt4.QtGui import QApplication
 
+from games.PaintGame.PaintGame import PaintGame
 from genericworker import *
 from modules.AdminInterface import AdminInterface
 from modules.HandMouse import HandMouse, MultiHandMouses
@@ -64,13 +65,16 @@ class SpecificWorker(GenericWorker):
 
 		# Size of second screen
 		rec = QApplication.desktop().screenGeometry(1)
-		self.screen_width = rec.width() - 20
-		self.screen_height = rec.height() - 20
-		self.calibrator = CalibrationStateMachine(self.screen_width, self.screen_height)
+		self.screen_1_width = rec.width() - 20
+		self.screen_1_height = rec.height() - 20
+		rec = QApplication.desktop().screenGeometry(0)
+		self.screen_0_width = rec.width() - 20
+		self.screen_0_height = rec.height() - 20
+		self.calibrator = CalibrationStateMachine(self.screen_1_width, self.screen_1_height)
 		# TODO: would be the size of the second screen
 		# self.screen_height = 740
 		# self.screen_width = 1360
-		self.screen_factor = 1
+		self.screen_1_factor = 1
 		self.tv_canvas = []
 		if self.debug:
 			self.tv_image.show_on_second_screen()
@@ -78,8 +82,10 @@ class SpecificWorker(GenericWorker):
 		self.timer.start(self.Period)
 		self.hand_track = []
 		self.hand_mouses = MultiHandMouses()
-		self._game = TakeDragGame()
-		self._game.show()
+		# self._game = TakeDragGame()
+		# self._game.show()
+		self._game2 = PaintGame(self.screen_1_height, self.screen_1_width)
+		self._admin_image = None
 
 	def mouse_pressed_on_tv(self):
 		self.mouse_grab = True
@@ -119,10 +125,11 @@ class SpecificWorker(GenericWorker):
 			calibration_ended = self.calibrator.update(tags)
 			if calibration_ended:
 				self.current_state = "game_getting_player"
+				self._game2.set_frame(self.calibrator.origin_points)
 			self.tv_image.set_opencv_image(self.calibrator.image, False)
 			# if self.debug:
-			# 	admin_image = self.calibration_image.copy()
-			# 	cv2.imshow("DEBUG: tvGame: camera view", admin_image)
+			# 	self._admin_image = self.calibration_image.copy()
+			# 	cv2.imshow("DEBUG: tvGame: camera view", self._admin_image)
 			cv2.waitKey(1)
 		elif "game" in self.current_state:
 			try:
@@ -141,10 +148,14 @@ class SpecificWorker(GenericWorker):
 				return False
 			depth_gray_image = cv2.flip(depth_gray_image, 0)
 			color_image = cv2.flip(color_image, 0)
-			admin_image = color_image.copy()
-			admin_image = cv2.warpPerspective(admin_image, self.calibrator.homography,
-											  (self.screen_width, self.screen_height))
-			self.screen_factor = self.screen_height / float(color_image.shape[0])
+			self._admin_image = color_image.copy()
+			self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
+			self._screen_0_factor = float(self._admin_image.shape[0]) / self.screen_0_height
+			self._admin_image = cv2.resize(self._admin_image, None, fx=self._screen_0_factor, fy=self._screen_0_factor,
+										   interpolation=cv2.INTER_CUBIC)
+			self._admin_image = cv2.warpPerspective(self._admin_image, self.calibrator.homography,
+													(self.screen_1_width, self.screen_1_height))
+			self.screen_1_factor = self.screen_1_height / float(color_image.shape[0])
 
 			# self.tv_canvas = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
 			# 						interpolation=cv2.INTER_CUBIC)
@@ -168,9 +179,9 @@ class SpecificWorker(GenericWorker):
 									search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
 
 								depth_rgb_image = cv2.cvtColor(depth_gray_image, cv2.COLOR_GRAY2BGR)
-								# admin_image = self.draw_initial_masked_frame(color_image, search_roi)
+								# self._admin_image = self.draw_initial_masked_frame(color_image, search_roi)
 								game_image = self.draw_initial_masked_frame(depth_rgb_image, search_roi)
-								game_image = cv2.resize(game_image, None, fx=self.screen_factor, fy=self.screen_factor,
+								game_image = cv2.resize(game_image, None, fx=self.screen_1_factor, fy=self.screen_1_factor,
 														interpolation=cv2.INTER_CUBIC)
 								self.tv_image.set_opencv_image(game_image, False)
 								self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands,
@@ -181,8 +192,8 @@ class SpecificWorker(GenericWorker):
 
 						elif current_hand_count >= self.expected_hands and self.expected_hands > 0:
 							self.current_state = "game_tracking"
-							self.tv_canvas = np.zeros((self.screen_height, self.screen_width, 3), dtype="uint8")
-							self.tv_canvas[::] = 255
+							self._game2.show()
+							self.tv_image.hide()
 					except Ice.Exception, e:
 						traceback.print_exc()
 						print e
@@ -192,86 +203,46 @@ class SpecificWorker(GenericWorker):
 					image = self.tv_image.get_raw_image()
 					image[:] = (255, 255, 255)
 					# TODO: the size of the string would be substracted
-					image = cv2.putText(image, "ADD NEW PLAYERS", (self.screen_width / 2, self.screen_height / 2),
+					image = cv2.putText(image, "ADD NEW PLAYERS", (self.screen_1_width / 2, self.screen_1_height / 2),
 										self.font, 1, [0, 0, 0], 2)
 					self.tv_image.set_opencv_image(image, False)
 			elif self.current_state == "game_tracking":
-
 				try:
 					self.hands = self.handdetection_proxy.getHands()
 					if len(self.hands) < self.expected_hands:
 						self.admin_interface.statusBar().showMessage("Hand Lost. recovering hand")
 						self.current_state = "game_getting_player"
 						self.hand_track = []
+						self._game2.hide()
+						self.tv_image.show()
+						return
 					if self.debug:
 						self.admin_interface.statusBar().showMessage("Debug: Traking %d hands" % (len(self.hands)))
 					# TODO: It would be configurable from a file and dynamic
-					self.paint_game(self.hands)
+					self.paint_game()
 				except Ice.Exception, e:
 					traceback.print_exc()
 					print e
 			# if self.debug:
-			self.admin_interface.update_admin_image(admin_image)
+			self.admin_interface.update_admin_image(self._admin_image)
 			cv2.waitKey(1)
 			# print "SpecificWorker.compute... in state %s with %d hands" % (self.current_state, len(self.hands))
 
 			return True
 
 	def paint_game(self):
-		tv_overlay = np.zeros((self.screen_height, self.screen_width, 3), dtype="uint8")
-		tv_overlay[::] = 255
 		for hand in self.hands:
-			if hand.centerMass:
-				new_point = self.toHomogeneous(hand.centerMass)
-				new_point = np.dot(self.calibrator.homography, new_point)
-				new_point = self.fromHomogeneus(new_point)
-				tv_overlay = self.draw_pointer(tv_overlay, new_point)
+			if hand.detected or hand.tracked:
+				if hand.centerMass:
+					new_point = self.toHomogeneous(hand.centerMass)
+					new_point = np.dot(self.calibrator.homography, new_point)
+					new_point = self.fromHomogeneus(new_point)
+					mouse = self.hand_mouses.add_state(hand.id, new_point, hand.detected)
+					if mouse.is_valid():
+						self._game2.update_pointer(mouse.hand_id(), mouse.last_pos(), mouse.last_state())
 
-				self.hand_mouses.add_state(hand.id, new_point, hand.detected)
-				if self.hand_mouses.is_closed(hand.id):
-					if self.hand_mouses.is_valid(hand.id):
-						self.hand_track.append(new_point)
-				else:
-					self.hand_track = []
+			self._admin_image = self.draw_hand_full_overlay(self._admin_image, hand)
 
-			admin_image = self.draw_hand_full_overlay(admin_image, hand)
-			# tv_overlay = self.draw_hand_overlay(tv_overlay, hand)
-			# Not working currently
-			# tv_overlay = self.draw_pointer(tv_overlay, hand.centerMass[:2])
-			# zero_point = self.toHomogeneous([100,100])
-			# zero_point = np.dot(self.calibrator.homography, zero_point)
-			# zero_point = self.fromHomogeneus(zero_point)
-			# tv_overlay = self.draw_pointer(tv_overlay, zero_point, [0,0,255])
-			self.tv_canvas = self.draw_hand_track(self.tv_canvas)
-
-		# if self.screen_factor != 1:
-		# 	tv_overlay = cv2.resize(tv_overlay, None, fx=self.screen_factor, fy=self.screen_factor,
-		# 						  interpolation=cv2.INTER_CUBIC)
-		# 	asdf = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
-		# 						  interpolation=cv2.INTER_CUBIC)
-		tv_overlay = cv2.cvtColor(tv_overlay, cv2.COLOR_RGB2RGBA)
-		tv_overlay[np.all(tv_overlay == [0, 0, 0, 255], axis=2)] = [0, 0, 0, 0]
-		asdf = cv2.cvtColor(self.tv_canvas, cv2.COLOR_RGB2RGBA)
-		mixed = cv2.addWeighted(asdf, 0.4, tv_overlay, 0.1, 0)
-		mixed = cv2.cvtColor(mixed, cv2.COLOR_RGBA2RGB)
-		self.tv_image.set_opencv_image(mixed, False)
-
-	def drag_drop_game(self):
-		if len(self.hands)== 1:
-			hand = self.hands[0]
-			if hand.centerMass:
-				new_point = self.toHomogeneous(hand.centerMass)
-				new_point = np.dot(self.calibrator.homography, new_point)
-				new_point = self.fromHomogeneus(new_point)
-				self.hand_mouses.add_state(hand.id, new_point, hand.detected)
-				if self.hand_mouses.is_closed(hand.id):
-					if self.hand_mouses.is_valid(hand.id):
-						self._game.move_to(new_point)
-				else:
-					self._game.move_to(new_point)
-
-		else:
-			print("This game is only for one player.")
 
 
 	def toHomogeneous(self, p):

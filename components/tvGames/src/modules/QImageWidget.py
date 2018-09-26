@@ -37,7 +37,7 @@ class QImageWidget(QWidget):
 
     def show_on_second_screen(self):
         desktop_widget = QApplication.desktop()
-        if desktop_widget.screenCount() > 1 and not self.isMaximized():
+        if desktop_widget.screenCount() > 1:
             second_screen_size = desktop_widget.screenGeometry(1)
             self.move(second_screen_size.left(), second_screen_size.top())
             # self.resize(second_screen_size.width(), second_screen_size.height())

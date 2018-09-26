@@ -13,8 +13,9 @@ class MultiHandMouses:
 
 	def add_state(self, hand_id, position, state):
 		if hand_id not in self._mouses.keys():
-			self._mouses[hand_id] = HandMouse()
+			self._mouses[hand_id] = HandMouse(hand_id)
 		self._mouses[hand_id].add_state(position, state)
+		return self._mouses[hand_id]
 
 	def is_open(self, hand_id):
 		return self._mouses[hand_id].is_open()
@@ -27,7 +28,8 @@ class MultiHandMouses:
 
 
 class HandMouse:
-	def __init__(self):
+	def __init__(self, hand_id):
+		self._id = hand_id
 		self._buffer = collections.deque(maxlen=5)
 		self._valid = False
 		self._filter = MeanFilter()
@@ -54,6 +56,20 @@ class HandMouse:
 	def is_valid(self):
 		return self._valid
 
+	def last_pos(self):
+		if len(self._buffer)>0:
+			return self._buffer[-1][0]
+		else:
+			return None
+
+	def last_state(self):
+		if len(self._buffer)>0:
+			return self._buffer[-1][1]
+		else:
+			return None
+
+	def hand_id(self):
+		return self._id
 
 class MouseStateFilter:
 	def filter_state(self):

@@ -32,7 +32,7 @@ class CalibrationStateMachine:
 		self.reference_points = []
 		self._homography = None
 		# TODO: It would be calculated
-		self._homography_adjustment = 30
+		self._homography_adjustment = 20
 		self._states_values = \
 			{
 				0:
@@ -40,8 +40,8 @@ class CalibrationStateMachine:
 						"tag": self.april_0,
 						"roi_x_pos": "self.tv_reduction",
 						"roi_y_pos": "self.tv_reduction",
-						"orig_x_pos": "5",
-						"orig_y_pos": "5",
+						"orig_x_pos": "5+self.tv_reduction",
+						"orig_y_pos": "5+self.tv_reduction",
 						"ref_x_pos": "detected_tags[0].tx-self._homography_adjustment",
 						"ref_y_pos": "detected_tags[0].ty-self._homography_adjustment"
 
@@ -51,8 +51,8 @@ class CalibrationStateMachine:
 						"tag": self.april_1,
 						"roi_x_pos": "self.tv_reduction",
 						"roi_y_pos": "self.screen_height - self.april_1.shape[0] - self.tv_reduction",
-						"orig_x_pos": "5",
-						"orig_y_pos": "self.screen_height",
+						"orig_x_pos": "5+self.tv_reduction",
+						"orig_y_pos": "self.screen_height-self.tv_reduction",
 						"ref_x_pos": "detected_tags[0].tx-self._homography_adjustment",
 						"ref_y_pos": "detected_tags[0].ty+self._homography_adjustment"
 
@@ -62,8 +62,8 @@ class CalibrationStateMachine:
 						"tag": self.april_2,
 						"roi_x_pos": "self.screen_width - self.april_2.shape[1] - self.tv_reduction",
 						"roi_y_pos": "self.tv_reduction",
-						"orig_x_pos": "self.screen_width",
-						"orig_y_pos": "5",
+						"orig_x_pos": "self.screen_width-self.tv_reduction",
+						"orig_y_pos": "5+self.tv_reduction",
 						"ref_x_pos": "detected_tags[0].tx+self._homography_adjustment",
 						"ref_y_pos": "detected_tags[0].ty-self._homography_adjustment"
 

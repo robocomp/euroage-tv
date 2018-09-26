@@ -8,7 +8,7 @@ import sys
 # Create a class for our main window
 from PyQt4.QtCore import Qt, QTimer, QPointF, pyqtSignal, QDateTime
 from PyQt4.QtGui import QApplication, QGraphicsScene, QHBoxLayout, \
-    QWidget, QGraphicsView, QPixmap, QGraphicsPixmapItem, QLabel, QFont, QPainter, QImage
+    QWidget, QGraphicsView, QPixmap, QGraphicsPixmapItem, QLabel, QFont, QPainter, QImage, QGraphicsTextItem
 
 CURRENT_PATH = os.path.dirname(__file__)
 
@@ -56,7 +56,7 @@ class DraggableItem(QGraphicsPixmapItem):
         painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
         painter.drawImage(0, 0, self.image)
         painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
-        aux_image = QImage("./resources/check-mark.png").scaled(self.width / 2, self.height / 2, Qt.KeepAspectRatio)
+        aux_image = QImage(os.path.join(CURRENT_PATH,"resources/check-mark.png")).scaled(self.width / 2, self.height / 2, Qt.KeepAspectRatio)
         painter.drawImage(self.width / 4,
                           self.height / 4,
                           aux_image)
@@ -107,19 +107,21 @@ class TakeDragGame(QWidget):
 #        self.setWindowState(Qt.WindowMaximized)
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_clock)
-        self.clock = QLabel("00:00")
+        self.clock = QGraphicsTextItem("00:00")
         self.clock.hide()
-        self.clock.setAttribute(Qt.WA_TranslucentBackground)
+        # self.clock.setAttribute(Qt.WA_TranslucentBackground)
         self.clock.setFont(QFont("Arial", 70, QFont.Bold))
-        self.clock.move(self.width - self.clock.size().width(), 0)
-        self.scene.addWidget(self.clock)
-        self.endMessage = QLabel(u"¡Has perdido!")
+        self.clock.setPos(self.width - self.clock.boundingRect().width(), 0)
+        self.clock.setZValue(60)
+        self.scene.addItem(self.clock)
+        self.endMessage = QGraphicsTextItem(u"¡Has perdido!")
         self.endMessage.hide()
-        self.endMessage.setAttribute(Qt.WA_TranslucentBackground)
+        # self.endMessage.setAttribute(Qt.WA_TranslucentBackground)
         self.endMessage.setFont(QFont("Arial", 90, QFont.Bold))
-        self.endMessage.move(self.width / 2 - self.endMessage.size().width() / 2,
-                             self.height / 2 - self.endMessage.size().height() / 2)
-        self.scene.addWidget(self.endMessage)
+        self.endMessage.setPos(self.width / 2 - self.endMessage.boundingRect().width() / 2,
+                             self.height / 2 - self.endMessage.boundingRect().height() / 2)
+        self.endMessage.setZValue(60)
+        self.scene.addItem(self.endMessage)
         # game data
         self.total_images = 0
         self.correct_images = 0
@@ -128,7 +130,7 @@ class TakeDragGame(QWidget):
         self.grabbed = None
         self.game_config = None
         self.config = ""
-        self.init_game('./resources/game1.json')
+        self.init_game(os.path.join(CURRENT_PATH, 'resources/game1.json'))
 
 
     def init_game(self, config_file):
@@ -151,16 +153,16 @@ class TakeDragGame(QWidget):
     def end_game(self, value):
         self.timer.stop()
         if value:
-            self.endMessage.setText(u"<font color='green'>¡Has ganado!</font>")
+            self.endMessage.setHtml(u"<font color='green'>¡Has ganado!</font>")
         else:
-            self.endMessage.setText(u"<font color='red'>¡Has perdido!</font>")
+            self.endMessage.setHtml(u"<font color='red'>¡Has perdido!</font>")
         self.endMessage.show()
         self.clock.hide()
 
 
     def update_clock(self):
         time_string = QDateTime.fromTime_t(self.time).toString("mm:ss")
-        self.clock.setText(time_string)
+        self.clock.setPlainText(time_string)
         if self.time <= 0:
             self.end_game(False)
         self.time = self.time - 1
@@ -242,9 +244,9 @@ class TakeDragGame(QWidget):
         if event.oldSize().width() < 0 or event.oldSize().height() < 0:
             return
         super(TakeDragGame, self).resizeEvent(event)
-        self.clock.move(self.view.width() - self.clock.size().width() * 1.1, 0)
-        self.endMessage.move(self.view.width() / 2 - self.endMessage.size().width() / 2,
-                             self.view.height() / 2 - self.endMessage.size().height() / 2)
+        self.clock.setPos(self.view.width() - self.clock.boundingRect().width() * 1.1, 0)
+        self.endMessage.setPos(self.view.width() / 2 - self.endMessage.boundingRect().width() / 2,
+                             self.view.height() / 2 - self.endMessage.boundingRect().height() / 2)
         # images
         xfactor = float(event.size().width()) / float(event.oldSize().width())
         yfactor = float(event.size().height()) / float(event.oldSize().height())

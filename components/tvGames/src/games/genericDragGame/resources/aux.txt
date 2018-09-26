@@ -1,0 +1,50 @@
+
+# Images got from public domain Pixabay  site
+# https://pixabay.com/en/shorts-beach-clothing-summer-149409/
+# https://pixabay.com/en/polo-shirt-t-shirt-clothes-shirt-154158/
+# https://pixabay.com/en/jacket-winter-clothing-cold-wear-32714/
+# https://pixabay.com/en/clothes-clothing-hose-trousers-1294974/
+# https://pixabay.com/en/cupboard-wooden-storage-cabinet-575356/
+# https://pixabay.com/en/crate-wood-box-archive-1143427/
+
+,
+  "Image2":
+  {
+    "size": [100,100],
+    "initial_pose": [100,100],
+    "final_pose": [100,100],
+    "draggable": "False",
+    "path": "resources/closet.png",
+    "name": "armario"
+  }
+
+  "Image22":
+  {
+    "path": "resources/pantalon.png",
+    "name": "pantalon",
+    "categories": ["clothes", "all"]
+  }
+  ,
+  "Image3":
+  {
+    "path": "resources/polo.png",
+    "name": "polo",
+    "categories": ["clothes", "summer"]
+  },
+  "Image4":
+  {
+    "path": "resources/shorts.png",
+    "name": "pantalon corto",
+    "categories": ["clothes", "summer"]
+  },
+  "Background to":
+  {
+    "path": "resources/cajon.png",
+    "name": "caja",
+    "categories": ["background", "to"]
+  }
+
+
+
+
+

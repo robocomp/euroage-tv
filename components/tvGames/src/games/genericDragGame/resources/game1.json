@@ -1,0 +1,49 @@
+{
+  "size":[1024, 768],
+  "difficult": "100",
+  "time": "20",
+  "depth":{
+    "background": "0",
+    "image": "10",
+    "mouse": "50"
+  },
+  "images": {
+    "abrigo": {
+      "size": [80,80],
+      "initial_pose": [200,200],
+      "final_pose": [500,500],
+      "path": "resources/abrigo.png",
+      "name": "abrigo",
+      "category": "image"
+    },
+    "polo": {
+      "size": [80,80],
+      "initial_pose": [190,225],
+      "final_pose": [500,500],
+      "path": "resources/polo.png",
+      "name": "polo",
+      "category": "image"
+    },
+    "armario": {
+      "size": [200,200],
+      "initial_pose": [400,400],
+      "path": "resources/closet.png",
+      "name": "armario",
+      "category": "background"
+    },
+    "handOpen": {
+      "size": [30,30],
+      "initial_pose": [400,300],
+      "path": "resources/00-Pointer-Hand-icon_2.png",
+      "name": "handOpen",
+      "category": "mouse"
+    },
+    "handClose": {
+      "size": [30,30],
+      "initial_pose": [400,300],
+      "path": "resources/01-Pointer-Hand-icon_2.png",
+      "name": "handClose",
+      "category": "mouse"
+    }
+  }
+}

@@ -30,8 +30,10 @@ from modules.AdminInterface import AdminInterface
 from modules.HandMouse import HandMouse, MultiHandMouses
 from modules.QImageWidget import QImageWidget
 from modules.QtLogin import QLoginWidget
-from modules.CalibrationStateMachine import CalibrationStateMachine
-from games.TakeDragGame.TakeDragGame import TakeDragGame
+from modules.CalibrationStateMachine import CalibrationStateMachine, MouseCalibrationStateMachine, \
+	ManualCalibrationStateMachine
+from games.genericDragGame.genericDragGame import TakeDragGame
+import imutils
 
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
@@ -70,7 +72,7 @@ class SpecificWorker(GenericWorker):
 		rec = QApplication.desktop().screenGeometry(0)
 		self.screen_0_width = rec.width() - 20
 		self.screen_0_height = rec.height() - 20
-		self.calibrator = CalibrationStateMachine(self.screen_1_width, self.screen_1_height)
+		self.calibrator = ManualCalibrationStateMachine(self.screen_1_width, self.screen_1_height)
 		# TODO: would be the size of the second screen
 		# self.screen_height = 740
 		# self.screen_width = 1360
@@ -84,15 +86,17 @@ class SpecificWorker(GenericWorker):
 		self.hand_mouses = MultiHandMouses()
 		# self._game = TakeDragGame()
 		# self._game.show()
-		self._game2 = PaintGame(self.screen_1_height, self.screen_1_width)
+		self._game2 = TakeDragGame(self.screen_1_height, self.screen_1_width)
 		self._admin_image = None
+		self._mouse_release_point = None
 
-	def mouse_pressed_on_tv(self):
+	def mouse_pressed_on_tv(self, point):
 		self.mouse_grab = True
 		print("Mouse pressed")
 
-	def mouse_released_on_tv(self):
+	def mouse_released_on_tv(self, point):
 		self.mouse_grab = False
+		self._mouse_release_point = point
 		print("Mouse released")
 
 	def setParams(self, params):
@@ -120,16 +124,30 @@ class SpecificWorker(GenericWorker):
 			# 									interpolation=cv2.INTER_CUBIC)
 			self.admin_interface.statusBar().showMessage(
 				"State: Calibrating. Calibrating state %d" % self.calibrator.state)
-			tags = self.getapriltags_proxy.checkMarcas()
+			# TODO: Not working very well on the new big screen
+			#tags = self.getapriltags_proxy.checkMarcas()
+			# calibration_ended = self.calibrator.update(tags)
 
-			calibration_ended = self.calibrator.update(tags)
+			####################### TO TEST
+			color, depth, _, _ = self.rgbd_proxy.getData()
+			frame = np.fromstring(color, dtype=np.uint8)
+			color_image = frame.reshape(480, 640, 3)
+			depth = np.array(depth, dtype=np.uint8)
+			depth_gray_image = depth.reshape(480, 640)
+			color_image = cv2.flip(color_image, 0)
+			self._admin_image = color_image.copy()
+			self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
+			calibration_ended = self.calibrator.update()
+			self._mouse_release_point = None
+			###################
 			if calibration_ended:
 				self.current_state = "game_getting_player"
-				self._game2.set_frame(self.calibrator.origin_points)
+				# self._game2.set_frame(self.calibrator._screen_points)
 			self.tv_image.set_opencv_image(self.calibrator.image, False)
 			# if self.debug:
 			# 	self._admin_image = self.calibration_image.copy()
 			# 	cv2.imshow("DEBUG: tvGame: camera view", self._admin_image)
+			self.admin_interface.update_admin_image(self._admin_image)
 			cv2.waitKey(1)
 		elif "game" in self.current_state:
 			try:
@@ -150,11 +168,9 @@ class SpecificWorker(GenericWorker):
 			color_image = cv2.flip(color_image, 0)
 			self._admin_image = color_image.copy()
 			self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
-			self._screen_0_factor = float(self._admin_image.shape[0]) / self.screen_0_height
-			self._admin_image = cv2.resize(self._admin_image, None, fx=self._screen_0_factor, fy=self._screen_0_factor,
-										   interpolation=cv2.INTER_CUBIC)
 			self._admin_image = cv2.warpPerspective(self._admin_image, self.calibrator.homography,
 													(self.screen_1_width, self.screen_1_height))
+			self._admin_image = imutils.resize(self._admin_image, width=640)
 			self.screen_1_factor = self.screen_1_height / float(color_image.shape[0])
 
 			# self.tv_canvas = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
@@ -192,7 +208,7 @@ class SpecificWorker(GenericWorker):
 
 						elif current_hand_count >= self.expected_hands and self.expected_hands > 0:
 							self.current_state = "game_tracking"
-							self._game2.show()
+							self._game2.init_game()
 							self.tv_image.hide()
 					except Ice.Exception, e:
 						traceback.print_exc()
@@ -239,7 +255,7 @@ class SpecificWorker(GenericWorker):
 					new_point = self.fromHomogeneus(new_point)
 					mouse = self.hand_mouses.add_state(hand.id, new_point, hand.detected)
 					if mouse.is_valid():
-						self._game2.update_pointer(mouse.hand_id(), mouse.last_pos(), mouse.last_state())
+						self._game2.update_pointer( mouse.last_pos()[0], mouse.last_pos()[1], not mouse.last_state())
 
 			self._admin_image = self.draw_hand_full_overlay(self._admin_image, hand)
 

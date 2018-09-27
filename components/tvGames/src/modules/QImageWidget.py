@@ -5,8 +5,8 @@ from PySide.QtGui import QWidget, QHBoxLayout, QLabel, QPixmap, QImage, QApplica
 
 
 class QImageWidget(QWidget):
-    mouse_pressed = Signal()
-    mouse_released = Signal()
+    mouse_pressed = Signal(object)
+    mouse_released = Signal(object)
     def __init__(self, parent=None):
         super(QImageWidget, self).__init__(parent)
         self.layout = QHBoxLayout(self)
@@ -45,8 +45,9 @@ class QImageWidget(QWidget):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.mouse_pressed.emit()
+            print([event.globalX()-1920, event.globalY()])
+            self.mouse_pressed.emit([event.globalX(), event.globalY()])
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.mouse_released.emit()
+            self.mouse_released.emit([event.globalX(), event.globalY()])

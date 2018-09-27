@@ -129,8 +129,9 @@ class TakeDragGame(QWidget):
         self.grabbed = None
         self.game_config = None
         self.config = ""
+        # self.init_game(os.path.join(CURRENT_PATH, 'resources/game1.json'))
 
-    def init_game(self, config_file):
+    def init_game(self, config_file='resources/game1.json'):
         self.clear_scene()
         self.game_config = None
         self.grabbed = None
@@ -148,6 +149,7 @@ class TakeDragGame(QWidget):
         self.clock.show()
         self.update_clock()
         self.timer.start(1000)
+        self.show_on_second_screen()
 
 
     def clear_scene(self):
@@ -272,6 +274,14 @@ class TakeDragGame(QWidget):
                     new_finalx = item["widget"].final_posex * xfactor
                     new_finaly = item["widget"].final_posey * yfactor
                     item["widget"].set_final_pose(new_finalx, new_finaly)
+
+    def show_on_second_screen(self):
+        desktop_widget = QApplication.desktop()
+        if desktop_widget.screenCount() > 1:
+            second_screen_size = desktop_widget.screenGeometry(1)
+            self.move(second_screen_size.left(), second_screen_size.top())
+            # self.resize(second_screen_size.width(), second_screen_size.height())
+            self.showMaximized()
 
 
 def main():

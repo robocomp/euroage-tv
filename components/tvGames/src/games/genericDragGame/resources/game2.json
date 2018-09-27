@@ -1,0 +1,153 @@
+{
+  "size":[1900, 1070],
+  "difficult": "100",
+  "time": "200",
+  "depth":{
+    "background": "0",
+    "image": "10",
+    "mouse": "50"
+  },
+  "images": {
+    "puzzle1": {
+      "size": [200,250],
+      "initial_pose": [180,220],
+      "final_pose": [1000,425],
+      "path": "resources/game2/puzzle1.jpg",
+      "name": "puzzle1",
+      "category": "image"
+    },
+    "puzzle2": {
+      "size": [200,250],
+      "initial_pose": [230,220],
+      "final_pose": [1202,425],
+      "path": "resources/game2/puzzle2.jpg",
+      "name": "puzzle2",
+      "category": "image"
+    },
+    "puzzle3": {
+      "size": [200,250],
+      "initial_pose": [170,240],
+      "final_pose": [1404,425],
+      "path": "resources/game2/puzzle3.jpg",
+      "name": "puzzle3",
+      "category": "image"
+    },
+    "puzzle4": {
+      "size": [200,250],
+      "initial_pose": [240,300],
+      "final_pose": [1606,425],
+      "path": "resources/game2/puzzle4.jpg",
+      "name": "puzzle4",
+      "category": "image"
+    },
+    "puzzle5": {
+      "size": [200,250],
+      "initial_pose": [350,160],
+      "final_pose": [1000,677],
+      "path": "resources/game2/puzzle5.jpg",
+      "name": "puzzle5",
+      "category": "image"
+    },
+    "puzzle6": {
+      "size": [200,250],
+      "initial_pose": [190,240],
+      "final_pose": [1202,677],
+      "path": "resources/game2/puzzle6.jpg",
+      "name": "puzzle6",
+      "category": "image"
+    },
+    "puzzle7": {
+      "size": [200,250],
+      "initial_pose": [230,170],
+      "final_pose": [1404,677],
+      "path": "resources/game2/puzzle7.jpg",
+      "name": "puzzle7",
+      "category": "image"
+    },
+    "puzzle8": {
+      "size": [200,250],
+      "initial_pose": [220,250],
+      "final_pose": [1606,677],
+      "path": "resources/game2/puzzle8.jpg",
+      "name": "puzzle8",
+      "category": "image"
+    },
+    "pos1": {
+      "size": [200,250],
+      "initial_pose": [900,300],
+      "path": "resources/pos1.jpg",
+      "name": "pos1",
+      "category": "background"
+    },
+    "pos2": {
+      "size": [200,250],
+      "initial_pose": [1102,300],
+      "path": "resources/pos2.jpg",
+      "name": "pos2",
+      "category": "background"
+    },
+    "pos3": {
+      "size": [200,250],
+      "initial_pose": [1304,300],
+      "path": "resources/pos3.jpg",
+      "name": "pos3",
+      "category": "background"
+    },
+    "pos4": {
+      "size": [200,250],
+      "initial_pose": [1506,300],
+      "path": "resources/pos4.jpg",
+      "name": "pos4",
+      "category": "background"
+    },
+    "pos5": {
+      "size": [200,250],
+      "initial_pose": [900,560],
+      "path": "resources/pos5.jpg",
+      "name": "pos5",
+      "category": "background"
+    },
+    "pos6": {
+      "size": [200,250],
+      "initial_pose": [1102,560],
+      "path": "resources/pos6.jpg",
+      "name": "pos6",
+      "category": "background"
+    },
+    "pos7": {
+      "size": [200,250],
+      "initial_pose": [1304,560],
+      "path": "resources/pos7.jpg",
+      "name": "pos7",
+      "category": "background"
+    },
+    "pos8": {
+      "size": [200,250],
+      "initial_pose": [1506,560],
+      "path": "resources/pos8.jpg",
+      "name": "pos8",
+      "category": "background"
+    },
+    "puzzleCompleto": {
+      "size": [600,375],
+      "initial_pose": [150,550],
+      "path": "resources/game2/puzzleCompleto.jpg",
+      "name": "puzzleCompleto",
+      "category": "background"
+    },
+    "handOpen": {
+      "size": [30,30],
+      "initial_pose": [400,300],
+      "path": "resources/00-Pointer-Hand-icon_2.png",
+      "name": "handOpen",
+      "category": "mouse"
+    },
+    "handClose": {
+      "size": [30,30],
+      "initial_pose": [400,300],
+      "path": "resources/01-Pointer-Hand-icon_2.png",
+      "name": "handClose",
+      "category": "mouse"
+    }
+  }
+}

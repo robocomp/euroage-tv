@@ -149,7 +149,8 @@ class TakeDragGame(QWidget):
         self.clock.show()
         self.update_clock()
         self.timer.start(1000)
-        self.show_on_second_screen()
+
+
 
 
     def clear_scene(self):
@@ -157,6 +158,8 @@ class TakeDragGame(QWidget):
             for key, item in self.game_config["images"].items():
                 self.scene.removeItem(item["widget"])
 
+    def show(self):
+        self.show_on_second_screen()
 
     def end_game(self, value):
         self.timer.stop()
@@ -211,6 +214,7 @@ class TakeDragGame(QWidget):
                     self.grabbed.set_overlay(True)
                     if not self.grabbed.correct_position:
                         self.grabbed.correct_position = True
+                        self.grabbed.draggable = False
                         self.correct_images = self.correct_images + 1
                     if self.correct_images == self.total_images:
                         self.end_game(True)

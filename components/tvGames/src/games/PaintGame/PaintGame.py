@@ -18,6 +18,16 @@ class PaintGame:
 		self._frame = frame
 		self.generate_new_canvas()
 
+	def init_game(self, value):
+		self._pointer_tracks = {}
+		self._current_postition = {}
+		self._tv_canvas = np.zeros((self._screen_height, self._screen_width, 3), dtype="uint8")
+		self._tv_canvas[::] = 255
+		self._pointers_overlay = np.zeros((self._screen_height, self._screen_width, 3), dtype="uint8")
+		self._pointers_overlay[::] = 255
+		self._frame = None
+		self.generate_new_canvas()
+
 	def generate_new_canvas(self):
 		if self._frame is None:
 			self._tv_canvas = np.zeros((self._screen_height, self._screen_width, 3), dtype="uint8")
@@ -52,11 +62,11 @@ class PaintGame:
 		self._current_postition[pointer_id] = point
 		self.paint()
 
-	def update_pointer(self, pointer_id, point, state):
-		if state:
-			self.move_to(pointer_id, point)
+	def update_pointer(self, pointer_id, point_x, point_y, state):
+		if not state:
+			self.move_to(pointer_id, (point_x, point_y))
 		else:
-			self.drag_to(pointer_id, point)
+			self.drag_to(pointer_id, (point_x, point_y))
 
 	def paint(self):
 		self._pointers_overlay[::] = 255

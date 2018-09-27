@@ -21,19 +21,18 @@ import time
 import traceback
 
 import cv2
+import imutils
 import numpy as np
 from PyQt4.QtGui import QApplication
 
+from games.genericDragGame.genericDragGame import TakeDragGame
 from games.PaintGame.PaintGame import PaintGame
 from genericworker import *
 from modules.AdminInterface import AdminInterface
-from modules.HandMouse import HandMouse, MultiHandMouses
+from modules.CalibrationStateMachine import ManualCalibrationStateMachine
+from modules.HandMouse import MultiHandMouses
 from modules.QImageWidget import QImageWidget
 from modules.QtLogin import QLoginWidget
-from modules.CalibrationStateMachine import CalibrationStateMachine, MouseCalibrationStateMachine, \
-	ManualCalibrationStateMachine
-from games.genericDragGame.genericDragGame import TakeDragGame
-import imutils
 
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
@@ -56,6 +55,7 @@ class SpecificWorker(GenericWorker):
 		self.admin_interface = AdminInterface()
 		self.admin_interface.add_player_button.clicked.connect(self.add_new_player)
 		self.admin_interface.remove_player_button.clicked.connect(self.remove_player)
+		self.admin_interface.reset_game_button.clicked.connect(self.reset_game)
 		self.admin_interface.show()
 		self.hide()
 		self.debug = True
@@ -86,9 +86,38 @@ class SpecificWorker(GenericWorker):
 		self.hand_mouses = MultiHandMouses()
 		# self._game = TakeDragGame()
 		# self._game.show()
-		self._game2 = TakeDragGame(self.screen_1_height, self.screen_1_width)
+		self._available_games = {
+			u"Painting":
+				["PaintGame(self.screen_1_height, self.screen_1_width)",""],
+			u"Puzzle1":
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)","resources/game2.json"],
+			u"Puzzle2":
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game3.json"],
+			u"Clothes":
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game1.json"],
+			u"Sorting":
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game4.json"]
+
+
+		}
+		self._game = None
+		self.admin_interface.games_combobox.currentIndexChanged.connect(self.update_game_selection)
+		self.update_game_selection()
+
 		self._admin_image = None
 		self._mouse_release_point = None
+		#TODO: Testing only. Remove
+		self.add_new_player()
+
+	def update_game_selection(self, index=None):
+		self._current_game_name = unicode(self.admin_interface.games_combobox.currentText())
+		self._game = eval(unicode(self._available_games[unicode(self._current_game_name)][0]))
+		self.current_state = "game_getting_player"
+		self.reset_game()
+
+	def reset_game(self):
+		config_path = self._available_games[unicode(self.admin_interface.games_combobox.currentText())][1]
+		self._game.init_game(config_path)
 
 	def mouse_pressed_on_tv(self, point):
 		self.mouse_grab = True
@@ -208,7 +237,8 @@ class SpecificWorker(GenericWorker):
 
 						elif current_hand_count >= self.expected_hands and self.expected_hands > 0:
 							self.current_state = "game_tracking"
-							self._game2.init_game()
+							self.reset_game()
+							self._game.show()
 							self.tv_image.hide()
 					except Ice.Exception, e:
 						traceback.print_exc()
@@ -229,7 +259,7 @@ class SpecificWorker(GenericWorker):
 						self.admin_interface.statusBar().showMessage("Hand Lost. recovering hand")
 						self.current_state = "game_getting_player"
 						self.hand_track = []
-						self._game2.hide()
+						self._game.hide()
 						self.tv_image.show()
 						return
 					if self.debug:
@@ -255,7 +285,7 @@ class SpecificWorker(GenericWorker):
 					new_point = self.fromHomogeneus(new_point)
 					mouse = self.hand_mouses.add_state(hand.id, new_point, hand.detected)
 					if mouse.is_valid():
-						self._game2.update_pointer( mouse.last_pos()[0], mouse.last_pos()[1], not mouse.last_state())
+						self._game.update_pointer(mouse.hand_id(), mouse.last_pos()[0], mouse.last_pos()[1], not mouse.last_state())
 
 			self._admin_image = self.draw_hand_full_overlay(self._admin_image, hand)
 

@@ -34,6 +34,49 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
+       <widget class="QLabel" name="games_label">
+        <property name="text">
+         <string>Select a game: </string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="games_combobox">
+        <item>
+         <property name="text">
+          <string>Painting</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Puzzle1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Puzzle2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Clothes</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Sorting</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="reset_game_button">
+        <property name="text">
+         <string>Reset game</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -58,6 +101,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="add_player_button">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Add player</string>
         </property>

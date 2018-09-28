@@ -3,15 +3,31 @@
 import json
 import math
 import os
+import subprocess
 import sys
 import time
 
 # Create a class for our main window
+from subprocess import call
+
 from PyQt4.QtCore import Qt, QTimer, QPointF, pyqtSignal, QDateTime
 from PyQt4.QtGui import QApplication, QGraphicsScene, QHBoxLayout, \
     QWidget, QGraphicsView, QPixmap, QGraphicsPixmapItem, QLabel, QFont, QPainter, QImage, QGraphicsTextItem
+from numpy.random.mtrand import randint
+try:
+    from subprocess import DEVNULL # py3k
+except ImportError:
+    import os
+    DEVNULL = open(os.devnull, 'wb')
 
 CURRENT_PATH = os.path.dirname(__file__)
+
+
+CONGRAT_STRING = ["¡Vas muy bien!", "¡Sigue así!", "¡Genial!", "¡Estupendo!", "¡Fabulóso!", "¡Maravilloso!", "¡Ánimo!", "¡Lo estás haciendo muy bien!"]
+WINNING_SOUNDS = ["resources/sounds/happy1.mp3", "resources/sounds/happy2.mp3"]
+LOST_SOUNDS = ["resources/sounds/sad.mp3", ""]
+SPEECH_COMMAND = "gtts es "
+
 
 
 class MyQGraphicsScene(QGraphicsScene):
@@ -130,6 +146,8 @@ class TakeDragGame(QWidget):
         self.game_config = None
         self.config = ""
         # self.init_game(os.path.join(CURRENT_PATH, 'resources/game1.json'))
+        # print("mplayer " + "\"" + os.path.join(CURRENT_PATH, WINNING_SOUNDS[0]) + "\"")
+        # subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, WINNING_SOUNDS[0]) + "\"", stdout=DEVNULL, shell=True)
 
     def init_game(self, config_file='resources/game1.json'):
         self.clear_scene()
@@ -165,8 +183,14 @@ class TakeDragGame(QWidget):
         self.timer.stop()
         if value:
             self.endMessage.setHtml(u"<font color='green'>¡Has ganado!</font>")
+            index = randint(0, len(WINNING_SOUNDS))
+            file = WINNING_SOUNDS[index]
+            subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH,file)+ "\"", stdout=DEVNULL, shell=True)
         else:
             self.endMessage.setHtml(u"<font color='red'>¡Has perdido!</font>")
+            index = randint(0, len(LOST_SOUNDS))
+            file = WINNING_SOUNDS[index]
+            subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
         self.clock.hide()
         self.endMessage.show()
 #        self.scene.update()
@@ -212,12 +236,18 @@ class TakeDragGame(QWidget):
                     new_ypos = self.grabbed.final_posey - self.grabbed.height / 2
                     self.grabbed.setPos(new_xpos, new_ypos)
                     self.grabbed.set_overlay(True)
+
                     if not self.grabbed.correct_position:
                         self.grabbed.correct_position = True
                         self.grabbed.draggable = False
                         self.correct_images = self.correct_images + 1
+                    index = randint(0, len(CONGRAT_STRING))
                     if self.correct_images == self.total_images:
                         self.end_game(True)
+                    elif index <= len(CONGRAT_STRING):
+                            text = CONGRAT_STRING[index]
+                            # print("Speeching: %s"%(SPEECH_COMMAND+text))
+                            subprocess.Popen(SPEECH_COMMAND + "\"" + text + "\"", stdout=DEVNULL, shell=True)
                 else:
                     if self.grabbed.correct_position:
                         self.grabbed.correct_position = False
@@ -285,7 +315,7 @@ class TakeDragGame(QWidget):
             second_screen_size = desktop_widget.screenGeometry(1)
             self.move(second_screen_size.left(), second_screen_size.top())
             # self.resize(second_screen_size.width(), second_screen_size.height())
-            self.showMaximized()
+            self.showFullScreen()
 
 
 def main():

@@ -1,0 +1,72 @@
+{
+  "size":[1900, 1070],
+  "difficult": "150",
+  "time": "200",
+  "depth":{
+    "background": "0",
+    "image": "10",
+    "mouse": "50"
+  },
+  "images": {
+    "bikini": {
+      "size": [300,300],
+      "initial_pose": [1400,160],
+      "final_pose": [500,300],
+      "path": "resources/game5/bikini.png",
+      "name": "bikini",
+      "category": "image"
+    },
+    "chanclas": {
+      "size": [200,200],
+      "initial_pose": [1450,300],
+      "final_pose": [500,300],
+      "path": "resources/game5/chanclas.png",
+      "name": "chanclas",
+      "category": "image"
+    },
+    "gorro_lana": {
+      "size": [200,200],
+      "initial_pose": [1500,450],
+      "final_pose": [500,750],
+      "path": "resources/game5/gorro_lana.png",
+      "name": "gorro_lana",
+      "category": "image"
+    },
+    "guantes": {
+      "size": [250,250],
+      "initial_pose": [1300,650],
+      "final_pose": [500,750],
+      "path": "resources/game5/guantes.png",
+      "name": "guantes",
+      "category": "image"
+    },
+    "pos1": {
+      "size": [600,400],
+      "initial_pose": [200,100],
+      "path": "resources/game5/verano.jpg",
+      "name": "verano",
+      "category": "background"
+    },
+    "pos2": {
+      "size": [600,400],
+      "initial_pose": [200,550],
+      "path": "resources/game5/invierno.jpg",
+      "name": "invierno",
+      "category": "background"
+    },
+    "handOpen": {
+      "size": [30,30],
+      "initial_pose": [400,300],
+      "path": "resources/00-Pointer-Hand-icon_2.png",
+      "name": "handOpen",
+      "category": "mouse"
+    },
+    "handClose": {
+      "size": [30,30],
+      "initial_pose": [400,300],
+      "path": "resources/01-Pointer-Hand-icon_2.png",
+      "name": "handClose",
+      "category": "mouse"
+    }
+  }
+}

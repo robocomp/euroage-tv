@@ -84,14 +84,14 @@
       "category": "background"
     },
     "handOpen": {
-      "size": [30,30],
+      "size": [100,100],
       "initial_pose": [400,300],
       "path": "resources/00-Pointer-Hand-icon_2.png",
       "name": "handOpen",
       "category": "mouse"
     },
     "handClose": {
-      "size": [30,30],
+      "size": [100,100],
       "initial_pose": [400,300],
       "path": "resources/01-Pointer-Hand-icon_2.png",
       "name": "handClose",

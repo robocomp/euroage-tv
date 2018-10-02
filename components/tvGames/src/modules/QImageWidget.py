@@ -7,7 +7,7 @@ from PySide.QtGui import QWidget, QHBoxLayout, QLabel, QPixmap, QImage, QApplica
 class QImageWidget(QWidget):
     mouse_pressed = Signal(object)
     mouse_released = Signal(object)
-    def __init__(self, parent=None):
+    def __init__(self, max_width= None, parent=None):
         super(QImageWidget, self).__init__(parent)
         self.layout = QHBoxLayout(self)
         self.label = QLabel()
@@ -19,6 +19,10 @@ class QImageWidget(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setAlignment(Qt.AlignCenter)
         self.image = None
+        self._max_width = max_width
+
+    def set_max_width(self, max_width):
+        self._max_width = max_width
 
     def set_opencv_image(self, raw_image, BGR=True):
         if raw_image is not None:
@@ -29,6 +33,8 @@ class QImageWidget(QWidget):
                                 raw_image.shape[0], raw_image.shape[1] * 3,
                                 QImage.Format_RGB888)
             self.pixmap = QPixmap(self.image)
+            if self._max_width!= None:
+                self.pixmap= self.pixmap.scaled(640,480,Qt.KeepAspectRatio)
             self.label.setPixmap(self.pixmap)
             self.image = raw_image
 

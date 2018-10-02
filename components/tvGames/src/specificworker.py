@@ -56,6 +56,8 @@ class SpecificWorker(GenericWorker):
 		self.admin_interface.add_player_button.clicked.connect(self.add_new_player)
 		self.admin_interface.remove_player_button.clicked.connect(self.remove_player)
 		self.admin_interface.reset_game_button.clicked.connect(self.reset_game)
+		self.admin_interface.close_main_window.connect(self.quit_app)
+		self.admin_interface.admin_image.set_max_width(640)
 		self.admin_interface.show()
 		self.hide()
 		self.debug = True
@@ -94,9 +96,11 @@ class SpecificWorker(GenericWorker):
 			u"Puzzle2":
 				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game3.json"],
 			u"Clothes":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game1.json"],
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game5.json"],
 			u"Sorting":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game4.json"]
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game4.json"],
+			u"Looser":
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game6.json"]
 
 
 		}
@@ -108,6 +112,9 @@ class SpecificWorker(GenericWorker):
 		self._mouse_release_point = None
 		#TODO: Testing only. Remove
 		self.add_new_player()
+
+	def quit_app(self):
+		self.current_state = "quitting"
 
 	def update_game_selection(self, index=None):
 		self._current_game_name = unicode(self.admin_interface.games_combobox.currentText())
@@ -161,7 +168,7 @@ class SpecificWorker(GenericWorker):
 			color, depth, _, _ = self.rgbd_proxy.getData()
 			frame = np.fromstring(color, dtype=np.uint8)
 			color_image = frame.reshape(480, 640, 3)
-			depth = np.array(depth, dtype=np.uint8)
+			depth = np.ascontiguousarray(depth, dtype=np.uint8)
 			depth_gray_image = depth.reshape(480, 640)
 			color_image = cv2.flip(color_image, 0)
 			self._admin_image = color_image.copy()
@@ -197,9 +204,7 @@ class SpecificWorker(GenericWorker):
 			color_image = cv2.flip(color_image, 0)
 			self._admin_image = color_image.copy()
 			self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
-			self._admin_image = cv2.warpPerspective(self._admin_image, self.calibrator.homography,
-													(self.screen_1_width, self.screen_1_height))
-			self._admin_image = imutils.resize(self._admin_image, width=640)
+			# self._admin_image = imutils.resize(self._admin_image, width=640)
 			self.screen_1_factor = self.screen_1_height / float(color_image.shape[0])
 
 			# self.tv_canvas = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
@@ -270,11 +275,15 @@ class SpecificWorker(GenericWorker):
 					traceback.print_exc()
 					print e
 			# if self.debug:
+			self._admin_image = cv2.warpPerspective(self._admin_image, self.calibrator.homography,
+													(self.screen_1_width, self.screen_1_height))
 			self.admin_interface.update_admin_image(self._admin_image)
 			cv2.waitKey(1)
 			# print "SpecificWorker.compute... in state %s with %d hands" % (self.current_state, len(self.hands))
 
 			return True
+		elif self.current_state == "quitting":
+			exit(0)
 
 	def paint_game(self):
 		for hand in self.hands:
@@ -284,10 +293,9 @@ class SpecificWorker(GenericWorker):
 					new_point = np.dot(self.calibrator.homography, new_point)
 					new_point = self.fromHomogeneus(new_point)
 					mouse = self.hand_mouses.add_state(hand.id, new_point, hand.detected)
+					self._admin_image = self.draw_hand_full_overlay(self._admin_image, hand)
 					if mouse.is_valid():
 						self._game.update_pointer(mouse.hand_id(), mouse.last_pos()[0], mouse.last_pos()[1], not mouse.last_state())
-
-			self._admin_image = self.draw_hand_full_overlay(self._admin_image, hand)
 
 
 

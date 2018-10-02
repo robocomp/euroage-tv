@@ -92,7 +92,7 @@ class PaintGame:
 	def draw_pointer(self, frame, point, color=[100, 0, 255]):
 		if point is not None:
 			# Draw center mass
-			cv2.circle(frame, tuple(point), 7, color, 2)
+			cv2.circle(frame, tuple(point), 7, color, 30)
 		# cv2.putText(frame, 'Center', tuple(point), self.font, 0.5, (255, 255, 255), 1)
 		return frame
 
@@ -102,5 +102,5 @@ class PaintGame:
 			for i in np.arange(1, len(pointer_track)):
 				p1 = pointer_track[i]
 				p0 = pointer_track[i - 1]
-				cv2.line(frame, tuple(p0), tuple(p1), (0, 0, 255), 3)
+				cv2.line(frame, tuple(p0), tuple(p1), (0, 0, 255), 20)
 		return frame

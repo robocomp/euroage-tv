@@ -25,7 +25,7 @@ CURRENT_PATH = os.path.dirname(__file__)
 
 CONGRAT_STRING = ["¡Vas muy bien!", "¡Sigue así!", "¡Genial!", "¡Estupendo!", "¡Fabulóso!", "¡Maravilloso!", "¡Ánimo!", "¡Lo estás haciendo muy bien!"]
 WINNING_SOUNDS = ["resources/sounds/happy1.mp3", "resources/sounds/happy2.mp3"]
-LOST_SOUNDS = ["resources/sounds/sad.mp3", ""]
+LOST_SOUNDS = ["resources/sounds/sad1.mp3", "resources/sounds/sad2-2.mp3"]
 SPEECH_COMMAND = "gtts es "
 
 
@@ -166,7 +166,6 @@ class TakeDragGame(QWidget):
         self.setWindowState(Qt.WindowMaximized)
         self.clock.show()
         self.update_clock()
-        self.timer.start(1000)
 
 
 
@@ -178,6 +177,7 @@ class TakeDragGame(QWidget):
 
     def show(self):
         self.show_on_second_screen()
+        self.timer.start(1000)
 
     def end_game(self, value):
         self.timer.stop()
@@ -189,7 +189,7 @@ class TakeDragGame(QWidget):
         else:
             self.endMessage.setHtml(u"<font color='red'>¡Has perdido!</font>")
             index = randint(0, len(LOST_SOUNDS))
-            file = WINNING_SOUNDS[index]
+            file = LOST_SOUNDS[index]
             subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
         self.clock.hide()
         self.endMessage.show()

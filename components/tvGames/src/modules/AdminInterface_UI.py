@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AdminInterface.ui'
 #
-# Created: Thu Sep 27 19:38:48 2018
+# Created: Fri Sep 28 16:48:29 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -34,6 +34,7 @@ class Ui_AdminInterface(object):
         self.games_combobox.addItem("")
         self.games_combobox.addItem("")
         self.games_combobox.addItem("")
+        self.games_combobox.addItem("")
         self.horizontalLayout.addWidget(self.games_combobox)
         self.reset_game_button = QtGui.QPushButton(self.centralwidget)
         self.reset_game_button.setObjectName("reset_game_button")
@@ -45,7 +46,7 @@ class Ui_AdminInterface(object):
         self.remove_player_button.setObjectName("remove_player_button")
         self.horizontalLayout.addWidget(self.remove_player_button)
         self.add_player_button = QtGui.QPushButton(self.centralwidget)
-        self.add_player_button.setEnabled(False)
+        self.add_player_button.setEnabled(True)
         self.add_player_button.setObjectName("add_player_button")
         self.horizontalLayout.addWidget(self.add_player_button)
         self.players_lcd = QtGui.QLCDNumber(self.centralwidget)
@@ -72,6 +73,7 @@ class Ui_AdminInterface(object):
         self.games_combobox.setItemText(2, QtGui.QApplication.translate("AdminInterface", "Puzzle2", None, QtGui.QApplication.UnicodeUTF8))
         self.games_combobox.setItemText(3, QtGui.QApplication.translate("AdminInterface", "Clothes", None, QtGui.QApplication.UnicodeUTF8))
         self.games_combobox.setItemText(4, QtGui.QApplication.translate("AdminInterface", "Sorting", None, QtGui.QApplication.UnicodeUTF8))
+        self.games_combobox.setItemText(5, QtGui.QApplication.translate("AdminInterface", "Looser", None, QtGui.QApplication.UnicodeUTF8))
         self.reset_game_button.setText(QtGui.QApplication.translate("AdminInterface", "Reset game", None, QtGui.QApplication.UnicodeUTF8))
         self.remove_player_button.setText(QtGui.QApplication.translate("AdminInterface", "Remove player", None, QtGui.QApplication.UnicodeUTF8))
         self.add_player_button.setText(QtGui.QApplication.translate("AdminInterface", "Add player", None, QtGui.QApplication.UnicodeUTF8))

@@ -67,6 +67,11 @@
           <string>Sorting</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Looser</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item>
@@ -102,7 +107,7 @@
       <item>
        <widget class="QPushButton" name="add_player_button">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>Add player</string>

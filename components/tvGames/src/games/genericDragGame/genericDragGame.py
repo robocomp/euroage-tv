@@ -98,7 +98,76 @@ class DraggableItem(QGraphicsPixmapItem):
         else:
             self.setPixmap(QPixmap.fromImage(self.image))
 
+    def clone(self):
+        return DraggableItem(self.id,self.image_path, self.width,self.height, self.draggable)
 
+class Pointer(object):
+    def __init__(self, id, xpos, ypos, grabbed, open_widget, closed_widget):
+        self._id = id
+        self._grabbed = grabbed
+        self._open_widget = open_widget
+        self._closed_widget = closed_widget
+        self._closed_widget.hide()
+        self._open_widget.show()
+        self._position = (xpos, ypos)
+        self._taken = None
+
+    @property
+    def grabbed(self):
+        return self._grabbed
+
+    @grabbed.setter
+    def grabbed(self, value):
+        assert isinstance(value,bool), "Pointer.grabbed must be boolean"
+        self._grabbed = value
+        if self._grabbed:
+            self._closed_widget.show()
+            self._open_widget.hide()
+            # self.game_config["images"]["handClose"]["widget"].show()
+            # self.game_config["images"]["handOpen"]["widget"].hide()
+        else:
+            self._closed_widget.hide()
+            self._open_widget.show()
+
+
+    @property
+    def open_widget(self):
+        return self._open_widget
+
+    @open_widget.setter
+    def open_widget(self, widget):
+        assert isinstance(widget,QGraphicsPixmapItem), "Pointer.open_widget must be of QGraphicsPixmapItem derivated"
+        self._open_widget = widget
+
+    @property
+    def closed_widget(self):
+        return self._closed_widget
+
+    @closed_widget.setter
+    def closed_widget(self, widget):
+        assert isinstance(widget, QGraphicsPixmapItem), "Pointer.closed_widget must be of QGraphicsPixmapItem derivated"
+        self._closed_widget = widget
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, position):
+        new_xpos = position[0] - self._open_widget.boundingRect().width() / 2
+        new_ypos = position[1] - self._open_widget.boundingRect().height() / 2
+        self._position = (new_xpos, new_ypos)
+        self._open_widget.setPos(new_xpos, new_ypos)
+        self._closed_widget.setPos(new_xpos, new_ypos)
+
+    @property
+    def taken(self):
+        return self._taken
+
+    @taken.setter
+    def taken(self, widget):
+        assert (isinstance(widget, QGraphicsPixmapItem) or widget==None), "Pointer.taken must be of QGraphicsPixmapItem derivated"
+        self._taken = widget
 
 class TakeDragGame(QWidget):
     def __init__(self, width=1920, height=1080, parent=None):
@@ -145,6 +214,7 @@ class TakeDragGame(QWidget):
         self.grabbed = None
         self.game_config = None
         self.config = ""
+        self._pointers = {}
         # self.init_game(os.path.join(CURRENT_PATH, 'resources/game1.json'))
         # print("mplayer " + "\"" + os.path.join(CURRENT_PATH, WINNING_SOUNDS[0]) + "\"")
         # subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, WINNING_SOUNDS[0]) + "\"", stdout=DEVNULL, shell=True)
@@ -155,12 +225,13 @@ class TakeDragGame(QWidget):
         self.grabbed = None
         self.correct_images = 0
         self.total_images = 0
+        self._pointers = {}
         # load config game file
         with open(os.path.join(CURRENT_PATH, config_file)) as file_path:
             self.game_config = json.load(file_path)
         self.resize(self.game_config["size"][0], self.game_config["size"][1])
         self.create_and_add_images()
-        self.draw_position(self.scene.width()/2, self.scene.height()/2, False)
+        # self.draw_position(self.scene.width()/2, self.scene.height()/2, False)
         self.time = int(self.game_config["time"])
         self.endMessage.hide()
         self.setWindowState(Qt.WindowMaximized)
@@ -174,6 +245,10 @@ class TakeDragGame(QWidget):
         if self.game_config:
             for key, item in self.game_config["images"].items():
                 self.scene.removeItem(item["widget"])
+        if len(self._pointers)>0 and self._pointers is not None:
+            for pointer in self._pointers.values():
+                self.scene.removeItem(pointer.open_widget)
+                self.scene.removeItem(pointer.closed_widget)
 
     def show(self):
         self.show_on_second_screen()
@@ -207,39 +282,49 @@ class TakeDragGame(QWidget):
 
 
     def update_pointer(self,id, xpos, ypos, grab):
-        self.draw_position(xpos, ypos, grab)
-        if grab:
-            if self.grabbed:
-                new_xpos = xpos - self.grabbed.boundingRect().width() / 2
-                new_ypos = ypos - self.grabbed.boundingRect().height() / 2
-                self.grabbed.setPos(new_xpos, new_ypos)
+        if id not in self._pointers:
+            open_pointer_widget = self.game_config["images"]["handOpen"]["widget"].clone()
+            close_pointer_widget = self.game_config["images"]["handClose"]["widget"].clone()
+            open_pointer_widget.setZValue(int(self.game_config["depth"]["mouse"]))
+            close_pointer_widget.setZValue(int(self.game_config["depth"]["mouse"]))
+            self._pointers[id] = Pointer(id,xpos,ypos, grab, open_pointer_widget, close_pointer_widget)
+            self.scene.addItem(self._pointers[id].open_widget)
+            self.scene.addItem(self._pointers[id].closed_widget)
+        self._pointers[id].position = (xpos, ypos)
+        self._pointers[id].grabbed = grab
+        if self._pointers[id].grabbed:
+            if self._pointers[id].taken is not None:
+                new_xpos = xpos - self._pointers[id].taken.boundingRect().width() / 2
+                new_ypos = ypos - self._pointers[id].taken.boundingRect().height() / 2
+                self._pointers[id].taken.setPos(new_xpos, new_ypos)
             else:
                 items = self.scene.items(QPointF(xpos, ypos))
                 if len(items) > 1:
                     if items[1].draggable:
-                        self.grabbed = items[1]
-                        items[1].setZValue(int(self.game_config["depth"]["mouse"]) - 1)
+                        self._pointers[id].taken = items[1]
+                        self._pointers[id].taken.setZValue(int(self.game_config["depth"]["mouse"]) - 1)
         else:
-            if self.grabbed:
+            if self._pointers[id].taken:
+                # dropping
                 # adjust Z value
                 items = self.scene.items(QPointF(xpos, ypos))
                 zvalue = int(self.game_config["depth"]["image"])
                 if len(items) > 1:
                     zvalue = zvalue + len(items) * 2
-                self.grabbed.setZValue(zvalue)
+                self._pointers[id].taken.setZValue(zvalue)
                 # check correct position
-                xdistance = (self.grabbed.scenePos().x() + self.grabbed.width / 2) - self.grabbed.final_posex
-                ydistance = (self.grabbed.scenePos().y() + self.grabbed.height / 2) - self.grabbed.final_posey
+                xdistance = (self._pointers[id].taken.scenePos().x() + self._pointers[id].taken.width / 2) - self._pointers[id].taken.final_posex
+                ydistance = (self._pointers[id].taken.scenePos().y() + self._pointers[id].taken.height / 2) - self._pointers[id].taken.final_posey
                 distance = math.sqrt(pow(xdistance, 2) + pow(ydistance, 2))
                 if distance < int(self.game_config["difficult"]):
-                    new_xpos = self.grabbed.final_posex - self.grabbed.width / 2
-                    new_ypos = self.grabbed.final_posey - self.grabbed.height / 2
-                    self.grabbed.setPos(new_xpos, new_ypos)
-                    self.grabbed.set_overlay(True)
+                    new_xpos = self._pointers[id].taken.final_posex - self._pointers[id].taken.width / 2
+                    new_ypos = self._pointers[id].taken.final_posey - self._pointers[id].taken.height / 2
+                    self._pointers[id].taken.setPos(new_xpos, new_ypos)
+                    self._pointers[id].taken.set_overlay(True)
 
-                    if not self.grabbed.correct_position:
-                        self.grabbed.correct_position = True
-                        self.grabbed.draggable = False
+                    if not self._pointers[id].taken.correct_position:
+                        self._pointers[id].taken.correct_position = True
+                        self._pointers[id].taken.draggable = False
                         self.correct_images = self.correct_images + 1
                     index = randint(0, len(CONGRAT_STRING))
                     if self.correct_images == self.total_images:
@@ -249,23 +334,19 @@ class TakeDragGame(QWidget):
                             # print("Speeching: %s"%(SPEECH_COMMAND+text))
                             subprocess.Popen(SPEECH_COMMAND + "\"" + text + "\"", stdout=DEVNULL, shell=True)
                 else:
-                    if self.grabbed.correct_position:
-                        self.grabbed.correct_position = False
+                    if self._pointers[id].taken.correct_position:
+                        self._pointers[id].taken.correct_position = False
                         self.correct_images = self.correct_images - 1
-                    self.grabbed.set_overlay(False)
-                self.grabbed = None
+                    self._pointers[id].taken.set_overlay(False)
+                self._pointers[id].taken = None
 
-    def draw_position(self, xpos, ypos, grab):
-        if grab:
-            self.game_config["images"]["handOpen"]["widget"].hide()
-            self.game_config["images"]["handClose"]["widget"].show()
-        else:
-            self.game_config["images"]["handOpen"]["widget"].show()
-            self.game_config["images"]["handClose"]["widget"].hide()
-        new_xpos = xpos - self.game_config["images"]["handOpen"]["widget"].boundingRect().width() / 2
-        new_ypos = ypos - self.game_config["images"]["handOpen"]["widget"].boundingRect().height() / 2
-        self.game_config["images"]["handOpen"]["widget"].setPos(new_xpos, new_ypos)
-        self.game_config["images"]["handClose"]["widget"].setPos(new_xpos, new_ypos)
+
+            # self.game_config["images"]["handOpen"]["widget"].show()
+            # self.game_config["images"]["handClose"]["widget"].hide()
+
+
+        # self.game_config["images"]["handOpen"]["widget"].setPos(new_xpos, new_ypos)
+        # self.game_config["images"]["handClose"]["widget"].setPos(new_xpos, new_ypos)
 
 
     def create_and_add_images(self):
@@ -276,7 +357,8 @@ class TakeDragGame(QWidget):
                 new_image.setPos(item["initial_pose"][0], item["initial_pose"][1])
                 new_image.setZValue(int(self.game_config["depth"][item["category"]]))
                 self.game_config["images"][image_id]["widget"] = new_image
-                self.scene.addItem(new_image)
+                if item["category"] != "mouse":
+                    self.scene.addItem(new_image)
                 if item["category"] == "image":
                     new_image.set_final_pose(item["final_pose"][0], item["final_pose"][1])
                     self.total_images = self.total_images + 1

@@ -20,8 +20,8 @@
   <upCommand command="rcremote localhost tvGames /home/robolab/robocomp/components/euroage-tv/components/tvGames/ python src/tvgames.py /home/robolab/robocomp/components/euroage-tv/components/tvGames/etc/config" />
   <downCommand command="pkill -9 -f tvgames.py" />
   <configFile path="" />
-  <xpos value="-147.305824798" />
-  <ypos value="-140.688166637" />
+  <xpos value="-17.4725263742" />
+  <ypos value="-220.981827111" />
   <radius value="10.0" />
   <color value="#AAAAAA" />
  </node>
@@ -30,10 +30,10 @@
   <dependence alias="RGBD" />
   <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/" />
   <upCommand command="rcremote localhost AprilTags /home/robolab/robocomp/components/robocomp-robolab/components/apriltagsComp/ ./bin/AprilTagsComp etc/config_rgbd" />
-  <downCommand command="pkill -9 -f tvgames.py" />
+  <downCommand command="pkill -9 -f AprilTagsComp" />
   <configFile path="" />
-  <xpos value="159.174175202" />
-  <ypos value="-10.208166637" />
+  <xpos value="210.221439966" />
+  <ypos value="58.356426267" />
   <radius value="10.0" />
   <color value="#AAAAAA" />
  </node>
@@ -45,8 +45,8 @@
   <upCommand command="rcremote localhost handDetection /home/robolab/robocomp/components/robocomp-robolab/components/handDetection python src/handDetection.py /home/robolab/robocomp/components/robocomp-robolab/components/handDetection/etc/config" />
   <downCommand command="pkill -9 -f handDetection" />
   <configFile path="" />
-  <xpos value="-65.6227834677" />
-  <ypos value="-96.3678889086" />
+  <xpos value="-33.6155187039" />
+  <ypos value="54.1247039954" />
   <radius value="10.0" />
   <color value="#FF3333" />
  </node>
@@ -56,8 +56,8 @@
   <upCommand command="rcremote localhost cameraSimple /home/robolab/robocomp/components/robocomp-robolab/components/camerasimple python src/camerasimple.py /home/robolab/robocomp/components/robocomp-robolab/components/camerasimple/etc/config" />
   <downCommand command="pkill -9 -f camerasimple" />
   <configFile path="" />
-  <xpos value="-65.6227834677" />
-  <ypos value="123.632111091" />
+  <xpos value="-257.517876183" />
+  <ypos value="52.3759928537" />
   <radius value="10.0" />
   <color value="#FF3333" />
  </node>
@@ -67,8 +67,8 @@
   <upCommand command="rcremote localhost RGBD /home/robolab/robocomp/components/robocomp-robolab/components/astraRGBD ./bin/astraRGBD etc/config" />
   <downCommand command="pkill -9 -f astraRGBD" />
   <configFile path="etc/config" />
-  <xpos value="119.377216532" />
-  <ypos value="123.632111091" />
+  <xpos value="98.3844812958" />
+  <ypos value="56.124703995" />
   <radius value="10.0" />
   <color value="#FF3333" />
  </node>

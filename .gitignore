@@ -6,3 +6,9 @@ components/tvGames/\.idea/
 *.pyc
 
 components/tvGamesAdmin/\.idea/
+
+components/tvGames/src/modules/ui_AdminInterface\.py
+
+components/tvGames/src/ui_AdminInterface\.py
+
+components/tvGames/Makefile

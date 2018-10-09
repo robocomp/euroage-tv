@@ -10,7 +10,7 @@ import sys
 
 from PySide.QtCore import Signal
 from PySide.QtGui import QMainWindow, QApplication
-from AdminInterface_UI import Ui_AdminInterface
+from ui_AdminInterface import Ui_AdminInterface
 
 class AdminInterface(QMainWindow, Ui_AdminInterface):
     close_main_window = Signal()

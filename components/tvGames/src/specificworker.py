@@ -98,9 +98,9 @@ class SpecificWorker(GenericWorker):
 			u"Clothes":
 				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game5.json"],
 			u"Sorting":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game4.json"],
-			u"Looser":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game6.json"]
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game4.json"]
+			# u"Looser":
+			# 	["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game6.json"]
 
 
 		}

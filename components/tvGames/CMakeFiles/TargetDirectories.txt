@@ -1,3 +1,0 @@
-/home/robolab/robocomp/components/euroage-tv/components/tvGames/CMakeFiles/edit_cache.dir
-/home/robolab/robocomp/components/euroage-tv/components/tvGames/CMakeFiles/rebuild_cache.dir
-/home/robolab/robocomp/components/euroage-tv/components/tvGames/CMakeFiles/ui_mainUI.dir

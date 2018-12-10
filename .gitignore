@@ -12,3 +12,9 @@ components/tvGames/src/modules/ui_AdminInterface\.py
 components/tvGames/src/ui_AdminInterface\.py
 
 components/tvGames/Makefile
+
+components/tvGames/CMakeFiles/
+
+components/tvGames/cmake_install\.cmake
+
+components/tvGames/CMakeCache\.txt

@@ -138,6 +138,18 @@ if not ice_GetAprilTags:
 	print 'Couln\'t load GetAprilTags'
 	sys.exit(-1)
 from RoboCompGetAprilTags import *
+ice_TouchPoints = False
+for p in icePaths:
+	if os.path.isfile(p+'/TouchPoints.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"TouchPoints.ice"
+		Ice.loadSlice(wholeStr)
+		ice_TouchPoints = True
+		break
+if not ice_TouchPoints:
+	print 'Couln\'t load TouchPoints'
+	sys.exit(-1)
+from RoboCompTouchPoints import *
 
 
 from commonbehaviorI import *
@@ -159,9 +171,10 @@ class GenericWorker(QtGui.QWidget):
 
 
 		self.rgbd_proxy = mprx["RGBDProxy"]
+		self.camerasimple_proxy = mprx["CameraSimpleProxy"]
 		self.handdetection_proxy = mprx["HandDetectionProxy"]
 		self.getapriltags_proxy = mprx["GetAprilTagsProxy"]
-		self.camerasimple_proxy = mprx["CameraSimpleProxy"]
+		self.touchpoints_proxy = mprx["TouchPointsPub"]
 		self.ui = Ui_guiDlg()
 		self.ui.setupUi(self)
 		self.show()

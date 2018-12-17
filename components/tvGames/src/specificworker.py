@@ -23,6 +23,7 @@ import traceback
 import cv2
 import imutils
 import numpy as np
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QApplication
 
 from games.genericDragGame.genericDragGame import TakeDragGame
@@ -90,9 +91,9 @@ class SpecificWorker(GenericWorker):
 		# self._game.show()
 		self._available_games = {
 			u"Painting":
-				["PaintGame(self.screen_1_height, self.screen_1_width)",""],
+				["PaintGame(self.screen_1_height, self.screen_1_width)", ""],
 			u"Puzzle1":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)","resources/game2.json"],
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game2.json"],
 			u"Puzzle2":
 				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game3.json"],
 			u"Clothes":
@@ -102,7 +103,6 @@ class SpecificWorker(GenericWorker):
 			# u"Looser":
 			# 	["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game6.json"]
 
-
 		}
 		self._game = None
 		self.admin_interface.games_combobox.currentIndexChanged.connect(self.update_game_selection)
@@ -110,7 +110,7 @@ class SpecificWorker(GenericWorker):
 
 		self._admin_image = None
 		self._mouse_release_point = None
-		#TODO: Testing only. Remove
+		# TODO: Testing only. Remove
 		self.add_new_player()
 
 	def quit_app(self):
@@ -119,6 +119,7 @@ class SpecificWorker(GenericWorker):
 	def update_game_selection(self, index=None):
 		self._current_game_name = unicode(self.admin_interface.games_combobox.currentText())
 		self._game = eval(unicode(self._available_games[unicode(self._current_game_name)][0]))
+		self._game.touch_signal.connect(self.detectedTouchPoints)
 		self.current_state = "game_getting_player"
 		self.reset_game()
 
@@ -161,7 +162,7 @@ class SpecificWorker(GenericWorker):
 			self.admin_interface.statusBar().showMessage(
 				"State: Calibrating. Calibrating state %d" % self.calibrator.state)
 			# TODO: Not working very well on the new big screen
-			#tags = self.getapriltags_proxy.checkMarcas()
+			# tags = self.getapriltags_proxy.checkMarcas()
 			# calibration_ended = self.calibrator.update(tags)
 
 			####################### TO TEST
@@ -178,7 +179,7 @@ class SpecificWorker(GenericWorker):
 			###################
 			if calibration_ended:
 				self.current_state = "game_getting_player"
-				# self._game2.set_frame(self.calibrator._screen_points)
+			# self._game2.set_frame(self.calibrator._screen_points)
 			self.tv_image.set_opencv_image(self.calibrator.image, False)
 			# if self.debug:
 			# 	self._admin_image = self.calibration_image.copy()
@@ -231,7 +232,8 @@ class SpecificWorker(GenericWorker):
 								depth_rgb_image = cv2.cvtColor(depth_gray_image, cv2.COLOR_GRAY2BGR)
 								# self._admin_image = self.draw_initial_masked_frame(color_image, search_roi)
 								game_image = self.draw_initial_masked_frame(depth_rgb_image, search_roi)
-								game_image = cv2.resize(game_image, None, fx=self.screen_1_factor, fy=self.screen_1_factor,
+								game_image = cv2.resize(game_image, None, fx=self.screen_1_factor,
+														fy=self.screen_1_factor,
 														interpolation=cv2.INTER_CUBIC)
 								self.tv_image.set_opencv_image(game_image, False)
 								self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands,
@@ -295,9 +297,8 @@ class SpecificWorker(GenericWorker):
 					mouse = self.hand_mouses.add_state(hand.id, new_point, hand.detected)
 					self._admin_image = self.draw_hand_full_overlay(self._admin_image, hand)
 					if mouse.is_valid():
-						self._game.update_pointer(mouse.hand_id(), mouse.last_pos()[0], mouse.last_pos()[1], not mouse.last_state())
-
-
+						self._game.update_pointer(mouse.hand_id(), mouse.last_pos()[0], mouse.last_pos()[1],
+												  not mouse.last_state())
 
 	def toHomogeneous(self, p):
 		ret = np.resize(p, (len(p) + 1, 1))
@@ -486,3 +487,18 @@ class SpecificWorker(GenericWorker):
 		# implementCODE
 		#
 		pass
+
+	def detectedTouchPoints(self, qt_touch_points):
+		touch_points = []
+		state_mapping = {Qt.TouchPointPressed: StateEnum.TouchPointPressed,
+						 Qt.TouchPointMoved: StateEnum.TouchPointMoved,
+						 Qt.TouchPointStationary: StateEnum.TouchPointPressed,
+						 Qt.TouchPointReleased: StateEnum.TouchPointReleased}
+		for qt_t_point in qt_touch_points:
+			aux_point = qt_t_point.lastPos()
+			tp = TouchPoint(id=qt_t_point.id(),
+											state=state_mapping[qt_t_point.state()],
+											fingertip=[qt_t_point.screenPos().x(), qt_t_point.screenPos().y()],
+											lastPos=[aux_point.x(), aux_point.y()])
+			touch_points.append(tp)
+		self.touchpoints_proxy.detectedTouchPoints(touch_points)

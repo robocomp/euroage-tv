@@ -105,6 +105,15 @@ if __name__ == '__main__':
 	for i in ic.getProperties():
 		parameters[str(i)] = str(ic.getProperties().getProperty(i))
 
+	# Topic Manager
+	proxy = ic.getProperties().getProperty("TopicManager.Proxy")
+	obj = ic.stringToProxy(proxy)
+	try:
+		topicManager = IceStorm.TopicManagerPrx.checkedCast(obj)
+	except Ice.ConnectionRefusedException, e:
+		print 'Cannot connect to IceStorm! ('+proxy+')'
+		sys.exit(-1)
+
 	# Remote object connection for GetAprilTags
 	try:
 		proxyString = ic.getProperties().getProperty('GetAprilTagsProxy')
@@ -139,6 +148,23 @@ if __name__ == '__main__':
 		status = 1
 
 
+	# Remote object connection for HandDetection
+	try:
+		proxyString = ic.getProperties().getProperty('HandDetectionProxy')
+		try:
+			basePrx = ic.stringToProxy(proxyString)
+			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
+			mprx["HandDetectionProxy"] = handdetection_proxy
+		except Ice.Exception:
+			print 'Cannot connect to the remote object (HandDetection)', proxyString
+			#traceback.print_exc()
+			status = 1
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get HandDetectionProxy property.'
+		status = 1
+
+
 	# Remote object connection for CameraSimple
 	try:
 		proxyString = ic.getProperties().getProperty('CameraSimpleProxy')
@@ -156,21 +182,23 @@ if __name__ == '__main__':
 		status = 1
 
 
-	# Remote object connection for HandDetection
+	# Create a proxy to publish a TouchPoints topic
+	topic = False
 	try:
-		proxyString = ic.getProperties().getProperty('HandDetectionProxy')
+		topic = topicManager.retrieve("TouchPoints")
+	except:
+		pass
+	while not topic:
 		try:
-			basePrx = ic.stringToProxy(proxyString)
-			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
-			mprx["HandDetectionProxy"] = handdetection_proxy
-		except Ice.Exception:
-			print 'Cannot connect to the remote object (HandDetection)', proxyString
-			#traceback.print_exc()
-			status = 1
-	except Ice.Exception, e:
-		print e
-		print 'Cannot get HandDetectionProxy property.'
-		status = 1
+			topic = topicManager.retrieve("TouchPoints")
+		except IceStorm.NoSuchTopic:
+			try:
+				topic = topicManager.create("TouchPoints")
+			except:
+				print 'Another client created the TouchPoints topic? ...'
+	pub = topic.getPublisher().ice_oneway()
+	touchpointsTopic = TouchPointsPrx.uncheckedCast(pub)
+	mprx["TouchPointsPub"] = touchpointsTopic
 
 	if status == 0:
 		worker = SpecificWorker(mprx)

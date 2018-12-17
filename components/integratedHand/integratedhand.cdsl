@@ -1,0 +1,13 @@
+import "TouchPoints.idsl";
+import "HandDetection.idsl";
+
+
+Component require
+{
+	Communications
+	{
+		requires HandDetection;
+	};
+	language cpp;
+	gui Qt(QWidget);
+};

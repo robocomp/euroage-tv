@@ -5,7 +5,7 @@
 #define USE_QTGUI
 
 
-#define PROGRAM_NAME    "require"
-#define SERVER_FULL_NAME   "RoboComp require:: require"
+#define PROGRAM_NAME    "IntegratedHand"
+#define SERVER_FULL_NAME   "RoboComp IntegratedHand:: IntegratedHand"
 
 #endif

@@ -2,11 +2,12 @@ import "TouchPoints.idsl";
 import "HandDetection.idsl";
 
 
-Component require
+Component IntegratedHand
 {
 	Communications
 	{
 		requires HandDetection;
+		subscribesTo TouchPoints;
 	};
 	language cpp;
 	gui Qt(QWidget);

@@ -20,25 +20,29 @@
 #define GENERICWORKER_H
 
 #include "config.h"
-#include <QtGui>
 #include <stdint.h>
 #include <qlog/qlog.h>
 
+#if Qt5_FOUND
+	#include <QtWidgets>
+#else
+	#include <QtGui>
+#endif
 #include <ui_mainUI.h>
 
 #include <CommonBehavior.h>
 
+#include <TouchPoints.h>
 #include <HandDetection.h>
 
 #define CHECK_PERIOD 5000
 #define BASIC_PERIOD 100
 
-typedef map <string,::IceProxy::Ice::Object*> MapPrx;
-
 using namespace std;
-
 using namespace RoboCompHandDetection;
 using namespace RoboCompTouchPoints;
+
+typedef map <string,::IceProxy::Ice::Object*> MapPrx;
 
 
 
@@ -63,6 +67,7 @@ public:
 
 	HandDetectionPrx handdetection_proxy;
 
+	virtual void TouchPoints_detectedTouchPoints(const TouchPointsSeq &touchpoints) = 0;
 
 protected:
 	QTimer timer;
@@ -73,6 +78,7 @@ private:
 
 public slots:
 	virtual void compute() = 0;
+	virtual void initialize(int period) = 0;
 signals:
 	void kill();
 };

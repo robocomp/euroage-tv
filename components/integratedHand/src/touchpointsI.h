@@ -16,36 +16,29 @@
  *    You should have received a copy of the GNU General Public License
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef TOUCHPOINTS_H
+#define TOUCHPOINTS_H
 
-/**
-       \brief
-       @author authorname
-*/
+// Ice includes
+#include <Ice/Ice.h>
+#include <TouchPoints.h>
 
+#include <config.h>
+#include "genericworker.h"
 
+using namespace RoboCompTouchPoints;
 
-#ifndef SPECIFICWORKER_H
-#define SPECIFICWORKER_H
-
-#include <genericworker.h>
-#include <innermodel/innermodel.h>
-
-class SpecificWorker : public GenericWorker
+class TouchPointsI : public virtual RoboCompTouchPoints::TouchPoints
 {
-Q_OBJECT
 public:
-	SpecificWorker(MapPrx& mprx);
-	~SpecificWorker();
-	bool setParams(RoboCompCommonBehavior::ParameterList params);
+TouchPointsI(GenericWorker *_worker);
+	~TouchPointsI();
 
-	void TouchPoints_detectedTouchPoints(const TouchPointsSeq &touchpoints);
-
-public slots:
-	void compute();
-	void initialize(int period);
+	void detectedTouchPoints(const TouchPointsSeq  &touchpoints, const Ice::Current&);
 
 private:
-	InnerModel *innerModel;
+
+	GenericWorker *worker;
 
 };
 

@@ -1,5 +1,5 @@
 /*
- *    Copyright (C)2018 by YOUR NAME HERE
+ *    Copyright (C) 2018 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -16,37 +16,20 @@
  *    You should have received a copy of the GNU General Public License
  *    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "touchpointsI.h"
 
-/**
-       \brief
-       @author authorname
-*/
-
-
-
-#ifndef SPECIFICWORKER_H
-#define SPECIFICWORKER_H
-
-#include <genericworker.h>
-#include <innermodel/innermodel.h>
-
-class SpecificWorker : public GenericWorker
+TouchPointsI::TouchPointsI(GenericWorker *_worker)
 {
-Q_OBJECT
-public:
-	SpecificWorker(MapPrx& mprx);
-	~SpecificWorker();
-	bool setParams(RoboCompCommonBehavior::ParameterList params);
+	worker = _worker;
+}
 
-	void TouchPoints_detectedTouchPoints(const TouchPointsSeq &touchpoints);
 
-public slots:
-	void compute();
-	void initialize(int period);
+TouchPointsI::~TouchPointsI()
+{
+}
 
-private:
-	InnerModel *innerModel;
+void TouchPointsI::detectedTouchPoints(const TouchPointsSeq  &touchpoints, const Ice::Current&)
+{
+	worker->TouchPoints_detectedTouchPoints(touchpoints);
+}
 
-};
-
-#endif

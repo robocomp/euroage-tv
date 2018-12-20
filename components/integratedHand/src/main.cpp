@@ -18,11 +18,11 @@
  */
 
 
-/** \mainpage RoboComp::require
+/** \mainpage RoboComp::IntegratedHand
  *
  * \section intro_sec Introduction
  *
- * The require component...
+ * The IntegratedHand component...
  *
  * \section interface_sec Interface
  *
@@ -34,7 +34,7 @@
  * ...
  *
  * \subsection install2_ssec Compile and install
- * cd require
+ * cd IntegratedHand
  * <br>
  * cmake . && make
  * <br>
@@ -52,7 +52,7 @@
  *
  * \subsection execution_ssec Execution
  *
- * Just: "${PATH_TO_BINARY}/require --Ice.Config=${PATH_TO_CONFIG_FILE}"
+ * Just: "${PATH_TO_BINARY}/IntegratedHand --Ice.Config=${PATH_TO_CONFIG_FILE}"
  *
  * \subsection running_ssec Once running
  *
@@ -81,7 +81,9 @@
 #include "specificmonitor.h"
 #include "commonbehaviorI.h"
 
+#include <touchpointsI.h>
 
+#include <TouchPoints.h>
 #include <HandDetection.h>
 
 
@@ -91,10 +93,10 @@
 using namespace std;
 using namespace RoboCompCommonBehavior;
 
-class require : public RoboComp::Application
+class IntegratedHand : public RoboComp::Application
 {
 public:
-	require (QString prfx) { prefix = prfx.toStdString(); }
+	IntegratedHand (QString prfx) { prefix = prfx.toStdString(); }
 private:
 	void initialize();
 	std::string prefix;
@@ -104,14 +106,14 @@ public:
 	virtual int run(int, char*[]);
 };
 
-void ::require::initialize()
+void ::IntegratedHand::initialize()
 {
 	// Config file properties read example
 	// configGetString( PROPERTY_NAME_1, property1_holder, PROPERTY_1_DEFAULT_VALUE );
 	// configGetInt( PROPERTY_NAME_2, property1_holder, PROPERTY_2_DEFAULT_VALUE );
 }
 
-int ::require::run(int argc, char* argv[])
+int ::IntegratedHand::run(int argc, char* argv[])
 {
 #ifdef USE_QTGUI
 	QApplication a(argc, argv);  // GUI application
@@ -150,13 +152,22 @@ int ::require::run(int argc, char* argv[])
 	}
 	catch(const Ice::Exception& ex)
 	{
-		cout << "[" << PROGRAM_NAME << "]: Exception: " << ex;
+		cout << "[" << PROGRAM_NAME << "]: Exception creating proxy HandDetection: " << ex;
 		return EXIT_FAILURE;
 	}
 	rInfo("HandDetectionProxy initialized Ok!");
+
 	mprx["HandDetectionProxy"] = (::IceProxy::Ice::Object*)(&handdetection_proxy);//Remote server proxy creation example
-
-
+	IceStorm::TopicManagerPrx topicManager;
+	try
+	{
+		topicManager = IceStorm::TopicManagerPrx::checkedCast(communicator()->propertyToProxy("TopicManager.Proxy"));
+	}
+	catch (const Ice::Exception &ex)
+	{
+		cout << "[" << PROGRAM_NAME << "]: Exception: STORM not running: " << ex << endl;
+		return EXIT_FAILURE;
+	}
 
 	SpecificWorker *worker = new SpecificWorker(mprx);
 	//Monitor thread
@@ -175,34 +186,89 @@ int ::require::run(int argc, char* argv[])
 
 	try
 	{
-		// Server adapter creation and publication
-		if (not GenericMonitor::configGetString(communicator(), prefix, "CommonBehavior.Endpoints", tmp, ""))
-		{
-			cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy CommonBehavior\n";
+		try {
+			// Server adapter creation and publication
+			if (not GenericMonitor::configGetString(communicator(), prefix, "CommonBehavior.Endpoints", tmp, "")) {
+				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy CommonBehavior\n";
+			}
+			Ice::ObjectAdapterPtr adapterCommonBehavior = communicator()->createObjectAdapterWithEndpoints("commonbehavior", tmp);
+			CommonBehaviorI *commonbehaviorI = new CommonBehaviorI(monitor);
+			adapterCommonBehavior->add(commonbehaviorI, Ice::stringToIdentity("commonbehavior"));
+			adapterCommonBehavior->activate();
 		}
-		Ice::ObjectAdapterPtr adapterCommonBehavior = communicator()->createObjectAdapterWithEndpoints("commonbehavior", tmp);
-		CommonBehaviorI *commonbehaviorI = new CommonBehaviorI(monitor );
-		adapterCommonBehavior->add(commonbehaviorI, communicator()->stringToIdentity("commonbehavior"));
-		adapterCommonBehavior->activate();
+		catch(const Ice::Exception& ex)
+		{
+			status = EXIT_FAILURE;
+
+			cout << "[" << PROGRAM_NAME << "]: Exception raised while creating CommonBehavior adapter: " << endl;
+			cout << ex;
+
+		}
 
 
 
 
-
-
+		// Server adapter creation and publication
+		IceStorm::TopicPrx touchpoints_topic;
+		Ice::ObjectPrx touchpoints;
+		try
+		{
+			if (not GenericMonitor::configGetString(communicator(), prefix, "TouchPointsTopic.Endpoints", tmp, ""))
+			{
+				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy TouchPointsProxy";
+			}
+			Ice::ObjectAdapterPtr TouchPoints_adapter = communicator()->createObjectAdapterWithEndpoints("touchpoints", tmp);
+			TouchPointsPtr touchpointsI_ =  new TouchPointsI(worker);
+			Ice::ObjectPrx touchpoints = TouchPoints_adapter->addWithUUID(touchpointsI_)->ice_oneway();
+			if(!touchpoints_topic)
+			{
+				try {
+					touchpoints_topic = topicManager->create("TouchPoints");
+				}
+				catch (const IceStorm::TopicExists&) {
+					//Another client created the topic
+					try{
+						cout << "[" << PROGRAM_NAME << "]: Probably other client already opened the topic. Trying to connect.\n";
+						touchpoints_topic = topicManager->retrieve("TouchPoints");
+					}
+					catch(const IceStorm::NoSuchTopic&)
+					{
+						cout << "[" << PROGRAM_NAME << "]: Topic doesn't exists and couldn't be created.\n";
+						//Error. Topic does not exist
+					}
+				}
+				IceStorm::QoS qos;
+				touchpoints_topic->subscribeAndGetPublisher(qos, touchpoints);
+			}
+			TouchPoints_adapter->activate();
+		}
+		catch(const IceStorm::NoSuchTopic&)
+		{
+			cout << "[" << PROGRAM_NAME << "]: Error creating TouchPoints topic.\n";
+			//Error. Topic does not exist
+		}
 
 		// Server adapter creation and publication
 		cout << SERVER_FULL_NAME " started" << endl;
 
 		// User defined QtGui elements ( main window, dialogs, etc )
 
-#ifdef USE_QTGUI
-		//ignoreInterrupt(); // Uncomment if you want the component to ignore console SIGINT signal (ctrl+c).
-		a.setQuitOnLastWindowClosed( true );
-#endif
+		#ifdef USE_QTGUI
+			//ignoreInterrupt(); // Uncomment if you want the component to ignore console SIGINT signal (ctrl+c).
+			a.setQuitOnLastWindowClosed( true );
+		#endif
 		// Run QT Application Event Loop
 		a.exec();
 
+		try
+		{
+			std::cout << "Unsubscribing topic: touchpoints " <<std::endl;
+			touchpoints_topic->unsubscribe( touchpoints );
+		}
+		catch(const Ice::Exception& ex)
+		{
+			std::cout << "ERROR Unsubscribing topic: touchpoints " <<std::endl;
+		}
 
 		status = EXIT_SUCCESS;
 	}
@@ -217,7 +283,6 @@ int ::require::run(int argc, char* argv[])
 	#ifdef USE_QTGUI
 		a.quit();
 	#endif
-
 
 	status = EXIT_SUCCESS;
 	monitor->terminate();
@@ -261,7 +326,7 @@ int main(int argc, char* argv[])
 			printf("Configuration prefix: <%s>\n", prefix.toStdString().c_str());
 		}
 	}
-	::require app(prefix);
+	::IntegratedHand app(prefix);
 
 	return app.main(argc, argv, configFile.c_str());
 }

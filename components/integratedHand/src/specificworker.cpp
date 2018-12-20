@@ -38,21 +38,28 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 {
 //       THE FOLLOWING IS JUST AN EXAMPLE
 //	To use innerModelPath parameter you should uncomment specificmonitor.cpp readConfig method content
-//	try
-//	{
-//		RoboCompCommonBehavior::Parameter par = params.at("InnerModelPath");
-//		std::string innermodel_path = par.value;
-//		innerModel = new InnerModel(innermodel_path);
-//	}
-//	catch(std::exception e) { qFatal("Error reading config params"); }
+	try
+	{
+		RoboCompCommonBehavior::Parameter par = params.at("InnerModelPath");
+		std::string innermodel_path = par.value;
+		innerModel = new InnerModel(innermodel_path);
+	}
+	catch(std::exception e) { qFatal("Error reading config params"); }
 
 
 
 
-	timer.start(Period);
+	
 
 
 	return true;
+}
+
+void SpecificWorker::initialize(int period)
+{
+	std::cout << "Initialize worker" << std::endl;
+	this->Period = period;
+	timer.start(Period);
 }
 
 void SpecificWorker::compute()
@@ -69,7 +76,14 @@ void SpecificWorker::compute()
 // 	{
 // 		std::cout << "Error reading from Camera" << e << std::endl;
 // 	}
+//	innerModel->save(QString("mejillon.xml"));
 }
 
+
+void SpecificWorker::TouchPoints_detectedTouchPoints(const TouchPointsSeq &touchpoints)
+{
+//subscribesToCODE
+
+}
 
 

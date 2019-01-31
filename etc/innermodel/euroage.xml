@@ -6,6 +6,9 @@
 			<plane id="camera_stick2" ny="1"  px="333" py="420" pz="0" size="20,20,860" texture="#666666" />
 			<axes id="ejes1" />
 			<transform id="t_tcamera" ty="810">
+				<transform id="hand_t"  tx="0" ty="0" tz="0" >
+					<plane id="hand" px="0" py="0" pz="0" size="50,10,50" texture="#DA70D6"/>
+				</transform>
 				<plane id="camera" ny="1"  px="0" py="30" pz="0" size="20,170,40" texture="#4444FF" />
 				<transform id="t_rotcamera" rx="1.4">
 					<rgbd id="orbec" focal="490" width="640" height="480" port="10096" noise="0.00" ifconfig="40000,50000" />

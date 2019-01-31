@@ -11,4 +11,5 @@ Component IntegratedHand
 	};
 	language cpp;
 	gui Qt(QWidget);
+	options innermodelviewer;
 };

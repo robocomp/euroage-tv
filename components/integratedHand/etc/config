@@ -1,12 +1,12 @@
-CommonBehavior.Endpoints=tcp -p 10000
+CommonBehavior.Endpoints=tcp -p 18333
 
 
 # Endpoints for subscriptions
-TouchPointsTopic.Endpoints=tcp -p 0
+TouchPointsTopic.Endpoints=tcp -p 11341
 
 
 # Proxies for required interfaces
-HandDetectionProxy = handdetection:tcp -h localhost -p 0
+HandDetectionProxy = handdetection:tcp -h localhost -p 21222
 
 
 # This property is used by the clients to connect to IceStorm.

@@ -1,5 +1,5 @@
 /*
- *    Copyright (C)2018 by YOUR NAME HERE
+ *    Copyright (C)2019 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -45,14 +45,12 @@ using namespace RoboCompTouchPoints;
 typedef map <string,::IceProxy::Ice::Object*> MapPrx;
 
 
-
-
 class GenericWorker :
 #ifdef USE_QTGUI
-public QWidget, public Ui_guiDlg
+	public QWidget, public Ui_guiDlg
 #else
-public QObject
-#endif
+	public QObject
+ #endif
 {
 Q_OBJECT
 public:

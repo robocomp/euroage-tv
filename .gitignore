@@ -20,3 +20,7 @@ components/tvGames/cmake_install\.cmake
 components/tvGames/CMakeCache\.txt
 
 components/integratedHand/\.idea/
+
+components/integratedHand/build/
+
+components/integratedHand/bin/

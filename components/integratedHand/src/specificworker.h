@@ -1,5 +1,5 @@
 /*
- *    Copyright (C)2018 by YOUR NAME HERE
+ *    Copyright (C)2019 by YOUR NAME HERE
  *
  *    This file is part of RoboComp
  *
@@ -29,6 +29,13 @@
 
 #include <genericworker.h>
 #include <innermodel/innermodel.h>
+#include <chrono>
+#ifdef USE_QTGUI
+	#include <osgviewer/osgview.h>
+	#include <innermodel/innermodelviewer.h>
+#endif
+
+using namespace std::chrono;
 
 class SpecificWorker : public GenericWorker
 {
@@ -45,7 +52,12 @@ public slots:
 	void initialize(int period);
 
 private:
-	InnerModel *innerModel;
+//	InnerModel *innerModel;
+	std::shared_ptr<InnerModel> innerModel;
+#ifdef USE_QTGUI
+	OsgView *osgView;
+	InnerModelViewer *innerModelViewer;
+#endif
 
 };
 

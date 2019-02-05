@@ -11,7 +11,7 @@ Component tvgames
 	Communications
 	{
 		requires HandDetection, CameraSimple, RGBD, GetAprilTags;
-        	implements CommonBehavior, TvGames;
+        implements CommonBehavior, TvGames;
 		publishes TouchPoints;
 	};
 	language Python;

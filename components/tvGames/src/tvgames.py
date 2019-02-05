@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Copyright (C) 2018 by YOUR NAME HERE
+# Copyright (C) 2019 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -68,6 +68,7 @@ from specificworker import *
 class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 	def __init__(self, _handler):
 		self.handler = _handler
+
 	def getFreq(self, current = None):
 		self.handler.getFreq()
 	def setFreq(self, freq, current = None):
@@ -114,6 +115,40 @@ if __name__ == '__main__':
 		print 'Cannot connect to IceStorm! ('+proxy+')'
 		sys.exit(-1)
 
+	# Remote object connection for CameraSimple
+	try:
+		proxyString = ic.getProperties().getProperty('CameraSimpleProxy')
+		try:
+			basePrx = ic.stringToProxy(proxyString)
+			camerasimple_proxy = CameraSimplePrx.checkedCast(basePrx)
+			mprx["CameraSimpleProxy"] = camerasimple_proxy
+		except Ice.Exception:
+			print 'Cannot connect to the remote object (CameraSimple)', proxyString
+			#traceback.print_exc()
+			status = 1
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get CameraSimpleProxy property.'
+		status = 1
+
+
+	# Remote object connection for HandDetection
+	try:
+		proxyString = ic.getProperties().getProperty('HandDetectionProxy')
+		try:
+			basePrx = ic.stringToProxy(proxyString)
+			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
+			mprx["HandDetectionProxy"] = handdetection_proxy
+		except Ice.Exception:
+			print 'Cannot connect to the remote object (HandDetection)', proxyString
+			#traceback.print_exc()
+			status = 1
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get HandDetectionProxy property.'
+		status = 1
+
+
 	# Remote object connection for GetAprilTags
 	try:
 		proxyString = ic.getProperties().getProperty('GetAprilTagsProxy')
@@ -145,40 +180,6 @@ if __name__ == '__main__':
 	except Ice.Exception, e:
 		print e
 		print 'Cannot get RGBDProxy property.'
-		status = 1
-
-
-	# Remote object connection for HandDetection
-	try:
-		proxyString = ic.getProperties().getProperty('HandDetectionProxy')
-		try:
-			basePrx = ic.stringToProxy(proxyString)
-			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
-			mprx["HandDetectionProxy"] = handdetection_proxy
-		except Ice.Exception:
-			print 'Cannot connect to the remote object (HandDetection)', proxyString
-			#traceback.print_exc()
-			status = 1
-	except Ice.Exception, e:
-		print e
-		print 'Cannot get HandDetectionProxy property.'
-		status = 1
-
-
-	# Remote object connection for CameraSimple
-	try:
-		proxyString = ic.getProperties().getProperty('CameraSimpleProxy')
-		try:
-			basePrx = ic.stringToProxy(proxyString)
-			camerasimple_proxy = CameraSimplePrx.checkedCast(basePrx)
-			mprx["CameraSimpleProxy"] = camerasimple_proxy
-		except Ice.Exception:
-			print 'Cannot connect to the remote object (CameraSimple)', proxyString
-			#traceback.print_exc()
-			status = 1
-	except Ice.Exception, e:
-		print e
-		print 'Cannot get CameraSimpleProxy property.'
 		status = 1
 
 

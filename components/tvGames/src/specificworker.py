@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018 by YOUR NAME HERE
+# Copyright (C) 2019 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -166,6 +166,7 @@ class SpecificWorker(GenericWorker):
 			# calibration_ended = self.calibrator.update(tags)
 
 			####################### TO TEST
+			color, depth, points, _, _ = self.rgbd_proxy.getImage()
 			color, depth, _, _ = self.rgbd_proxy.getData()
 			frame = np.fromstring(color, dtype=np.uint8)
 			color_image = frame.reshape(480, 640, 3)
@@ -290,8 +291,8 @@ class SpecificWorker(GenericWorker):
 	def paint_game(self):
 		for hand in self.hands:
 			if hand.detected or hand.tracked:
-				if hand.centerMass:
-					new_point = self.toHomogeneous(hand.centerMass)
+				if hand.centerMass2D:
+					new_point = self.toHomogeneous(hand.centerMass2D)
 					new_point = np.dot(self.calibrator.homography, new_point)
 					new_point = self.fromHomogeneus(new_point)
 					mouse = self.hand_mouses.add_state(hand.id, new_point, hand.detected)
@@ -378,13 +379,13 @@ class SpecificWorker(GenericWorker):
 				thickness = int((float(i) / tail_length) * 13) + 1
 				cv2.line(frame, tuple(points[ci - 1]), tuple(points[ci]), (0, 0, 255), thickness)
 
-		if hand.centerMass is not None:
+		if hand.centerMass2D is not None:
 			# Draw center mass
-			cv2.circle(frame, tuple(hand.centerMass), 7, [100, 0, 255], 2)
-			cv2.putText(frame, 'Center', tuple(hand.centerMass), self.font, 0.5, (255, 255, 255), 1)
+			cv2.circle(frame, tuple(hand.centerMass2D), 7, [100, 0, 255], 2)
+			cv2.putText(frame, 'Center', tuple(hand.centerMass2D), self.font, 0.5, (255, 255, 255), 1)
 
 		hand_string = "hand %d %s: D=%s|T=%s|L=%s" % (
-			hand.id, str(hand.centerMass), str(hand.detected), str(hand.tracked), str(hand.truthValue))
+			hand.id, str(hand.centerMass2D), str(hand.detected), str(hand.tracked), str(hand.truthValue))
 		cv2.putText(frame, hand_string, (10, 30 + 15 * int(hand.id)), self.font, 0.5, (255, 255, 255), 1)
 		return frame
 
@@ -501,4 +502,5 @@ class SpecificWorker(GenericWorker):
 											fingertip=[qt_t_point.screenPos().x(), qt_t_point.screenPos().y()],
 											lastPos=[aux_point.x(), aux_point.y()])
 			touch_points.append(tp)
+		print "TouchPoint Detected:"+str(tp)
 		self.touchpoints_proxy.detectedTouchPoints(touch_points)

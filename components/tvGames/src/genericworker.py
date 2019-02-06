@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018 by YOUR NAME HERE
+# Copyright (C) 2019 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -170,10 +170,10 @@ class GenericWorker(QtGui.QWidget):
 		super(GenericWorker, self).__init__()
 
 
-		self.rgbd_proxy = mprx["RGBDProxy"]
-		self.camerasimple_proxy = mprx["CameraSimpleProxy"]
-		self.handdetection_proxy = mprx["HandDetectionProxy"]
 		self.getapriltags_proxy = mprx["GetAprilTagsProxy"]
+		self.camerasimple_proxy = mprx["CameraSimpleProxy"]
+		self.rgbd_proxy = mprx["RGBDProxy"]
+		self.handdetection_proxy = mprx["HandDetectionProxy"]
 		self.touchpoints_proxy = mprx["TouchPointsPub"]
 		self.ui = Ui_guiDlg()
 		self.ui.setupUi(self)

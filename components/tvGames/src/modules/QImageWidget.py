@@ -47,7 +47,8 @@ class QImageWidget(QWidget):
             second_screen_size = desktop_widget.screenGeometry(1)
             self.move(second_screen_size.left(), second_screen_size.top())
             # self.resize(second_screen_size.width(), second_screen_size.height())
-            self.showMaximized()
+            # self.showMaximized()
+            self.showFullScreen()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:

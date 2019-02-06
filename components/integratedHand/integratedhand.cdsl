@@ -1,0 +1,15 @@
+import "TouchPoints.idsl";
+import "HandDetection.idsl";
+
+
+Component IntegratedHand
+{
+	Communications
+	{
+		requires HandDetection;
+		subscribesTo TouchPoints;
+	};
+	language cpp;
+	gui Qt(QWidget);
+	options innermodelviewer;
+};

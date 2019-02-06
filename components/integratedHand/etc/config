@@ -1,0 +1,19 @@
+CommonBehavior.Endpoints=tcp -p 18333
+
+
+# Endpoints for subscriptions
+TouchPointsTopic.Endpoints=tcp -p 11341
+
+
+# Proxies for required interfaces
+HandDetectionProxy = handdetection:tcp -h localhost -p 21222
+
+
+# This property is used by the clients to connect to IceStorm.
+TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
+
+InnerModelPath = ../../etc/innermodel/euroage.xml
+
+Ice.Warn.Connections=0
+Ice.Trace.Network=0
+Ice.Trace.Protocol=0

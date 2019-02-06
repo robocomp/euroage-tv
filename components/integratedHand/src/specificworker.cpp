@@ -95,9 +95,16 @@ void SpecificWorker::compute()
  		if(handCount > 0)
 		{
 			 auto hands = handdetection_proxy->getHands();
-			 std::cout<<"Detected Hands:"<< handCount <<" Coordinates: "<<hands[0].centerMass[0]<<", "<<hands[0].centerMass[1]<<", "<<hands[0].centerMass[2]<<endl;
-			 innerModel->updateTransformValues("hand_t", -1*hands[0].centerMass[1],-hands[0].centerMass[2], -1*hands[0].centerMass[0], 0,0,0);
-			 innerModel->save("patatita.xml");
+			try {
+				std::cout<<"Detected Hands:"<< handCount <<" Coordinates: "<<hands[0].centerMass3D[0]<<", "<<hands[0].centerMass3D[1]<<", "<<hands[0].centerMass3D[2]<<endl;
+				innerModel->updateTransformValues("hand_t", -1*hands[0].centerMass3D[1],-hands[0].centerMass3D[2], -1*hands[0].centerMass3D[0], 0,0,0);
+				innerModel->save("patatita.xml");
+			}
+			catch(...)
+			{
+				std::cout<<"Problem updating transform"<<endl;
+			}
+
 		}
 		else
 		{

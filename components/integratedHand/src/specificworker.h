@@ -45,6 +45,8 @@ public:
 	~SpecificWorker();
 	bool setParams(RoboCompCommonBehavior::ParameterList params);
 
+	void AprilTags_newAprilTagAndPose(const tagsList &tags, const RoboCompGenericBase::TBaseState &bState, const RoboCompJointMotor::MotorStateMap &hState);
+	void AprilTags_newAprilTag(const tagsList &tags);
 	void TouchPoints_detectedTouchPoints(const TouchPointsSeq &touchpoints);
 
 public slots:

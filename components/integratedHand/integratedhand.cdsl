@@ -1,5 +1,6 @@
 import "TouchPoints.idsl";
 import "HandDetection.idsl";
+import "AprilTags.idsl";
 
 
 Component IntegratedHand
@@ -7,7 +8,7 @@ Component IntegratedHand
 	Communications
 	{
 		requires HandDetection;
-		subscribesTo TouchPoints;
+		subscribesTo TouchPoints, AprilTags;
 	};
 	language cpp;
 	gui Qt(QWidget);

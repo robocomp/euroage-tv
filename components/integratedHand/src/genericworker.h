@@ -32,15 +32,21 @@
 
 #include <CommonBehavior.h>
 
-#include <TouchPoints.h>
+#include <AprilTags.h>
+#include <GenericBase.h>
+#include <JointMotor.h>
 #include <HandDetection.h>
+#include <TouchPoints.h>
 
 #define CHECK_PERIOD 5000
 #define BASIC_PERIOD 100
 
 using namespace std;
-using namespace RoboCompHandDetection;
 using namespace RoboCompTouchPoints;
+using namespace RoboCompGenericBase;
+using namespace RoboCompJointMotor;
+using namespace RoboCompAprilTags;
+using namespace RoboCompHandDetection;
 
 typedef map <string,::IceProxy::Ice::Object*> MapPrx;
 
@@ -65,6 +71,8 @@ public:
 
 	HandDetectionPrx handdetection_proxy;
 
+	virtual void AprilTags_newAprilTagAndPose(const tagsList &tags, const RoboCompGenericBase::TBaseState &bState, const RoboCompJointMotor::MotorStateMap &hState) = 0;
+	virtual void AprilTags_newAprilTag(const tagsList &tags) = 0;
 	virtual void TouchPoints_detectedTouchPoints(const TouchPointsSeq &touchpoints) = 0;
 
 protected:

@@ -77,14 +77,14 @@ void SpecificWorker::initialize(int period)
 	std::cout << "Initialize worker" << std::endl;
 	this->Period = period;
 	timer.start(Period);
-	TRoi search_roi_class;
-	search_roi_class.y = 480 / 2 - 100;
-	search_roi_class.x = 640 / 2 - 100;
-	search_roi_class.w = 200;
-	search_roi_class.h = 200;
+//	TRoi search_roi_class;
+//	search_roi_class.y = 480 / 2 - 100;
+//	search_roi_class.x = 640 / 2 - 100;
+//	search_roi_class.w = 200;
+//	search_roi_class.h = 200;
 //	search_roi = (
 //			search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w);
-	handdetection_proxy->addNewHand(1,search_roi_class);
+	//handdetection_proxy->addNewHand(1,search_roi_class);
 }
 
 void SpecificWorker::compute()
@@ -97,7 +97,7 @@ void SpecificWorker::compute()
 			 auto hands = handdetection_proxy->getHands();
 			try {
 				std::cout<<"Detected Hands:"<< handCount <<" Coordinates: "<<hands[0].centerMass3D[0]<<", "<<hands[0].centerMass3D[1]<<", "<<hands[0].centerMass3D[2]<<endl;
-				innerModel->updateTransformValues("hand_t", -1*hands[0].centerMass3D[1],-hands[0].centerMass3D[2], -1*hands[0].centerMass3D[0], 0,0,0);
+				innerModel->updateTransformValues("hand_t", -hands[0].centerMass3D[1],-hands[0].centerMass3D[2], -hands[0].centerMass3D[0], 0,0,0);
 				innerModel->save("patatita.xml");
 			}
 			catch(...)
@@ -114,7 +114,7 @@ void SpecificWorker::compute()
 	}
  	catch(const Ice::Exception &e)
  	{
- 		std::cout << "Error reading from Camera" << e << std::endl;
+ 		std::cout << "Error reading from HandDetection" << e << std::endl;
  	}
 
 #ifdef USE_QTGUI
@@ -129,6 +129,27 @@ void SpecificWorker::compute()
 //	innerModel->save(QString("mejillon.xml"));
 }
 
+
+void SpecificWorker::AprilTags_newAprilTagAndPose(const tagsList &tags, const RoboCompGenericBase::TBaseState &bState, const RoboCompJointMotor::MotorStateMap &hState)
+{
+	std::cout<<"AprilTags_newAprilTagAndPose"<<std::endl;
+}
+
+void SpecificWorker::AprilTags_newAprilTag(const tagsList &tags)
+{
+
+	std::cout<<"AprilTags_newAprilTag total tags: "<<tags.size()<<std::endl;
+
+	for(int i = 0; i< tags.size(); i++)
+	{
+		std::cout<<"Id : "<<tags[i].id<<std::endl;
+		if(tags[i].id==0)
+		{
+			std::cout<<"Position : "<<tags[i].tx<<", "<<tags[i].ty<<", "<<tags[i].tz<<std::endl;
+			innerModel->updateTransformValues("hand_t", tags[i].ty, -tags[i].tz, -tags[i].tx, 0,0,0);
+		}
+	}
+}
 
 void SpecificWorker::TouchPoints_detectedTouchPoints(const TouchPointsSeq &touchpoints)
 {

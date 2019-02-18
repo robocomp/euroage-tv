@@ -56,6 +56,8 @@ public slots:
 private:
 //	InnerModel *innerModel;
 	std::shared_ptr<InnerModel> innerModel;
+	std::map<int, RoboCompAprilTags::tag> seen_tags;
+	std::map<int, RoboCompHandDetection::Hand> hands;
 #ifdef USE_QTGUI
 	OsgView *osgView;
 	InnerModelViewer *innerModelViewer;

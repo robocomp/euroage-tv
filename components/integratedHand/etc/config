@@ -13,6 +13,7 @@ HandDetectionProxy = handdetection:tcp -h localhost -p 21222
 # This property is used by the clients to connect to IceStorm.
 TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
 
+#InnerModelPath = saved_inner.xml
 InnerModelPath = ../../etc/innermodel/euroage.xml
 
 Ice.Warn.Connections=0

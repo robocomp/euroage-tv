@@ -98,7 +98,6 @@ void SpecificWorker::compute()
 			try {
 				std::cout<<"Detected Hands:"<< handCount <<" Coordinates: "<<hands[0].centerMass3D[0]<<", "<<hands[0].centerMass3D[1]<<", "<<hands[0].centerMass3D[2]<<endl;
 				innerModel->updateTransformValues("hand_t", -hands[0].centerMass3D[1],-hands[0].centerMass3D[2], -hands[0].centerMass3D[0], 0,0,0);
-				innerModel->save("patatita.xml");
 			}
 			catch(...)
 			{
@@ -132,22 +131,43 @@ void SpecificWorker::compute()
 
 void SpecificWorker::AprilTags_newAprilTagAndPose(const tagsList &tags, const RoboCompGenericBase::TBaseState &bState, const RoboCompJointMotor::MotorStateMap &hState)
 {
-	std::cout<<"AprilTags_newAprilTagAndPose"<<std::endl;
+//	std::cout<<"AprilTags_newAprilTagAndPose"<<std::endl;
 }
 
 void SpecificWorker::AprilTags_newAprilTag(const tagsList &tags)
 {
 
-	std::cout<<"AprilTags_newAprilTag total tags: "<<tags.size()<<std::endl;
-
 	for(int i = 0; i< tags.size(); i++)
 	{
-		std::cout<<"Id : "<<tags[i].id<<std::endl;
-		if(tags[i].id==0)
+		map<int, RoboCompAprilTags::tag>::const_iterator it = seen_tags.find(tags[i].id);
+		if(it!=seen_tags.end())
 		{
-			std::cout<<"Position : "<<tags[i].tx<<", "<<tags[i].ty<<", "<<tags[i].tz<<std::endl;
-			innerModel->updateTransformValues("hand_t", tags[i].ty, -tags[i].tz, -tags[i].tx, 0,0,0);
+			std::cout<<"Moving tag ("<<tags[i].id<<") "<<tags[i].ty<<", "<<-tags[i].tz<<", "<<-tags[i].tx<<endl;
+//			innerModel->updateTransformValues("tag_t_"+QString::number(tags[i].id), tags[i].ty, -tags[i].tz, -tags[i].tx, 0,0,0);
 		}
+		else
+		{
+			std::cout<<"New tag ("<<tags[i].id<<") "<<tags[i].ty<<", "<<-tags[i].tz<<", "<<-tags[i].tx<<endl;
+			seen_tags.insert(std::make_pair(tags[i].id, tags[i]));
+//			auto new_tag_transform = innerModel->newTransform(QString::number(tags[i].id), "static", innerModel->getNode("t_tcamera"), tags[i].ty, -tags[i].tz, -tags[i].tx, 0, 0, 0);
+			InnerModelNode *camera_transform;
+			camera_transform = innerModel->getNode("t_tcamera");
+			InnerModelTransform *new_tag_transform;
+			new_tag_transform = innerModel->newTransform("tag_t_"+QString::number(tags[i].id), "static", camera_transform, 0, 0, 0, 0, 0, 0);
+			camera_transform->addChild(new_tag_transform);
+			InnerModelPlane *new_plane;
+			new_plane = innerModel->newPlane("tag_p_"+QString::number(tags[i].id), new_tag_transform, "#7FFFD4", 500, 100, 500, 1000,  0,1,0,   0,0,0,  false);
+			new_tag_transform->addChild(new_plane);
+			innerModel->update();
+			innerModel->save("saved_inner.xml");
+
+		}
+//		std::cout<<"Id : "<<tags[i].id<<std::endl;
+//		if(tags[i].id==0)
+//		{
+//			std::cout<<"Position : "<<tags[i].tx<<", "<<tags[i].ty<<", "<<tags[i].tz<<std::endl;
+//			innerModel->updateTransformValues(, tags[i].ty, -tags[i].tz, -tags[i].tx, 0,0,0);
+//		}
 	}
 }
 

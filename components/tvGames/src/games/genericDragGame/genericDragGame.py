@@ -7,12 +7,13 @@ import os
 import subprocess
 import sys
 
-from PyQt4.QtCore import Qt, QTimer, QPointF, pyqtSignal, QDateTime, QEvent
+from PyQt4.QtCore import Qt, QTimer, QPointF, pyqtSignal, QDateTime, QEvent, QObject
 from PyQt4.QtGui import QApplication, QGraphicsScene, QHBoxLayout, \
 	QWidget, QGraphicsView, QPixmap, QGraphicsPixmapItem, QFont, QPainter, QImage, QGraphicsTextItem
 from numpy.random.mtrand import randint
 
 # Create a class for our main window
+from games.genericDragGame.ClockWidget import ClockWidget
 
 try:
 	from subprocess import DEVNULL  # py3k
@@ -110,8 +111,9 @@ class DraggableItem(QGraphicsPixmapItem):
 		return DraggableItem(self.id, self.image_path, self.width, self.height, self.draggable)
 
 
-class Pointer(object):
+class Pointer(QObject):
 	def __init__(self, id, xpos, ypos, grabbed, open_widget, closed_widget):
+		super(Pointer, self).__init__()
 		self._id = id
 		self._grabbed = grabbed
 		self._open_widget = open_widget
@@ -120,7 +122,7 @@ class Pointer(object):
 		self._open_widget.show()
 		self._position = (xpos, ypos)
 		self._taken = None
-		self._lost_timer = QTimer()
+		self._lost_timer = QTimer(self)
 		self._lost_timer.start(5000)
 
 	@property
@@ -139,6 +141,7 @@ class Pointer(object):
 		else:
 			self._closed_widget.hide()
 			self._open_widget.show()
+		self._lost_timer.start(5000)
 
 	@property
 	def open_widget(self):
@@ -169,6 +172,7 @@ class Pointer(object):
 		self._position = (new_xpos, new_ypos)
 		self._open_widget.setPos(new_xpos, new_ypos)
 		self._closed_widget.setPos(new_xpos, new_ypos)
+		self._lost_timer.start(5000)
 
 	@property
 	def taken(self):
@@ -179,6 +183,16 @@ class Pointer(object):
 		assert (isinstance(widget,
 						   QGraphicsPixmapItem) or widget == None), "Pointer.taken must be of QGraphicsPixmapItem derivated"
 		self._taken = widget
+		self._lost_timer.start(5000)
+
+
+	@property
+	def id(self):
+		return self._id
+
+
+	def stop(self):
+		self._lost_timer.stop()
 
 
 	# @property
@@ -216,14 +230,14 @@ class TakeDragGame(QWidget):
 		# TODO: Check if its better with opengl or not
 		# self.view.setViewport(QtOpenGL.QGLWidget())
 		self.main_layout.addWidget(self.view)
-		self.timer = QTimer()
-		self.timer.timeout.connect(self.update_clock)
-		self.clock = QGraphicsTextItem("00:00")
+
+		self.clock = ClockWidget()
+		self.clock_proxy = self.scene.addWidget(self.clock)
 		self.clock.hide()
-		self.clock.setFont(QFont("Arial", 70, QFont.Bold))
-		self.clock.setPos(self.width - self.clock.boundingRect().width(), 0)
-		self.clock.setZValue(60)
-		self.scene.addItem(self.clock)
+		self.clock_proxy.setPos(self.width - self.clock_proxy.boundingRect().width(), 0)
+		self.clock_proxy.setZValue(60)
+		self.clock.timeout.connect(self.game_timeout)
+
 		self.end_message = QGraphicsTextItem(u"¡Has perdido!")
 		self.end_message.hide()
 		self.end_message.setFont(QFont("Arial", 90, QFont.Bold))
@@ -234,7 +248,7 @@ class TakeDragGame(QWidget):
 		# game data
 		self.total_images = 0
 		self.correct_images = 0
-		self.time = None
+
 		self.scene.setSceneRect(0, 0, width, height)
 		self.grabbed = None
 		self.game_config = None
@@ -260,11 +274,11 @@ class TakeDragGame(QWidget):
 		self.resize(self.game_config["size"][0], self.game_config["size"][1])
 		self.create_and_add_images()
 		# self.draw_position(self.scene.width()/2, self.scene.height()/2, False)
-		self.time = int(self.game_config["time"])
+		self.clock.set_time(int(self.game_config["time"]))
+		# self.clock.set_time(3)
 		self.end_message.hide()
 		self.setWindowState(Qt.WindowMaximized)
 		self.clock.show()
-		self.update_clock()
 
 	# Detecting touch events on multitouch screen
 	def event(self, event):
@@ -286,8 +300,9 @@ class TakeDragGame(QWidget):
 	def remove_pointer(self, pointer=None):
 		# check if pointer is the class or the id of one of the pointers
 		if pointer is None:
+			# print "TakeDragGame.remove_pointer() : received pointer is none. Sender is " + str(self.sender().parent())
 			if self.sender() is not None:
-				the_pointer = self.sender()
+				pointer = self.sender().parent()
 			else:
 				return
 		if isinstance(pointer, numbers.Integral):
@@ -302,17 +317,21 @@ class TakeDragGame(QWidget):
 		else:
 			print "TakeDragGame.remove_pointer() : ERROR unexpected type "+str(type(pointer))
 			return
-		self.scene.removeItem(the_pointer.open_widget)
-		self.scene.removeItem(the_pointer.closed_widget)
-		if the_pointer in self._pointers:
-			del self._pointers[the_pointer]
+		if the_pointer.id in self._pointers:
+			print("Removing pointer id %d"%(the_pointer.id))
+			the_pointer.stop()
+			self.scene.removeItem(the_pointer.open_widget)
+			self.scene.removeItem(the_pointer.closed_widget)
+			del self._pointers[the_pointer.id]
 
 	def show(self):
 		self.show_on_second_screen()
-		self.timer.start(1000)
+		self.clock.start()
+
+	def game_timeout(self):
+		self.end_game(False)
 
 	def end_game(self, value):
-		self.timer.stop()
 		if value:
 			self.end_message.setHtml(u"<font color='green'>¡Has ganado!</font>")
 			index = randint(0, len(WINNING_SOUNDS))
@@ -329,12 +348,7 @@ class TakeDragGame(QWidget):
 		#        time.sleep(3)
 		self.clear_scene()
 
-	def update_clock(self):
-		time_string = QDateTime.fromTime_t(self.time).toString("mm:ss")
-		self.clock.setPlainText(time_string)
-		if self.time <= 0:
-			self.end_game(False)
-		self.time = self.time - 1
+
 
 	def add_new_pointer(self, pointer_id, xpos, ypos, grab):
 		print "TakeDragGame.add_new_pointer: ID=%d"%pointer_id
@@ -443,7 +457,7 @@ class TakeDragGame(QWidget):
 		if event.oldSize().width() < 0 or event.oldSize().height() < 0:
 			return
 		super(TakeDragGame, self).resizeEvent(event)
-		self.clock.setPos(self.view.width() - self.clock.boundingRect().width() * 1.1, 0)
+		self.clock_proxy.setPos(self.view.width() - self.clock_proxy.boundingRect().width() * 1.1, 0)
 		self.end_message.setPos(self.view.width() / 2 - self.end_message.boundingRect().width() / 2,
 								self.view.height() / 2 - self.end_message.boundingRect().height() / 2)
 		# images

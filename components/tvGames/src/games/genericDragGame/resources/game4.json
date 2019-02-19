@@ -1,0 +1,101 @@
+{
+  "size":[1900, 1070],
+  "difficult": "100",
+  "time": "200",
+  "depth":{
+    "background": "0",
+    "image": "10",
+    "mouse": "50"
+  },
+  "images": {
+    "puzzle1": {
+      "size": [200,250],
+      "initial_pose": [320,160],
+      "final_pose": [800,677],
+      "path": "resources/game4/puzzle1.jpg",
+      "name": "puzzle1",
+      "category": "image"
+    },
+    "puzzle2": {
+      "size": [200,250],
+      "initial_pose": [350,160],
+      "final_pose": [1000,677],
+      "path": "resources/game4/puzzle2.jpg",
+      "name": "puzzle2",
+      "category": "image"
+    },
+    "puzzle3": {
+      "size": [200,250],
+      "initial_pose": [190,240],
+      "final_pose": [1202,677],
+      "path": "resources/game4/puzzle3.jpg",
+      "name": "puzzle3",
+      "category": "image"
+    },
+    "puzzle4": {
+      "size": [200,250],
+      "initial_pose": [230,170],
+      "final_pose": [1404,677],
+      "path": "resources/game4/puzzle4.jpg",
+      "name": "puzzle4",
+      "category": "image"
+    },
+    "puzzle5": {
+      "size": [200,250],
+      "initial_pose": [220,250],
+      "final_pose": [1606,677],
+      "path": "resources/game4/puzzle5.jpg",
+      "name": "puzzle5",
+      "category": "image"
+    },
+    "pos1": {
+      "size": [200,250],
+      "initial_pose": [698,560],
+      "path": "resources/pos1.jpg",
+      "name": "pos1",
+      "category": "background"
+    },
+    "pos2": {
+      "size": [200,250],
+      "initial_pose": [900,560],
+      "path": "resources/pos2.jpg",
+      "name": "pos2",
+      "category": "background"
+    },
+    "pos3": {
+      "size": [200,250],
+      "initial_pose": [1102,560],
+      "path": "resources/pos3.jpg",
+      "name": "pos3",
+      "category": "background"
+    },
+    "pos4": {
+      "size": [200,250],
+      "initial_pose": [1304,560],
+      "path": "resources/pos4.jpg",
+      "name": "pos4",
+      "category": "background"
+    },
+    "pos5": {
+      "size": [200,250],
+      "initial_pose": [1506,560],
+      "path": "resources/pos5.jpg",
+      "name": "pos5",
+      "category": "background"
+    },
+    "handOpen": {
+      "size": [100,100],
+      "initial_pose": [400,300],
+      "path": "resources/00-Pointer-Hand-icon_2.png",
+      "name": "handOpen",
+      "category": "mouse"
+    },
+    "handClose": {
+      "size": [100,100],
+      "initial_pose": [400,300],
+      "path": "resources/01-Pointer-Hand-icon_2.png",
+      "name": "handClose",
+      "category": "mouse"
+    }
+  }
+}

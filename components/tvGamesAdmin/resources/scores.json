@@ -1,0 +1,42 @@
+{
+  "Esteban":
+  {
+    "Nick": "orensbruli",
+    "Games":
+    {
+      "Selecciona la imagen":
+      {
+        "Times": 12,
+        "Seconds played": 110891,
+        "Last time": 1532256368,
+        "Best Score": 5731,
+        "Last Scores": [2301, 1000, 5000, 127, 48]
+
+      }
+    }
+  },
+  "Ramon":
+  {
+    "Nick": "raimon",
+    "Games":
+    {
+      "Selecciona la imagen":
+      {
+        "Times": 13,
+        "Seconds played": 1892,
+        "Last time": 1534934768,
+        "Best Score": 5731,
+        "Last Scores": [2300, 1000, 5000, 127, 48]
+
+      },
+      "Escoge tu ropa":
+      {
+        "Times": 2,
+        "Seconds played": 30,
+        "Last time": 1535021169,
+        "Best Score": 299,
+        "Last Scores": [2300, 1000, 5000, 127, 48]
+      }
+    }
+  }
+}

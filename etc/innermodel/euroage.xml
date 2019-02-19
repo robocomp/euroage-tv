@@ -1,0 +1,24 @@
+<innerModel>
+	<transform id="world">
+		<transform id="t_tv">
+			<plane id="tvplane" ny="1"  px="0" py="0" pz="0" size="666,1140,2" texture="#FFFFFF" />
+			<plane id="camera_stick1" ny="1"  px="158" py="900" pz="0" size="333,20,20" texture="#666666" />
+			<plane id="camera_stick2" ny="1"  px="333" py="420" pz="0" size="20,20,860" texture="#666666" />
+			<axes id="ejes1" />
+			<transform id="t_tcamera" ty="900">
+				<!--<transform id="hand_t"  tx="0" ty="0" tz="0" >
+					<plane id="hand" px="0" py="0" pz="0" size="50,10,50" texture="#DA70D6"/>
+				</transform>-->
+				<plane id="camera" ny="1"  px="0" py="30" pz="0" size="20,170,40" texture="#4444FF" />
+				<transform id="t_rotcamera" rx="1.4">
+					<rgbd id="rgbd" focal="458" width="640" height="480" port="10096" noise="0.00" ifconfig="40000,50000" />
+				</transform>			
+			</transform>				
+			<transform id="t_qt_ref"  tx="333" ty="0" tz="570" >
+				<axes id="axis2" />
+			</transform>		
+		</transform>			
+	</transform>
+</innerModel>
+
+

@@ -1,0 +1,28 @@
+<innermodel>
+	<transform id="world" tx="0" ty="0" tz="0"  rx="0" ry="0" rz="0">
+		<transform id="t_tv" tx="0" ty="0" tz="0"  rx="0" ry="0" rz="0">
+			<plane id="tvplane" texture="#FFFFFF" size="666,1140,10" repeat="1000" nx="0" ny="1" nz="0" px="0" py="0" pz="0" collide="0" />
+			<plane id="camera_stick1" texture="#666666" size="333,20,20" repeat="1000" nx="0" ny="1" nz="0" px="158" py="840" pz="0" collide="0" />
+			<plane id="camera_stick2" texture="#666666" size="20,20,860" repeat="1000" nx="0" ny="1" nz="0" px="333" py="420" pz="0" collide="0" />
+			<plane id="ejes1x" texture="#ff0000" size="15,15,200" repeat="1" nx="1" ny="0" nz="0" px="100" py="0" pz="0" collide="0" />
+			<plane id="ejes1y" texture="#00ff00" size="15,200,15" repeat="1" nx="1" ny="0" nz="0" px="0" py="100" pz="0" collide="0" />
+			<plane id="ejes1z" texture="#0000ff" size="200,15,15" repeat="1" nx="1" ny="0" nz="0" px="0" py="0" pz="100" collide="0" />
+			<plane id="ejes1c" texture="#ffffff" size="19.5,19.5,19.5" repeat="1" nx="1" ny="0" nz="0" px="0" py="0" pz="0" collide="0" />
+			<transform id="t_tcamera" tx="0" ty="810" tz="0"  rx="0" ry="0" rz="0">
+				<transform id="hand_t" tx="0" ty="0" tz="0"  rx="0" ry="0" rz="0">
+					<plane id="hand" texture="#DA70D6" size="50,10,50" repeat="1000" nx="0" ny="0" nz="-1" px="0" py="0" pz="0" collide="0" />
+				</transform>
+				<plane id="camera" texture="#4444FF" size="20,170,40" repeat="1000" nx="0" ny="1" nz="0" px="0" py="30" pz="0" collide="0" />
+				<transform id="t_rotcamera" tx="0" ty="0" tz="0"  rx="1.399999976" ry="0" rz="0">
+					<rgbd id="orbec" width="640" height="480" focal="490" port="10096" ifconfig="40000,50000" noise="0" />
+				</transform>
+			</transform>
+			<transform id="t_qt_ref" tx="333" ty="0" tz="570"  rx="0" ry="0" rz="0">
+				<plane id="axis2x" texture="#ff0000" size="15,15,200" repeat="1" nx="1" ny="0" nz="0" px="100" py="0" pz="0" collide="0" />
+				<plane id="axis2y" texture="#00ff00" size="15,200,15" repeat="1" nx="1" ny="0" nz="0" px="0" py="100" pz="0" collide="0" />
+				<plane id="axis2z" texture="#0000ff" size="200,15,15" repeat="1" nx="1" ny="0" nz="0" px="0" py="0" pz="100" collide="0" />
+				<plane id="axis2c" texture="#ffffff" size="19.5,19.5,19.5" repeat="1" nx="1" ny="0" nz="0" px="0" py="0" pz="0" collide="0" />
+			</transform>
+		</transform>
+	</transform>
+</innermodel>

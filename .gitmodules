@@ -1,0 +1,3 @@
+[submodule "components/tvGames/src/libs/simple-google-tts"]
+	path = components/tvGames/src/libs/simple-google-tts
+	url = https://github.com/glutanimate/simple-google-tts

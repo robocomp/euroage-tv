@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Copyright (C) 2018 by YOUR NAME HERE
+# Copyright (C) 2019 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -68,6 +68,7 @@ from specificworker import *
 class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 	def __init__(self, _handler):
 		self.handler = _handler
+
 	def getFreq(self, current = None):
 		self.handler.getFreq()
 	def setFreq(self, freq, current = None):
@@ -81,7 +82,7 @@ class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 		self.handler.killYourSelf()
 	def getAttrList(self, current = None):
 		try:
-			return None
+			return self.handler.getAttrList()
 		except:
 			print 'Problem getting getAttrList'
 			traceback.print_exc()
@@ -91,7 +92,7 @@ class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 
 
 if __name__ == '__main__':
-	app = QtCore.QCoreApplication(sys.argv)
+	app = QtGui.QApplication(sys.argv)
 	params = copy.deepcopy(sys.argv)
 	if len(params) > 1:
 		if not params[1].startswith('--Ice.Config='):
@@ -104,6 +105,15 @@ if __name__ == '__main__':
 	parameters = {}
 	for i in ic.getProperties():
 		parameters[str(i)] = str(ic.getProperties().getProperty(i))
+
+	# Topic Manager
+	proxy = ic.getProperties().getProperty("TopicManager.Proxy")
+	obj = ic.stringToProxy(proxy)
+	try:
+		topicManager = IceStorm.TopicManagerPrx.checkedCast(obj)
+	except Ice.ConnectionRefusedException, e:
+		print 'Cannot connect to IceStorm! ('+proxy+')'
+		sys.exit(-1)
 
 	# Remote object connection for CameraSimple
 	try:
@@ -138,13 +148,71 @@ if __name__ == '__main__':
 		print 'Cannot get HandDetectionProxy property.'
 		status = 1
 
+
+	# Remote object connection for GetAprilTags
+	try:
+		proxyString = ic.getProperties().getProperty('GetAprilTagsProxy')
+		try:
+			basePrx = ic.stringToProxy(proxyString)
+			getapriltags_proxy = GetAprilTagsPrx.checkedCast(basePrx)
+			mprx["GetAprilTagsProxy"] = getapriltags_proxy
+		except Ice.Exception:
+			print 'Cannot connect to the remote object (GetAprilTags)', proxyString
+			#traceback.print_exc()
+			status = 1
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get GetAprilTagsProxy property.'
+		status = 1
+
+
+	# Remote object connection for RGBD
+	try:
+		proxyString = ic.getProperties().getProperty('RGBDProxy')
+		try:
+			basePrx = ic.stringToProxy(proxyString)
+			rgbd_proxy = RGBDPrx.checkedCast(basePrx)
+			mprx["RGBDProxy"] = rgbd_proxy
+		except Ice.Exception:
+			print 'Cannot connect to the remote object (RGBD)', proxyString
+			#traceback.print_exc()
+			status = 1
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get RGBDProxy property.'
+		status = 1
+
+
+	# Create a proxy to publish a TouchPoints topic
+	topic = False
+	try:
+		topic = topicManager.retrieve("TouchPoints")
+	except:
+		pass
+	while not topic:
+		try:
+			topic = topicManager.retrieve("TouchPoints")
+		except IceStorm.NoSuchTopic:
+			try:
+				topic = topicManager.create("TouchPoints")
+			except:
+				print 'Another client created the TouchPoints topic? ...'
+	pub = topic.getPublisher().ice_oneway()
+	touchpointsTopic = TouchPointsPrx.uncheckedCast(pub)
+	mprx["TouchPointsPub"] = touchpointsTopic
+
 	if status == 0:
 		worker = SpecificWorker(mprx)
 		worker.setParams(parameters)
 
-		adapter = ic.createObjectAdapter('CommonBehavior')
-		adapter.add(CommonBehaviorI(worker), ic.stringToIdentity('commonbehavior'))
-		adapter.activate()
+	adapter = ic.createObjectAdapter('CommonBehavior')
+	adapter.add(CommonBehaviorI(worker), ic.stringToIdentity('commonbehavior'))
+	adapter.activate()
+
+
+	adapter = ic.createObjectAdapter('TvGames')
+	adapter.add(TvGamesI(worker), ic.stringToIdentity('tvgames'))
+	adapter.activate()
 
 
 	signal.signal(signal.SIGINT, signal.SIG_DFL)

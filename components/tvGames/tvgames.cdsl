@@ -1,14 +1,20 @@
 import "HandDetection.idsl";
 import "CameraSimple.idsl";
+import "RGBD.idsl";
 import "CommonBehavior.idsl";
+import "TvGames.idsl";
+import "GetAprilTags.idsl";
+import "TouchPoints.idsl";
 
 Component tvgames
 {
 	Communications
 	{
-		requires HandDetection, CameraSimple;
-        implements CommonBehavior;
+		requires HandDetection, CameraSimple, RGBD, GetAprilTags;
+        implements CommonBehavior, TvGames;
+		publishes TouchPoints;
 	};
 	language Python;
+	gui Qt(QWidget);
 };
 

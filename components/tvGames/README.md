@@ -34,3 +34,11 @@ After editing the new config file we can run the component:
 ```tvgames ```
 
     --Ice.Config=config
+ 
+## TODO
+· Add to makefile the compilation of the AdminInterface to put in in Modules.
+
+· Add a button to restart a game.
+
+· Add a button to restart the calibration.
+ 

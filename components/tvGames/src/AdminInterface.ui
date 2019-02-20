@@ -44,6 +44,11 @@
        <widget class="QComboBox" name="games_combobox">
         <item>
          <property name="text">
+          <string>Testing1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>Puzzle1</string>
          </property>
         </item>

@@ -90,6 +90,8 @@ class SpecificWorker(GenericWorker):
 		# self._game = TakeDragGame()
 		# self._game.show()
 		self._available_games = {
+			u"Testing1":
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame.json"],
 			u"Painting":
 				["PaintGame(self.screen_1_height, self.screen_1_width)", ""],
 			u"Puzzle1":
@@ -99,6 +101,8 @@ class SpecificWorker(GenericWorker):
 			u"Clothes":
 				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game5.json"],
 			u"Sorting":
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game4.json"],
+			u"Testing2":
 				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game4.json"]
 			# u"Looser":
 			# 	["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game6.json"]

@@ -1,12 +1,12 @@
 import cv2
 
-from PySide.QtCore import Qt, Signal
-from PySide.QtGui import QWidget, QHBoxLayout, QLabel, QPixmap, QImage, QApplication
+from PyQt4.QtCore import Qt, pyqtSignal
+from PyQt4.QtGui import QWidget, QHBoxLayout, QLabel, QPixmap, QImage, QApplication
 
 
 class QImageWidget(QWidget):
-    mouse_pressed = Signal(object)
-    mouse_released = Signal(object)
+    mouse_pressed = pyqtSignal(object)
+    mouse_released = pyqtSignal(object)
     def __init__(self, max_width= None, parent=None):
         super(QImageWidget, self).__init__(parent)
         self.layout = QHBoxLayout(self)

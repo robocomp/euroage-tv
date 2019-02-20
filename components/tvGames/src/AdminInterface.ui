@@ -44,6 +44,16 @@
        <widget class="QComboBox" name="games_combobox">
         <item>
          <property name="text">
+          <string>Lavar Ropa cerca</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Lavar Ropa lejos</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>Puzzle1</string>
          </property>
         </item>

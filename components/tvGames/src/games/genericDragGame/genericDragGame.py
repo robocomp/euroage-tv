@@ -108,11 +108,11 @@ class DraggableItem(QGraphicsPixmapItem):
 			self.setPixmap(QPixmap.fromImage(self.image))
 			
 		
-	def paint(self, painter, style, widget):
-		r = self.boundingRect()
-		p = painter.pen()
-		painter.drawRect(QRect(r.x(), r.y(), r.width() - p.width(), r.height() - p.width()));
-		super(DraggableItem, self).paint(painter, style, widget)
+	# def paint(self, painter, style, widget):
+	# 	r = self.boundingRect()
+	# 	p = painter.pen()
+	# 	painter.drawRect(QRect(r.x(), r.y(), r.width() - p.width(), r.height() - p.width()));
+	# 	super(DraggableItem, self).paint(painter, style, widget)
 
 	def clone(self):
 		return DraggableItem(self.id, self.image_path, self.width, self.height, self.draggable)

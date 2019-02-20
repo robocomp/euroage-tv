@@ -8,12 +8,12 @@
 # WARNING! All changes made in this file will be lost!
 import sys
 
-from PySide.QtCore import Signal
-from PySide.QtGui import QMainWindow, QApplication
+from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtGui import QMainWindow, QApplication
 from ui_AdminInterface import Ui_AdminInterface
 
 class AdminInterface(QMainWindow, Ui_AdminInterface):
-    close_main_window = Signal()
+    close_main_window = pyqtSignal()
     def __init__(self):
         super(AdminInterface, self).__init__()
         self.setupUi(self)

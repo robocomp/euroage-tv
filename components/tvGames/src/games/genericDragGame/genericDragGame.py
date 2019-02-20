@@ -7,7 +7,7 @@ import os
 import subprocess
 import sys
 
-from PyQt4.QtCore import Qt, QTimer, QPointF, pyqtSignal, QDateTime, QEvent, QObject
+from PyQt4.QtCore import Qt, QTimer, QPointF, pyqtSignal, QDateTime, QEvent, QObject, QRect
 from PyQt4.QtGui import QApplication, QGraphicsScene, QHBoxLayout, \
 	QWidget, QGraphicsView, QPixmap, QGraphicsPixmapItem, QFont, QPainter, QImage, QGraphicsTextItem
 from numpy.random.mtrand import randint
@@ -106,6 +106,13 @@ class DraggableItem(QGraphicsPixmapItem):
 			self.setPixmap(QPixmap.fromImage(self.c_image))
 		else:
 			self.setPixmap(QPixmap.fromImage(self.image))
+			
+		
+	# def paint(self, painter, style, widget):
+	# 	r = self.boundingRect()
+	# 	p = painter.pen()
+	# 	painter.drawRect(QRect(r.x(), r.y(), r.width() - p.width(), r.height() - p.width()));
+	# 	super(DraggableItem, self).paint(painter, style, widget)
 
 	def clone(self):
 		return DraggableItem(self.id, self.image_path, self.width, self.height, self.draggable)
@@ -496,7 +503,7 @@ def main():
 	window = TakeDragGame(1920, 1080)
 	window.show()
 
-	window.init_game(os.path.join(CURRENT_PATH, 'resources/game4.json'))
+	window.init_game(os.path.join(CURRENT_PATH, 'resources/clothclean/clothgame.json'))
 
 	# It's exec_ because exec is a reserved word in Python
 	sys.exit(app.exec_())

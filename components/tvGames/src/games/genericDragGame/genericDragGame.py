@@ -6,6 +6,8 @@ import numbers
 import os
 import subprocess
 import sys
+from os import listdir
+from os.path import isfile, join
 
 from PyQt4.QtCore import Qt, QTimer, QPointF, pyqtSignal, QDateTime, QEvent, QObject, QRect
 from PyQt4.QtGui import QApplication, QGraphicsScene, QHBoxLayout, \
@@ -13,6 +15,7 @@ from PyQt4.QtGui import QApplication, QGraphicsScene, QHBoxLayout, \
 from numpy.random.mtrand import randint
 
 # Create a class for our main window
+from games.genericDragGame.ListVideoPlayer import ListVideoPlayer
 from games.genericDragGame.ClockWidget import ClockWidget
 
 try:
@@ -245,6 +248,18 @@ class TakeDragGame(QWidget):
 		self.clock_proxy.setZValue(60)
 		self.clock.timeout.connect(self.game_timeout)
 
+
+		#TODO: generalize for the game
+		#TODO: do on the game initialization
+		# mypath = "//home//robolab//robocomp//components//euroage-tv//components//tvGames//src//games//genericDragGame//resources//videos"
+		# onlyfiles = [os.path.join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+		self.video_player = ListVideoPlayer()
+		# self.video_player.set_video_list(onlyfiles)
+		self._video_proxy = self.scene.addWidget(self.video_player)
+		# self.video_player.reproduce_all()
+		self.video_player.setFixedSize(320,240)
+		self._video_proxy.setPos(1200, 100)
+
 		self.end_message = QGraphicsTextItem(u"¡Has perdido!")
 		self.end_message.hide()
 		self.end_message.setFont(QFont("Arial", 90, QFont.Bold))
@@ -333,6 +348,9 @@ class TakeDragGame(QWidget):
 
 	def show(self):
 		self.show_on_second_screen()
+		self.clock.start()
+
+	def start(self):
 		self.clock.start()
 
 	def game_timeout(self):
@@ -447,7 +465,7 @@ class TakeDragGame(QWidget):
 	def create_and_add_images(self):
 		if self.game_config is not None:
 			for image_id, item in self.game_config["images"].items():
-				image_path = os.path.join(CURRENT_PATH, item["path"])
+				image_path = os.path.join(CURRENT_PATH, item["image_path"])
 				new_image = DraggableItem(image_id, image_path, item["size"][0], item["size"][1],
 										  item["category"] == "image")
 				new_image.setPos(item["initial_pose"][0], item["initial_pose"][1])
@@ -461,9 +479,11 @@ class TakeDragGame(QWidget):
 
 	def resizeEvent(self, event):
 		# skip initial entry
+		super(TakeDragGame, self).resizeEvent(event)
+		if self.game_config is None:
+			return
 		if event.oldSize().width() < 0 or event.oldSize().height() < 0:
 			return
-		super(TakeDragGame, self).resizeEvent(event)
 		self.clock_proxy.setPos(self.view.width() - self.clock_proxy.boundingRect().width() * 1.1, 0)
 		self.end_message.setPos(self.view.width() / 2 - self.end_message.boundingRect().width() / 2,
 								self.view.height() / 2 - self.end_message.boundingRect().height() / 2)
@@ -503,7 +523,7 @@ def main():
 	window = TakeDragGame(1920, 1080)
 	window.show()
 
-	window.init_game(os.path.join(CURRENT_PATH, 'resources/clothclean/clothgame.json'))
+	window.init_game(os.path.join(CURRENT_PATH, 'resources/clothclean/clothgame_far.json'))
 
 	# It's exec_ because exec is a reserved word in Python
 	sys.exit(app.exec_())

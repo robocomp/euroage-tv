@@ -3,90 +3,95 @@
   "difficult": "100",
   "time": "200",
   "depth":{
-    "background": "0",
-    "image": "10",
+    "destination": "0",
+    "piece": "10",
     "mouse": "50"
   },
   "images": {
     "action_1": {
+      "index": 1,
       "size": [320,240],
       "initial_pose": [320,160],
       "final_pose": [250, 685],
       "image_path": "resources/clothclean/LEJOS/action_1.JPG",
       "video_path": "resources/clothclean/LEJOS/action_1.mp4",
       "name": "action_1",
-      "category": "image"
+      "category": "piece"
     },
     "action_2": {
+      "index": 2,
       "size": [320,240],
       "initial_pose": [350,160],
       "final_pose": [576,685],
       "image_path": "resources/clothclean/LEJOS/action_2.JPG",
       "video_path": "resources/clothclean/LEJOS/action_2.mp4",
       "name": "action_2",
-      "category": "image"
+      "category": "piece"
     },
     "action_3": {
+      "index": 3,
       "size": [320,240],
       "initial_pose": [190,240],
       "final_pose": [902,685],
       "image_path": "resources/clothclean/LEJOS/action_3.JPG",
       "video_path": "resources/clothclean/LEJOS/action_3.mp4",
       "name": "action_3",
-      "category": "image"
+      "category": "piece"
     },
     "action_4": {
+      "index": 4,
       "size": [320,240],
       "initial_pose": [230,170],
       "final_pose": [1228,685],
       "image_path": "resources/clothclean/LEJOS/action_4.JPG",
       "video_path": "resources/clothclean/LEJOS/action_4.mp4",
       "name": "action_4",
-      "category": "image"
+      "category": "piece"
     },
     "action_5": {
+      "index": 5,
       "size": [320,240],
       "initial_pose": [220,250],
       "final_pose": [1554,685],
       "image_path": "resources/clothclean/LEJOS/action_5.JPG",
       "video_path": "resources/clothclean/LEJOS/action_5.mp4",
       "name": "action_5",
-      "category": "image"
+      "category": "piece"
     },
     "end_pos_1": {
       "size": [200,250],
       "initial_pose": [150,560],
       "image_path": "resources/pos1.jpg",
       "name": "end_pos_1",
-      "category": "background"
+      "category": "destination"
     },
     "end_pos_2": {
       "size": [200,250],
       "initial_pose": [476,560],
       "image_path": "resources/pos2.jpg",
       "name": "end_pos_2",
-      "category": "background"
+      "category": "destination"
     },
     "end_pos_3": {
       "size": [200,250],
       "initial_pose": [802,560],
       "image_path": "resources/pos3.jpg",
       "name": "end_pos_3",
-      "category": "background"
+      "category": "destination"
     },
     "end_pos_4": {
       "size": [200,250],
       "initial_pose": [1128,560],
       "image_path": "resources/pos4.jpg",
       "name": "end_pos_4",
-      "category": "background"
+      "category": "destination"
     },
     "end_pos_5": {
       "size": [200,250],
       "initial_pose": [1454,560],
       "image_path": "resources/pos5.jpg",
       "name": "end_pos_5",
-      "category": "background"
+      "category": "destination"
     },
     "handOpen": {
       "size": [100,100],

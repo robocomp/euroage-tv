@@ -15,7 +15,7 @@ from PyQt4.QtGui import QApplication, QGraphicsScene, QHBoxLayout, \
 from numpy.random.mtrand import randint
 
 # Create a class for our main window
-from games.genericDragGame.ListVideoPlayer import ListVideoPlayer
+from games.genericDragGame.ListVideoPlayer import ActionsVideoPlayer
 from games.genericDragGame.ClockWidget import ClockWidget
 
 try:
@@ -247,17 +247,20 @@ class TakeDragGame(QWidget):
 		self.clock_proxy.setPos(self.width - self.clock_proxy.boundingRect().width(), 0)
 		self.clock_proxy.setZValue(60)
 		self.clock.timeout.connect(self.game_timeout)
+		self._pieces = []
+		self._destinations = []
+		self._already_set = []
 
 
 		#TODO: generalize for the game
 		#TODO: do on the game initialization
 		# mypath = "//home//robolab//robocomp//components//euroage-tv//components//tvGames//src//games//genericDragGame//resources//videos"
 		# onlyfiles = [os.path.join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
-		self.video_player = ListVideoPlayer()
+		self._video_player = ActionsVideoPlayer()
 		# self.video_player.set_video_list(onlyfiles)
-		self._video_proxy = self.scene.addWidget(self.video_player)
+		self._video_proxy = self.scene.addWidget(self._video_player)
 		# self.video_player.reproduce_all()
-		self.video_player.setFixedSize(320,240)
+		self._video_player.setFixedSize(320, 240)
 		self._video_proxy.setPos(1200, 100)
 
 		self.end_message = QGraphicsTextItem(u"¡Has perdido!")
@@ -290,6 +293,8 @@ class TakeDragGame(QWidget):
 		self.correct_images = 0
 		self.total_images = 0
 		self._pointers = {}
+		self._pieces = []
+		self._destinations = []
 		# load config game file
 		with open(os.path.join(CURRENT_PATH, config_file)) as file_path:
 			self.game_config = json.load(file_path)
@@ -369,6 +374,7 @@ class TakeDragGame(QWidget):
 			subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
 		self.clock.hide()
 		self.end_message.show()
+		self._video_player.hide()
 		#        self.scene.update()
 		#        time.sleep(3)
 		self.clear_scene()
@@ -392,15 +398,20 @@ class TakeDragGame(QWidget):
 		self._pointers[pointer_id].position = (xpos, ypos)
 		self._pointers[pointer_id].grabbed = grab
 
-		# The pointes is closed/grabbed
+		# The pointer is closed/grabbed
 		if self._pointers[pointer_id].grabbed:
 			# Check if something is taken by that pointer
+			# Something is taken
 			if self._pointers[pointer_id].taken is not None:
-				new_xpos = xpos - self._pointers[pointer_id].taken.boundingRect().width() / 2
-				new_ypos = ypos - self._pointers[pointer_id].taken.boundingRect().height() / 2
+				element_taken = self._pointers[pointer_id].taken
+				new_xpos = xpos - element_taken.boundingRect().width() / 2
+				new_ypos = ypos - element_taken.boundingRect().height() / 2
 
 				# Set the position of the grabbed object to the center of the new position of the pointer
-				self._pointers[pointer_id].taken.setPos(new_xpos, new_ypos)
+				element_taken.setPos(new_xpos, new_ypos)
+				if element_taken.id in self._video_player:
+					self._video_player.play_one_action(element_taken.id)
+			# Nothing taken
 			else:
 				# check if there is any items unde rthe new pointer position and if it's draggable
 				items = self.scene.items(QPointF(xpos, ypos))
@@ -416,45 +427,38 @@ class TakeDragGame(QWidget):
 				# dropping item
 				# adjust Z value
 				items = self.scene.items(QPointF(xpos, ypos))
-				zvalue = int(self.game_config["depth"]["image"])
+				zvalue = int(self.game_config["depth"]["piece"])
 				if len(items) > 1:
 					# set the z value over any background image
 					zvalue = zvalue + len(items) * 2
 				self._pointers[pointer_id].taken.setZValue(zvalue)
 				# check correct position
-				xdistance = (self._pointers[pointer_id].taken.scenePos().x() + self._pointers[pointer_id].taken.width / 2) - \
-							self._pointers[pointer_id].taken.final_pose_x
-				ydistance = (self._pointers[pointer_id].taken.scenePos().y() + self._pointers[pointer_id].taken.height / 2) - \
-							self._pointers[pointer_id].taken.final_pose_y
-				distance = math.sqrt(pow(xdistance, 2) + pow(ydistance, 2))
-				# If the distance to the correct position is less that a configured threshold
-				if distance < int(self.game_config["difficult"]):
-					# Adjust the position of the taken object to the exact correcto one
-					new_xpos = self._pointers[pointer_id].taken.final_pose_x - self._pointers[pointer_id].taken.width / 2
-					new_ypos = self._pointers[pointer_id].taken.final_pose_y - self._pointers[pointer_id].taken.height / 2
-					self._pointers[pointer_id].taken.setPos(new_xpos, new_ypos)
-					# Set the overlay of the "right" sign over the object
-					self._pointers[pointer_id].taken.set_overlay(True)
+				self.adjust_to_nearest_destination(pointer_id)
 
-					# Uodate the data of the object to avoid to be taken
-					if not self._pointers[pointer_id].taken.correct_position:
-						self._pointers[pointer_id].taken.correct_position = True
-						self._pointers[pointer_id].taken.draggable = False
-						self.correct_images = self.correct_images + 1
-					# Check if game is ended and if a string is "talked"
-					index = randint(0, len(CONGRAT_STRING))
-					if self.correct_images == self.total_images:
-						self.end_game(True)
-					elif index <= len(CONGRAT_STRING):
-						text = CONGRAT_STRING[index]
-						# print("Speeching: %s"%(SPEECH_COMMAND+text))
-						subprocess.Popen(SPEECH_COMMAND + "\"" + text + "\"", stdout=DEVNULL, shell=True)
-				else:
-					if self._pointers[pointer_id].taken.correct_position:
-						self._pointers[pointer_id].taken.correct_position = False
-						self.correct_images = self.correct_images - 1
-					self._pointers[pointer_id].taken.set_overlay(False)
+				# TODO: REMOVE individual pieces check and anchoring
+			# 	# Set the overlay of the "right" sign over the object
+			# 	self._pointers[pointer_id].taken.set_overlay(True)
+			#
+			# 	# Update the data of the object to avoid to be taken
+			# 	if not self._pointers[pointer_id].taken.correct_position:
+			# 		self._pointers[pointer_id].taken.correct_position = True
+			# 		self._pointers[pointer_id].taken.draggable = False
+			# 		self.correct_images = self.correct_images + 1
+			# 	# Check if game is ended and if a string is "talked"
+			# 	index = randint(0, len(CONGRAT_STRING))
+			# 	if self.correct_images == self.total_images:
+			# 		self.end_game(True)
+			# 	elif index <= len(CONGRAT_STRING):
+			# 		text = CONGRAT_STRING[index]
+			# 		# print("Speeching: %s"%(SPEECH_COMMAND+text))
+			# 		subprocess.Popen(SPEECH_COMMAND + "\"" + text + "\"", stdout=DEVNULL, shell=True)
+			# else:
+				if self._pointers[pointer_id].taken.correct_position:
+					self._pointers[pointer_id].taken.correct_position = False
+					self.correct_images = self.correct_images - 1
+				# self._pointers[pointer_id].taken.set_overlay(False)
 				self._pointers[pointer_id].taken = None
+				self._video_player.stop()
 
 		# self.game_config["images"]["handOpen"]["widget"].show()
 		# self.game_config["images"]["handClose"]["widget"].hide()
@@ -462,20 +466,53 @@ class TakeDragGame(QWidget):
 	# self.game_config["images"]["handOpen"]["widget"].setPos(new_xpos, new_ypos)
 	# self.game_config["images"]["handClose"]["widget"].setPos(new_xpos, new_ypos)
 
+	def adjust_to_nearest_destination(self, pointer_id):
+		lowest_distance = sys.maxint
+		nearest_dest = None
+		for dest in self._destinations:
+			xdistance = (self._pointers[pointer_id].taken.scenePos().x() + self._pointers[pointer_id].taken.width / 2.) - \
+						(dest["initial_pose"][0]+ dest["size"][0]/2.)
+			ydistance = (self._pointers[pointer_id].taken.scenePos().y() + self._pointers[pointer_id].taken.height / 2.) - \
+						(dest["initial_pose"][1] + dest["size"][1]/2.)
+			distance = math.sqrt(pow(xdistance, 2) + pow(ydistance, 2))
+			if distance < lowest_distance:
+				lowest_distance = distance
+				nearest_dest = dest
+
+		# If the distance to the correct position is less that a configured threshold
+		if nearest_dest is not None and lowest_distance < int(self.game_config["difficult"]):
+			# Adjust the position of the taken object to the exact correct one
+			widths_diff = (self._pointers[pointer_id].taken.width -dest["size"][0])/2
+			heights_diff = (self._pointers[pointer_id].taken.height- dest["size"][1]) / 2
+			new_xpos = nearest_dest["initial_pose"][0] - widths_diff
+			new_ypos = nearest_dest["initial_pose"][1] - heights_diff
+			self._pointers[pointer_id].taken.setPos(new_xpos, new_ypos)
+
 	def create_and_add_images(self):
 		if self.game_config is not None:
 			for image_id, item in self.game_config["images"].items():
 				image_path = os.path.join(CURRENT_PATH, item["image_path"])
+				if "video_path" in item:
+					clip_path = os.path.join(CURRENT_PATH, item["video_path"])
+					if "index" in item:
+						action_index = item["index"]
+					else:
+						action_index = -1
+					self._video_player.add_action(image_id, clip_path, action_index)
+
 				new_image = DraggableItem(image_id, image_path, item["size"][0], item["size"][1],
-										  item["category"] == "image")
+										  item["category"] == "piece")
 				new_image.setPos(item["initial_pose"][0], item["initial_pose"][1])
 				new_image.setZValue(int(self.game_config["depth"][item["category"]]))
 				self.game_config["images"][image_id]["widget"] = new_image
 				if item["category"] != "mouse":
 					self.scene.addItem(new_image)
-				if item["category"] == "image":
+				if item["category"] == "piece":
 					new_image.set_final_pose(item["final_pose"][0], item["final_pose"][1])
+					self._pieces.append(item)
 					self.total_images = self.total_images + 1
+				if item["category"] == "destination":
+					self._destinations.append(item)
 
 	def resizeEvent(self, event):
 		# skip initial entry

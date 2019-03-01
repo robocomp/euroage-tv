@@ -1,6 +1,8 @@
+import errno
 import os
 from PyQt4 import QtGui
 from collections import OrderedDict
+from ptyprocess.ptyprocess import FileNotFoundError
 
 from PyQt4.QtGui import QFrame, QVBoxLayout
 from PyQt4.phonon import Phonon
@@ -27,7 +29,7 @@ class ListVideoPlayer(QtGui.QWidget):
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._frame_layout.setContentsMargins(4,4,4,4)
         self._frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-        self._video_list =
+        self._video_list = []
         self._played_videos = 0
         self.audio.setVolume(50)
         self.media.stateChanged.connect(self.handle_state_changed)
@@ -63,8 +65,11 @@ class ListVideoPlayer(QtGui.QWidget):
     def add_path_to_video_list(self,video_path):
         if os.path.exists(video_path):
             self._video_list.append(video_path)
+            return len(self._video_list)-1
         else:
-            print("Path of file not found %s", video_path)
+            raise FileNotFoundError( errno.ENOENT, os.strerror(errno.ENOENT), video_path)
+            return -1
+
 
     def play_indexes_list(self, video_indexes):
         self._reproduce_multiple = True
@@ -83,23 +88,43 @@ class ListVideoPlayer(QtGui.QWidget):
             print("Video index out of video list (%d of %d)"%(len(video_index, len(self._video_list))))
 
 class ActionsVideoPlayer(ListVideoPlayer):
-    def __init__(self):
+    def __init__(self, parent = None):
+        super(ActionsVideoPlayer, self).__init__(parent)
         self._actions_list = OrderedDict()
         # index from index number of actions to action keys (names)
         self._index_to_key = {}
+        self._index_to_playlist = {}
+        self._currently_playing = []
 
     def add_action(self, action_key, clip_path, action_index=-1):
         if action_index <0:
             next_index = len(self._actions_list)
-            self._actions_list[action_key] = {"index": next_index, "clip_path":clip_path}
-            self._index_to_key[next_index] = action_key
         else:
             if action_index not in self._index_to_key.keys():
-                self._actions_list[action_key] = {"index": action_index, "clip_path": clip_path}
-                self._index_to_key[action_index] = action_key
+                next_index = action_index
             else:
-                raise IndexError("Trying to use already existing index %d for action '%s'"%(action_index,action_key))
-        self.add_path_to_video_list(clip_path)
+                raise IndexError("Trying to use already existing index %d for action '%s'" % (action_index, action_key))
+
+        self._actions_list[action_key] = {"index": next_index, "clip_path":clip_path}
+        # save the action name by index
+        self._index_to_key[next_index] = action_key
+        # save the index in the playlist
+        self._index_to_playlist[action_key] = self.add_path_to_video_list(clip_path)
+
+    def play_one_action(self, action_key):
+        self.video.show()
+        play_list_index = self._index_to_playlist[action_key]
+        if [play_list_index] != self._currently_playing or self.media.state() != Phonon.PlayingState:
+            self.play_indexes_list([play_list_index])
+            self._currently_playing = [play_list_index]
+
+    def stop(self):
+        self.media.stop()
+        self.media.clear()
+
+    def __contains__(self, key):
+        return key in self._actions_list.keys()
+
 
 
 if __name__ == '__main__':

@@ -9,13 +9,14 @@ import sys
 from os import listdir
 from os.path import isfile, join
 
-from PyQt4.QtCore import Qt, QTimer, QPointF, pyqtSignal, QDateTime, QEvent, QObject, QRect
-from PyQt4.QtGui import QApplication, QGraphicsScene, QHBoxLayout, \
-	QWidget, QGraphicsView, QPixmap, QGraphicsPixmapItem, QFont, QPainter, QImage, QGraphicsTextItem
+from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize
+from PySide2.QtGui import QImage, QPixmap, QPainter, QFont
+from PySide2.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QWidget, QHBoxLayout, QGraphicsView, \
+	QGraphicsTextItem, QApplication, QGridLayout
 from numpy.random.mtrand import randint
 
 # Create a class for our main window
-from games.genericDragGame.ListVideoPlayer import ActionsVideoPlayer
+from games.genericDragGame.QGraphicsVideoListItem import ActionsVideoPlayer
 from games.genericDragGame.ClockWidget import ClockWidget
 
 try:
@@ -34,9 +35,46 @@ LOST_SOUNDS = ["resources/sounds/sad1.mp3", "resources/sounds/sad2-2.mp3"]
 SPEECH_COMMAND = "gtts es "
 
 
+class GameTopBarWidget(QWidget):
+	def __init__(self, parent = None):
+		super(GameTopBarWidget, self).__init__(parent)
+		self._main_layout = QHBoxLayout()
+		self.setLayout(self._main_layout)
+		self._clock = ClockWidget()
+		self._main_layout.addWidget(self._clock)
+
+class GameWidget(QWidget):
+	def __init__(self, parent = None):
+		super(GameWidget, self).__init__(parent)
+		self._main_layout = QGridLayout()
+		self.setLayout(self._main_layout)
+		self.setContentsMargins(0, 0, 0, 0)
+		self._main_layout.setContentsMargins(0, 0, 0, 0)
+		
+		self._top_bar = GameTopBarWidget()
+		self._main_layout.addWidget(self._top_bar,0,20)
+		self._game_frame = TakeDragGame(1920, 1080)
+		self._game_frame.init_game(os.path.join(CURRENT_PATH, 'resources/final_game1/final_game1.json'))
+		self._main_layout.addWidget(self._game_frame, 1,20)
+
+
+
+
+	def show_on_second_screen(self):
+		desktop_widget = QApplication.desktop()
+		if desktop_widget.screenCount() > 1:
+			# TODO: set 1 to production
+			second_screen_size = desktop_widget.screenGeometry(1)
+			self.move(second_screen_size.left(), second_screen_size.top())
+			# self.resize(second_screen_size.width(), second_screen_size.height())
+			self.showFullScreen()
+		
+
+
+
 # Reimplemented QGraphicScene to catch mouse movements for testing porposes
 class MyQGraphicsScene(QGraphicsScene):
-	moved = pyqtSignal(int, int, int, bool)
+	moved = Signal(int, int, int, bool)
 
 	def mousePressEvent(self, event):
 		self.moved.emit(-1, event.scenePos().x(), event.scenePos().y(), event.buttons() == Qt.LeftButton)
@@ -218,7 +256,7 @@ class Pointer(QObject):
 
 
 class TakeDragGame(QWidget):
-	touch_signal = pyqtSignal(list)
+	touch_signal = Signal(list)
 	def __init__(self, width=1920, height=1080, parent=None):
 		super(TakeDragGame, self).__init__(parent)
 		# ui
@@ -257,11 +295,22 @@ class TakeDragGame(QWidget):
 		# mypath = "//home//robolab//robocomp//components//euroage-tv//components//tvGames//src//games//genericDragGame//resources//videos"
 		# onlyfiles = [os.path.join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 		self._video_player = ActionsVideoPlayer()
+		# self._video_player.show()
 		# self.video_player.set_video_list(onlyfiles)
-		self._video_proxy = self.scene.addWidget(self._video_player)
+		#TODO: Problem with QVideoWidget and QGraphicScene  https://forum.qt.io/topic/100437/problem-with-qgraphicsscene-and-qvideowidget-in-qt5-python2-pyside2
+		self.scene.addItem(self._video_player)
 		# self.video_player.reproduce_all()
-		self._video_player.setFixedSize(320, 240)
-		self._video_proxy.setPos(1200, 100)
+
+		self._video_player.setSize(QSize(320, 240))
+		# TODO: Problem with QVideoWidget and QGraphicScene  https://forum.qt.io/topic/100437/problem-with-qgraphicsscene-and-qvideowidget-in-qt5-python2-pyside2
+		self._video_player.setPos(1200, 100)
+		desktop_widget = QApplication.desktop()
+		# if desktop_widget.screenCount() > 1:
+		# 	second_screen_size = desktop_widget.screenGeometry(1)
+		# 	self._video_player.move(second_screen_size.left()+1200, 200)
+		# else:
+		# 	self._video_player.move(1200, 200)
+		# self._video_player.show()
 
 		self.end_message = QGraphicsTextItem(u"¡Has perdido!")
 		self.end_message.hide()
@@ -288,6 +337,7 @@ class TakeDragGame(QWidget):
 
 	def init_game(self, config_file='resources/game1.json'):
 		self.clear_scene()
+		self._video_player.clear()
 		self.game_config = None
 		self.grabbed = None
 		self.correct_images = 0
@@ -547,6 +597,7 @@ class TakeDragGame(QWidget):
 	def show_on_second_screen(self):
 		desktop_widget = QApplication.desktop()
 		if desktop_widget.screenCount() > 1:
+			# TODO: set 1 to production
 			second_screen_size = desktop_widget.screenGeometry(1)
 			self.move(second_screen_size.left(), second_screen_size.top())
 			# self.resize(second_screen_size.width(), second_screen_size.height())
@@ -557,10 +608,12 @@ def main():
 	# Again, this is boilerplate, it's going to be the same on
 	# almost every app you write
 	app = QApplication(sys.argv)
-	window = TakeDragGame(1920, 1080)
-	window.show()
+	main_widget = GameWidget()
+	main_widget.show_on_second_screen()
+	# window = TakeDragGame(1920, 1080)
+	# window.show()
 
-	window.init_game(os.path.join(CURRENT_PATH, 'resources/clothclean/clothgame_far.json'))
+
 
 	# It's exec_ because exec is a reserved word in Python
 	sys.exit(app.exec_())

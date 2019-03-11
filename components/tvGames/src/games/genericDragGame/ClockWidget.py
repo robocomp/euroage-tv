@@ -1,11 +1,12 @@
 import sys
 
-from PyQt4.QtCore import QDateTime, pyqtSignal, QTimer
-from PyQt4.QtGui import QFont, QGraphicsTextItem, QApplication, QLabel
+from PySide2.QtCore import Signal, QTimer, QDateTime
+from PySide2.QtGui import QFont
+from PySide2.QtWidgets import QLabel, QApplication
 
 
 class ClockWidget(QLabel):
-	timeout = pyqtSignal()
+	timeout = Signal()
 
 	def __init__(self, parent=None):
 		super(ClockWidget, self).__init__("00:00", parent)

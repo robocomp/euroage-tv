@@ -23,8 +23,7 @@ import traceback
 import cv2
 import imutils
 import numpy as np
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication
+from PySide2.QtCore import Slot, Qt
 
 from games.genericDragGame.genericDragGame import TakeDragGame
 from games.PaintGame.PaintGame import PaintGame
@@ -51,8 +50,8 @@ class SpecificWorker(GenericWorker):
 		self.hands = []
 		self.font = cv2.FONT_HERSHEY_SIMPLEX
 		self.current_state = "calibrating"
-		self.login_widget = QLoginWidget()
-		self.login_widget.login_executed.connect(self.login_executed)
+		# self.login_widget = QLoginWidget()
+		# self.login_widget.login_executed.connect(self.login_executed)
 		self.admin_interface = AdminInterface()
 		self.admin_interface.add_player_button.clicked.connect(self.add_new_player)
 		self.admin_interface.remove_player_button.clicked.connect(self.remove_player)
@@ -91,9 +90,9 @@ class SpecificWorker(GenericWorker):
 		# self._game.show()
 		self._available_games = {
 			u"Lavar Ropa cerca":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame_near.json"],
-			u"Lavar Ropa lejos":
 				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame_far.json"],
+			u"Lavar Ropa lejos":
+				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame_near.json"],
 			u"Painting":
 				["PaintGame(self.screen_1_height, self.screen_1_width)", ""],
 			u"Puzzle1":

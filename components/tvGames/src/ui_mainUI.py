@@ -6,8 +6,9 @@
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
+from PySide2.QtCore import QMetaObject, QCoreApplication
+from PySide2.QtWidgets import QApplication
 
-from PySide import QtCore, QtGui
 
 class Ui_guiDlg(object):
     def setupUi(self, guiDlg):
@@ -15,8 +16,8 @@ class Ui_guiDlg(object):
         guiDlg.resize(400, 300)
 
         self.retranslateUi(guiDlg)
-        QtCore.QMetaObject.connectSlotsByName(guiDlg)
+        QMetaObject.connectSlotsByName(guiDlg)
 
     def retranslateUi(self, guiDlg):
-        guiDlg.setWindowTitle(QtGui.QApplication.translate("guiDlg", "tvgames", None, QtGui.QApplication.UnicodeUTF8))
+        guiDlg.setWindowTitle(QApplication.translate("guiDlg", "tvgames", None))
 

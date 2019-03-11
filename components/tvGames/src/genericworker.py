@@ -17,7 +17,10 @@
 #    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, Ice, os
-from PySide import QtGui, QtCore
+
+from PySide2.QtCore import QMutex, QTimer, SIGNAL
+from PySide2.QtWidgets import QWidget
+from PySide2 import QtCore
 
 ROBOCOMP = ''
 try:
@@ -157,12 +160,13 @@ from tvgamesI import *
 
 try:
 	from ui_mainUI import *
-except:
+except Exception as e:
 	print "Can't import UI file. Did you run 'make'?"
+	print e
 	sys.exit(-1)
 
 
-class GenericWorker(QtGui.QWidget):
+class GenericWorker(QWidget):
 	kill = QtCore.Signal()
 
 
@@ -180,9 +184,9 @@ class GenericWorker(QtGui.QWidget):
 		self.show()
 
 
-		self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
+		self.mutex = QMutex(QMutex.Recursive)
 		self.Period = 30
-		self.timer = QtCore.QTimer(self)
+		self.timer = QTimer(self)
 
 
 	@QtCore.Slot()

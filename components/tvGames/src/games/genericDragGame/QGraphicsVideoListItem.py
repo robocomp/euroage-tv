@@ -6,41 +6,28 @@ from ptyprocess.ptyprocess import FileNotFoundError
 
 from PySide2.QtCore import QUrl, Qt
 from PySide2.QtMultimedia import QMediaPlayer, QMediaPlaylist, QMediaContent
-from PySide2.QtMultimediaWidgets import QVideoWidget
+from PySide2.QtMultimediaWidgets import QVideoWidget, QGraphicsVideoItem
 from PySide2.QtWidgets import QVBoxLayout, QFrame, QWidget, QApplication, QLabel
 
 
-class ListVideoPlayer(QWidget):
+class ListVideoPlayer(QGraphicsVideoItem):
     def __init__(self, graphic_item = False, parent=None):
         super(ListVideoPlayer, self).__init__(parent=parent)
-        self._frame = QFrame()
 
-        self._media_player = QMediaPlayer(self)
-        self._video_widget = QVideoWidget(self._frame)
+        self._media_player = QMediaPlayer()
+        self._video_widget = QGraphicsVideoItem()
         self._current_play_list = QMediaPlaylist()
-        self._media_player.setVideoOutput(self._video_widget)
+        self._media_player.setVideoOutput(self)
         self._media_player.setPlaylist(self._current_play_list)
-        self._frame_layout = QVBoxLayout()
 
-        self._frame.setLayout(self._frame_layout)
-        self._frame_layout.addWidget(self._video_widget)
+
+
+
         self._full_media_list = []
-        # self.audio = Phonon.AudioOutput(Phonon.VideoCategory, self)
-        # Phonon.createPath(self.media, self.audio)
-        # Phonon.createPath(self.media, self.video)
-        self._main_layout = QVBoxLayout(self)
-        self._main_layout.addWidget(self._frame, 1)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
-        self._frame_layout.setContentsMargins(4,4,4,4)
-        self._frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-        self.setLayout(self._main_layout)
-        self.setMaximumSize(640,480)
-        print  self.sizeHint()
-        print  self._frame.sizeHint()
         # self._played_videos = 0
-        # # self.audio.setVolume(50)
+
         self._media_player.stateChanged.connect(self.handle_state_changed)
-        # self._reproduce_multiple = False
+
 
     # def handleButton(self):
     #     if self._media_player.state() == QMediaPlayer.PlayingState:
@@ -99,8 +86,7 @@ class ActionsVideoPlayer(ListVideoPlayer):
         self._index_to_key = {}
         self._index_to_playlist = {}
         self._currently_playing = []
-        # TODO: Only needed becuase the problem with QVideoWidget and QGraphicScene
-        self.setWindowFlags(Qt.WindowStaysOnTopHint| Qt.FramelessWindowHint)
+
 
 
     def add_action(self, action_key, clip_path, action_index=-1):

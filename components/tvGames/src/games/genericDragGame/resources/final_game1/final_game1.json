@@ -1,0 +1,131 @@
+{
+  "size":[1900, 1070],
+  "difficult": "100",
+  "time": "200",
+  "depth":{
+    "destination": "0",
+    "piece": "10",
+    "mouse": "50"
+  },
+  "images": {
+    "action_1": {
+      "index": 1,
+      "size": [320,240],
+      "initial_pose": [320,160],
+      "final_pose": [250, 685],
+      "image_path": "resources/final_game1/photos/action_1.jpg",
+      "video_path": "resources/final_game1/videos/action_1.MP4",
+      "name": "action_1",
+      "category": "piece"
+    },
+    "action_2": {
+      "index": 2,
+      "size": [320,240],
+      "initial_pose": [350,160],
+      "final_pose": [576,685],
+      "image_path": "resources/final_game1/photos/action_2.jpg",
+      "video_path": "resources/final_game1/videos/action_2.MP4",
+      "name": "action_2",
+      "category": "piece"
+    },
+    "action_3": {
+      "index": 3,
+      "size": [320,240],
+      "initial_pose": [190,240],
+      "final_pose": [902,685],
+      "image_path": "resources/final_game1/photos/action_3.jpg",
+      "video_path": "resources/final_game1/videos/action_3.MP4",
+      "name": "action_3",
+      "category": "piece"
+    },
+    "action_4": {
+      "index": 4,
+      "size": [320,240],
+      "initial_pose": [230,170],
+      "final_pose": [1228,685],
+      "image_path": "resources/final_game1/photos/action_4.jpg",
+      "video_path": "resources/final_game1/videos/action_4.MP4",
+      "name": "action_4",
+      "category": "piece"
+    },
+    "action_5": {
+      "index": 5,
+      "size": [320,240],
+      "initial_pose": [220,250],
+      "final_pose": [1554,685],
+      "image_path": "resources/final_game1/photos/action_5.jpg",
+      "video_path": "resources/final_game1/videos/action_5.MP4",
+      "name": "action_5",
+      "category": "piece"
+    },
+    "action_6": {
+      "index": 6,
+      "size": [320,240],
+      "initial_pose": [220,250],
+      "final_pose": [1554,685],
+      "image_path": "resources/final_game1/photos/action_6.jpg",
+      "video_path": "resources/final_game1/videos/action_6.MP4",
+      "name": "action_6",
+      "category": "piece"
+    },
+    "action_7": {
+      "index": 7,
+      "size": [320,240],
+      "initial_pose": [220,250],
+      "final_pose": [1554,685],
+      "image_path": "resources/final_game1/photos/action_7.jpg",
+      "video_path": "resources/final_game1/videos/action_7.MP4",
+      "name": "action_7",
+      "category": "piece"
+    },
+    "end_pos_1": {
+      "size": [200,250],
+      "initial_pose": [150,560],
+      "image_path": "resources/pos1.jpg",
+      "name": "end_pos_1",
+      "category": "destination"
+    },
+    "end_pos_2": {
+      "size": [200,250],
+      "initial_pose": [476,560],
+      "image_path": "resources/pos2.jpg",
+      "name": "end_pos_2",
+      "category": "destination"
+    },
+    "end_pos_3": {
+      "size": [200,250],
+      "initial_pose": [802,560],
+      "image_path": "resources/pos3.jpg",
+      "name": "end_pos_3",
+      "category": "destination"
+    },
+    "end_pos_4": {
+      "size": [200,250],
+      "initial_pose": [1128,560],
+      "image_path": "resources/pos4.jpg",
+      "name": "end_pos_4",
+      "category": "destination"
+    },
+    "end_pos_5": {
+      "size": [200,250],
+      "initial_pose": [1454,560],
+      "image_path": "resources/pos5.jpg",
+      "name": "end_pos_5",
+      "category": "destination"
+    },
+    "handOpen": {
+      "size": [100,100],
+      "initial_pose": [400,300],
+      "image_path": "resources/00-Pointer-Hand-icon_2.png",
+      "name": "handOpen",
+      "category": "mouse"
+    },
+    "handClose": {
+      "size": [100,100],
+      "initial_pose": [400,300],
+      "image_path": "resources/01-Pointer-Hand-icon_2.png",
+      "name": "handClose",
+      "category": "mouse"
+    }
+  }
+}

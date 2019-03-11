@@ -8,12 +8,12 @@
 # WARNING! All changes made in this file will be lost!
 import sys
 
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QMainWindow, QApplication
+from PySide2.QtCore import Signal
+from PySide2.QtWidgets import QMainWindow, QApplication
 from ui_AdminInterface import Ui_AdminInterface
 
 class AdminInterface(QMainWindow, Ui_AdminInterface):
-    close_main_window = pyqtSignal()
+    close_main_window = speak = Signal(str)
     def __init__(self):
         super(AdminInterface, self).__init__()
         self.setupUi(self)

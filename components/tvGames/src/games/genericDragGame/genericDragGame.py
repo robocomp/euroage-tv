@@ -9,10 +9,10 @@ import sys
 from os import listdir
 from os.path import isfile, join
 
-from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize
-from PySide2.QtGui import QImage, QPixmap, QPainter, QFont
+from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize, QRectF
+from PySide2.QtGui import QImage, QPixmap, QPainter, QFont, QPen, QBrush, QColor
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QWidget, QHBoxLayout, QGraphicsView, \
-	QGraphicsTextItem, QApplication, QGridLayout
+	QGraphicsTextItem, QApplication, QGridLayout, QLabel
 from numpy.random.mtrand import randint
 
 # Create a class for our main window
@@ -34,6 +34,7 @@ WINNING_SOUNDS = ["resources/sounds/happy1.mp3", "resources/sounds/happy2.mp3"]
 LOST_SOUNDS = ["resources/sounds/sad1.mp3", "resources/sounds/sad2-2.mp3"]
 SPEECH_COMMAND = "gtts es "
 
+GREEN_TITTLE_COLOR = "#91C69A"
 
 class GameTopBarWidget(QWidget):
 	def __init__(self, parent = None):
@@ -43,6 +44,70 @@ class GameTopBarWidget(QWidget):
 		self._clock = ClockWidget()
 		self._main_layout.addWidget(self._clock)
 
+
+class BullseyeWidget(QWidget):
+	def __init__(self, color = QColor(GREEN_TITTLE_COLOR), out_color = None, parent=None):
+		self._color = color
+		if out_color is None:
+			self._out_color = self._color.dark(150)
+		else:
+			self._out_color = out_color
+		super(BullseyeWidget, self).__init__(parent)
+
+
+	def paintEvent(self, event):
+		inital_rect = self.rect()
+		diameter = min(inital_rect.width(), inital_rect.height())
+		painter = QPainter(self)
+		painter.save()
+		color_pen = QPen(self._color)
+		outer_pen = QPen(self._out_color)
+		outer_pen.setWidth(3)
+		painter.setPen(outer_pen)
+		color_brush = QBrush(self._color)
+		painter.setBrush(color_brush)
+		painter.drawEllipse(QRectF(0,0,diameter, diameter))
+
+		new_diameter = diameter/1.4
+		white_pen = QPen(Qt.white)
+		painter.setPen(white_pen)
+		white_brush = QBrush(Qt.white)
+		painter.setBrush(white_brush)
+		painter.drawEllipse(QRectF((diameter-new_diameter)/2,(diameter-new_diameter)/2,new_diameter,new_diameter))
+
+		new_diameter = new_diameter / 1.4
+		painter.setBrush(color_brush)
+		painter.setPen(color_pen)
+		painter.drawEllipse(QRectF((diameter - new_diameter) / 2, (diameter - new_diameter) / 2, new_diameter, new_diameter))
+
+		new_diameter = new_diameter / 2
+		painter.setBrush(white_brush)
+		painter.setPen(white_pen)
+		painter.drawEllipse(QRectF((diameter - new_diameter) / 2, (diameter - new_diameter) / 2, new_diameter, new_diameter))
+		painter.restore()
+		super(BullseyeWidget, self).paintEvent(event)
+
+
+class GameNameWidget(QWidget):
+	def __init__(self, text, size = 30, parent= None):
+		super(GameNameWidget, self).__init__(parent)
+		self._main_layout = QHBoxLayout()
+		self.setLayout(self._main_layout)
+		self._bulleyeicon = BullseyeWidget()
+		self._bulleyeicon.setMinimumSize(50, 50)
+		self._label = QLabel(text)
+		la_font = QFont("Times", size)
+		self._label.setFont(la_font)
+		self._label.setStyleSheet("border-radius: 12px; background: #91C69A; color: black;")
+		self._label.setContentsMargins(10,0,10,0)
+		self._main_layout.addWidget(self._bulleyeicon)
+		self._main_layout.addWidget(self._label)
+		self.setMinimumHeight(50)
+		self.setContentsMargins(0,0,0,0)
+		self._main_layout.setContentsMargins(0,0,0,0)
+
+
+
 class GameWidget(QWidget):
 	def __init__(self, parent = None):
 		super(GameWidget, self).__init__(parent)
@@ -50,7 +115,7 @@ class GameWidget(QWidget):
 		self.setLayout(self._main_layout)
 		self.setContentsMargins(0, 0, 0, 0)
 		self._main_layout.setContentsMargins(0, 0, 0, 0)
-		
+
 		self._top_bar = GameTopBarWidget()
 		self._main_layout.addWidget(self._top_bar,0,20)
 		self._game_frame = TakeDragGame(1920, 1080)
@@ -241,17 +306,6 @@ class Pointer(QObject):
 
 	def stop(self):
 		self._lost_timer.stop()
-
-
-	# @property
-	# def lost_ticks(self):
-	# 	return self._lost_ticks
-	#
-	# @lost_ticks.setter
-	# def lost_ticks(self, new_value):
-	# 	assert (isinstance(new_value,
-	# 					   int)), "Pointer.lost_ticks must be of QGraphicsPixmapItem derivated"
-	# 	self._lost_ticks = new_value
 
 
 
@@ -608,8 +662,11 @@ def main():
 	# Again, this is boilerplate, it's going to be the same on
 	# almost every app you write
 	app = QApplication(sys.argv)
-	main_widget = GameWidget()
-	main_widget.show_on_second_screen()
+	the_label = GameNameWidget("Ordena la secuencia")
+	the_label.show()
+
+	# main_widget = GameWidget()
+	# main_widget.show_on_second_screen()
 	# window = TakeDragGame(1920, 1080)
 	# window.show()
 

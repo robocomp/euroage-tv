@@ -42,7 +42,11 @@ class GameTopBarWidget(QWidget):
 		self._main_layout = QHBoxLayout()
 		self.setLayout(self._main_layout)
 		self._clock = ClockWidget()
+		self._game_name_label = GameNameWidget("El nombre del juego")
+		self._main_layout.addWidget(self._game_name_label)
+		self._main_layout.addStretch()
 		self._main_layout.addWidget(self._clock)
+
 
 
 class BullseyeWidget(QWidget):
@@ -94,7 +98,6 @@ class GameNameWidget(QWidget):
 		self._main_layout = QHBoxLayout()
 		self.setLayout(self._main_layout)
 		self._bulleyeicon = BullseyeWidget()
-		self._bulleyeicon.setMinimumSize(50, 50)
 		self._label = QLabel(text)
 		la_font = QFont("Times", size)
 		self._label.setFont(la_font)
@@ -102,9 +105,12 @@ class GameNameWidget(QWidget):
 		self._label.setContentsMargins(10,0,10,0)
 		self._main_layout.addWidget(self._bulleyeicon)
 		self._main_layout.addWidget(self._label)
-		self.setMinimumHeight(50)
 		self.setContentsMargins(0,0,0,0)
 		self._main_layout.setContentsMargins(0,0,0,0)
+
+	def resizeEvent(self, event):
+		self._bulleyeicon.setMinimumSize(self.height()-2, self.height()-2)
+		super(GameNameWidget, self).resizeEvent(event)
 
 
 
@@ -662,7 +668,7 @@ def main():
 	# Again, this is boilerplate, it's going to be the same on
 	# almost every app you write
 	app = QApplication(sys.argv)
-	the_label = GameNameWidget("Ordena la secuencia")
+	the_label = GameWidget()
 	the_label.show()
 
 	# main_widget = GameWidget()

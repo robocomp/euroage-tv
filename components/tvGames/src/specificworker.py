@@ -205,7 +205,7 @@ class SpecificWorker(GenericWorker):
 				depth_gray_image = depth.reshape(480, 640)
 			except Ice.Exception, e:
 				traceback.print_exc()
-				print e
+				print (e)
 				return False
 			depth_gray_image = cv2.flip(depth_gray_image, 0)
 			color_image = cv2.flip(color_image, 0)

@@ -4,12 +4,15 @@ import json
 import os
 import signal
 import sys
+from passlib.hash import pbkdf2_sha256
 from pprint import pprint
 
 import passwordmeter
-from PyQt4.QtCore import QObject, pyqtSignal, pyqtWrapperType
-from PyQt4.QtGui import QWidget, QLabel, QGroupBox, QPushButton, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication
-from passlib.hash import pbkdf2_sha256
+from PySide2.QtCore import QObject, Signal, QFile
+from PySide2.QtUiTools import QUiLoader
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication
+
+from admin_widgets import LoginWindow, RegisterWindow
 
 FILE_PATH = os.path.abspath(__file__)
 print(FILE_PATH)
@@ -43,7 +46,7 @@ class DDBBStatus:
     disconneted = 2
 
 
-class Singleton(pyqtWrapperType, type):
+class Singleton(type(QObject), type):
     def __init__(cls, name, bases, dict):
         super(Singleton, cls).__init__(name, bases, dict)
         cls.instance = None
@@ -57,7 +60,7 @@ class Singleton(pyqtWrapperType, type):
 class QUserManager(QObject):
     __metaclass__ = Singleton
 
-    status_changed = pyqtSignal(str)
+    status_changed = Signal(str)
 
     def __init__(self, parent=None, **kwargs):
         super(QUserManager, self).__init__(parent, **kwargs)
@@ -71,6 +74,7 @@ class QUserManager(QObject):
     # 		if os.path.isfile(DATABASE_PATH):
     # 			self.open_ddbb()
     # 		else:
+    # 			self.status_changed.emit("[!]Creating DDBB file.")
     # 			self.status_changed.emit("[!]Creating DDBB file.")
     # 			try:
     # 				conn = sqlite3.connect(DATABASE_PATH)
@@ -113,11 +117,13 @@ class QUserManager(QObject):
 
     def load_users(self):
         with open(USERS_FILE_PATH) as f:
+            print ("[INFO] Loading users ...")
             self.users_data = json.load(f)
 
         pprint(self.users_data)
 
     def check_user_password(self, username, password_to_check):
+        print ("[INFO] Checking password ...")
         if len(self.users_data) > 0:
             with open(SHADOWS_FILE_PATH) as f:
                 stored_passwords = json.load(f)
@@ -141,8 +147,9 @@ class QUserManager(QObject):
             return False
 
     def set_username_password(self, username, plain_password, role='admin'):
-        with open(SHADOWS_FILE_PATH, "r+") as f:
+        with open(SHADOWS_FILE_PATH, "r") as f:
             stored_passwords = json.load(f)
+        with open(SHADOWS_FILE_PATH, "w") as f:
             stored_passwords[username] = pbkdf2_sha256.hash(plain_password)
             json.dump(stored_passwords, f)
         self.users_data[username] = [username, role, '_']
@@ -151,127 +158,70 @@ class QUserManager(QObject):
 
 
 
-class QLoginWidgetBase(QWidget):
+class MainWindow(QWidget):
+    login_executed = Signal(bool)
+
     def __init__(self, parent=None):
-        super(QLoginWidgetBase, self).__init__(parent)
+        super(MainWindow, self).__init__(parent)
+
 
         self.user_ddbb_connector = QUserManager()
         self.user_ddbb_connector.status_changed.connect(self.ddbb_status_changed)
 
-        self.main_layout = QVBoxLayout()
-        self.setLayout(self.main_layout)
-        self.username_layout = QHBoxLayout()
-        self.username_label = QLabel(u"Usuario:")
-        self.username_lineedit = QLineEdit()
-        self.password_layout = QHBoxLayout()
-        self.password_label = QLabel(u"Contraseña:")
-        self.password_lineedit = QLineEdit()
-        self.password_lineedit.setEchoMode(QLineEdit.Password)
-        self.login_button_layout = QHBoxLayout()
-        self.login_button = QPushButton(u"Iniciar sesión")
-        self.login_status = QLabel("[+]")
-        f = self.login_status.font()
-        f.setPointSize(6)
-        self.login_status.setFont(f)
+        self.mylayout = QVBoxLayout()
+        self.setLayout(self.mylayout)
+        loader = QUiLoader()
+        loader.registerCustomWidget(LoginWindow)
+        loader.registerCustomWidget(RegisterWindow)
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/modules/mainUI.ui")
+        file.open(QFile.ReadOnly)
+        self.ui = loader.load(file, self.parent())
+        self.mylayout.addWidget(self.ui)
+        self.mylayout.setContentsMargins(0, 0, 0, 0)
+        self.ui.stackedWidget.setCurrentIndex(0)
 
-        self.login_groupbox = QGroupBox(u"Iniciar sesión:")
-        self.login_layout = QVBoxLayout()
-
-        self.build_widget()
-        self.user_ddbb_connector.load_users()
-
-    def build_widget(self):
-        self.username_layout.addWidget(self.username_label)
-        self.username_layout.addStretch()
-        self.username_layout.addWidget(self.username_lineedit)
-
-        self.password_layout.addWidget(self.password_label)
-        self.password_layout.addStretch()
-        self.password_layout.addWidget(self.password_lineedit)
-
-        self.login_button_layout.addWidget(self.login_status)
-        self.login_button_layout.addStretch()
-        self.login_button_layout.addWidget(self.login_button)
-
-        self.login_layout.addLayout(self.username_layout)
-        self.login_layout.addLayout(self.password_layout)
-        self.login_layout.addLayout(self.login_button_layout)
-
-        self.login_groupbox.setLayout(self.login_layout)
-        self.main_layout.addWidget(self.login_groupbox)
-
-    def ddbb_status_changed(self, string):
-        self.login_status.setText(string)
-
-
-class QLoginWidget(QLoginWidgetBase):
-    login_executed = pyqtSignal(bool)
-    def __init__(self, parent=None):
-        super(QLoginWidget, self).__init__(parent)
-        self.login_button.clicked.connect(self.check_login)
+        ## Login window
+        self.ui.login_button_2.clicked.connect(self.check_login)
+        self.ui.newuser_button_2.clicked.connect(self.newuser_clicked)
         self.login_executed.connect(self.update_login_status)
 
+        ## Register window
+        self.ui.password_lineedit_reg.textChanged.connect(self.password_strength_check)
+        self.ui.password_2_lineedit_reg.textChanged.connect(self.password_strength_check)
+        self.ui.createuser_button_reg.clicked.connect(self.create_new_user)
+
+        self.ui.back_button_reg.clicked.connect(self.back_clicked)
+
+        file.close()
+        self.user_ddbb_connector.load_users()
+
+
+    def ddbb_status_changed(self, string):
+        self.ui.login_status.setText(string)
+
     def check_login(self):
-        username = unicode(self.username_lineedit.text())
-        password = unicode(self.password_lineedit.text())
+        print ("[INFO] Checking login ...")
+
+        username = unicode(self.ui.username_lineedit.text())
+        password = unicode(self.ui.password_lineedit.text())
+
         if self.user_ddbb_connector.check_user_password(username, password):
+            print("Yess")
             self.login_executed.emit(True)
         else:
+            print ("Nope")
             self.login_executed.emit(False)
 
     def update_login_status(self, status):
         if not status:
-            self.login_status.setText("[!]Login failed")
+            self.ui.login_status.setText("[!]Login failed")
         else:
-            self.login_status.setText("[+]Login OK")
+            self.ui.login_status.setText("[+]Login OK")
 
-
-class QUserManagementWidget(QLoginWidgetBase):
-    def __init__(self, parent=None):
-        self.password_2_layout = QHBoxLayout()
-        self.password_2_label = QLabel(u"Repetir contraseña:")
-        self.password_2_lineedit = QLineEdit()
-        self.password_2_lineedit.setEchoMode(QLineEdit.Password)
-        self.password_status = QLabel("")
-        f = self.password_status.font()
-        f.setPointSize(6)
-        self.password_status.setFont(f)
-        super(QUserManagementWidget, self).__init__(parent)
-        self.login_button.setText(u"Crear usuario")
-        self.login_groupbox.setTitle(u"Nuevo usuario:")
-
-    def build_widget(self):
-        self.username_layout.addWidget(self.username_label)
-        self.username_layout.addStretch()
-        self.username_layout.addWidget(self.username_lineedit)
-
-        self.password_layout.addWidget(self.password_label)
-        self.password_layout.addStretch()
-        self.password_layout.addWidget(self.password_lineedit)
-
-        self.password_2_layout.addWidget(self.password_2_label)
-        self.password_2_layout.addStretch()
-        self.password_2_layout.addWidget(self.password_2_lineedit)
-
-        self.login_button_layout.addWidget(self.login_status)
-        self.login_button_layout.addStretch()
-        self.login_button_layout.addWidget(self.login_button)
-
-        self.login_layout.addLayout(self.username_layout)
-        self.login_layout.addLayout(self.password_layout)
-        self.login_layout.addLayout(self.password_2_layout)
-        self.login_layout.addWidget(self.password_status)
-        self.login_layout.addLayout(self.login_button_layout)
-
-        self.login_groupbox.setLayout(self.login_layout)
-        self.main_layout.addWidget(self.login_groupbox)
-        self.password_lineedit.textChanged.connect(self.password_strength_check)
-        self.password_2_lineedit.textChanged.connect(self.password_strength_check)
-        self.login_button.clicked.connect(self.create_new_user)
 
     def password_strength_check(self):
-        password = unicode(self.password_lineedit.text())
-        repeated_password = unicode(self.password_2_lineedit.text())
+        password = unicode(self.ui.password_lineedit_reg.text())
+        repeated_password = unicode(self.ui.password_2_lineedit_reg.text())
         strength, improvements = passwordmeter.test(password)
 
         if strength < 0.5:
@@ -280,13 +230,15 @@ class QUserManagementWidget(QLoginWidgetBase):
                 if message != "":
                     message += "\n"
                 message += u"· " + improve
-            self.password_status.setText(message)
+            self.ui.password_status_reg.setText(message)
             return False
         if repeated_password != password:
-            self.password_status.setText(u"Las contraseñas introducidas no coinciden")
+            self.ui.password_status_reg.setText(u"Las contraseñas introducidas no coinciden")
             return False
-        self.password_status.setText(u"")
+        self.ui.password_status_reg.setText(u"")
         return True
+
+    ##########################################################################################
 
     def check_username(self):
         # user is not empty
@@ -299,22 +251,34 @@ class QUserManagementWidget(QLoginWidgetBase):
         pass
 
     def create_new_user(self):
+        print ("[INFO] Trying to create new user ...")
+
         if self.password_strength_check():
-            username = unicode(self.username_lineedit.text())
-            password = unicode(self.password_lineedit.text())
+            username = unicode(self.ui.username_lineedit_reg.text())
+            password = unicode(self.ui.password_lineedit_reg.text())
             self.user_ddbb_connector.set_username_password(username, password)
+            print ("[INFO] User created correctly")
             return True
         else:
+            print ("[ERROR] The user couldn't be created ")
             return False
+    ##########################################################################################
+
+    def back_clicked(self):
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+    def newuser_clicked(self):
+        index = self.ui.stackedWidget.indexOf(self.ui.register_page)
+        self.ui.stackedWidget.setCurrentIndex(index)
 
 
 if __name__ == '__main__':
+
     app = QApplication(sys.argv)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    login = QLoginWidget()
-    login.show()
+    main = MainWindow()
+    main.show()
 
-    signup = QUserManagementWidget()
-    signup.show()
+
     app.exec_()

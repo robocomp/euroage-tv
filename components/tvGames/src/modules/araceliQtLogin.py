@@ -10,7 +10,7 @@ from pprint import pprint
 import passwordmeter
 from PySide2.QtCore import QObject, Signal, QFile
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox
 
 from admin_widgets import LoginWindow, RegisterWindow
 
@@ -156,6 +156,15 @@ class QUserManager(QObject):
         with open(USERS_FILE_PATH, "w") as f:
             json.dump(self.users_data, f)
 
+    def check_user(self,username): #Return true when the user is found
+        if len(self.users_data) > 0:
+            if username in self.users_data:
+                return True
+            else:
+                return False
+        else:
+            return False
+
 
 
 class MainWindow(QWidget):
@@ -164,10 +173,13 @@ class MainWindow(QWidget):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
 
-
+        #User Management
         self.user_ddbb_connector = QUserManager()
         self.user_ddbb_connector.status_changed.connect(self.ddbb_status_changed)
+        self.user_ddbb_connector.load_users()
 
+
+        #Load widget from ui
         self.mylayout = QVBoxLayout()
         self.setLayout(self.mylayout)
         loader = QUiLoader()
@@ -179,6 +191,8 @@ class MainWindow(QWidget):
         self.mylayout.addWidget(self.ui)
         self.mylayout.setContentsMargins(0, 0, 0, 0)
         self.ui.stackedWidget.setCurrentIndex(0)
+        
+        file.close()
 
         ## Login window
         self.ui.login_button_2.clicked.connect(self.check_login)
@@ -189,16 +203,13 @@ class MainWindow(QWidget):
         self.ui.password_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.password_2_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.createuser_button_reg.clicked.connect(self.create_new_user)
-
         self.ui.back_button_reg.clicked.connect(self.back_clicked)
-
-        file.close()
-        self.user_ddbb_connector.load_users()
 
 
     def ddbb_status_changed(self, string):
         self.ui.login_status.setText(string)
 
+    #Login window functions
     def check_login(self):
         print ("[INFO] Checking login ...")
 
@@ -209,7 +220,9 @@ class MainWindow(QWidget):
             print("Yess")
             self.login_executed.emit(True)
         else:
-            print ("Nope")
+            QMessageBox().information(self.focusWidget(), 'Error',
+                                      'Username or password incorrect',
+                                      QMessageBox.Ok)
             self.login_executed.emit(False)
 
     def update_login_status(self, status):
@@ -218,7 +231,12 @@ class MainWindow(QWidget):
         else:
             self.ui.login_status.setText("[+]Login OK")
 
+    def newuser_clicked(self):
+        index = self.ui.stackedWidget.indexOf(self.ui.register_page)
+        self.ui.stackedWidget.setCurrentIndex(index)
 
+
+    #Register window functions
     def password_strength_check(self):
         password = unicode(self.ui.password_lineedit_reg.text())
         repeated_password = unicode(self.ui.password_2_lineedit_reg.text())
@@ -238,7 +256,6 @@ class MainWindow(QWidget):
         self.ui.password_status_reg.setText(u"")
         return True
 
-    ##########################################################################################
 
     def check_username(self):
         # user is not empty
@@ -256,20 +273,23 @@ class MainWindow(QWidget):
         if self.password_strength_check():
             username = unicode(self.ui.username_lineedit_reg.text())
             password = unicode(self.ui.password_lineedit_reg.text())
-            self.user_ddbb_connector.set_username_password(username, password)
-            print ("[INFO] User created correctly")
-            return True
+
+            if (self.user_ddbb_connector.check_user(username) == True): #The user already exist
+                QMessageBox().information(self.focusWidget(), 'Error',
+                                          'The username already exist',
+                                          QMessageBox.Ok)
+                return False
+            else:
+                self.user_ddbb_connector.set_username_password(username, password)
+                print ("[INFO] User created correctly")
+                return True
         else:
             print ("[ERROR] The user couldn't be created ")
             return False
-    ##########################################################################################
 
     def back_clicked(self):
         self.ui.stackedWidget.setCurrentIndex(0)
 
-    def newuser_clicked(self):
-        index = self.ui.stackedWidget.indexOf(self.ui.register_page)
-        self.ui.stackedWidget.setCurrentIndex(index)
 
 
 if __name__ == '__main__':

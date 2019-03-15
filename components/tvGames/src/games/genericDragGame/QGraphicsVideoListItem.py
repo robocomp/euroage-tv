@@ -15,6 +15,7 @@ class ListVideoPlayer(QGraphicsVideoItem):
         super(ListVideoPlayer, self).__init__(parent=parent)
 
         self._media_player = QMediaPlayer()
+        self._media_player.setMuted(True)
         self._video_widget = QGraphicsVideoItem()
         self._current_play_list = QMediaPlaylist()
         self._media_player.setVideoOutput(self)

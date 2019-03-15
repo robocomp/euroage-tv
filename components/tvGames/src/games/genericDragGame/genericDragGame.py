@@ -9,15 +9,15 @@ import sys
 from os import listdir
 from os.path import isfile, join
 
-from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize
-from PySide2.QtGui import QImage, QPixmap, QPainter, QFont
+from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize, QRectF
+from PySide2.QtGui import QImage, QPixmap, QPainter, QFont, QPen, QBrush, QColor, QPalette
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QWidget, QHBoxLayout, QGraphicsView, \
-	QGraphicsTextItem, QApplication, QGridLayout
+	QGraphicsTextItem, QApplication, QGridLayout, QLabel, QStyleOption, QStyle
 from numpy.random.mtrand import randint
 
 # Create a class for our main window
+from games.genericDragGame.GameWidgets import GameTopBarWidget
 from games.genericDragGame.QGraphicsVideoListItem import ActionsVideoPlayer
-from games.genericDragGame.ClockWidget import ClockWidget
 
 try:
 	from subprocess import DEVNULL  # py3k
@@ -34,14 +34,8 @@ WINNING_SOUNDS = ["resources/sounds/happy1.mp3", "resources/sounds/happy2.mp3"]
 LOST_SOUNDS = ["resources/sounds/sad1.mp3", "resources/sounds/sad2-2.mp3"]
 SPEECH_COMMAND = "gtts es "
 
+GREEN_TITTLE_COLOR = "#91C69A"
 
-class GameTopBarWidget(QWidget):
-	def __init__(self, parent = None):
-		super(GameTopBarWidget, self).__init__(parent)
-		self._main_layout = QHBoxLayout()
-		self.setLayout(self._main_layout)
-		self._clock = ClockWidget()
-		self._main_layout.addWidget(self._clock)
 
 class GameWidget(QWidget):
 	def __init__(self, parent = None):
@@ -50,15 +44,31 @@ class GameWidget(QWidget):
 		self.setLayout(self._main_layout)
 		self.setContentsMargins(0, 0, 0, 0)
 		self._main_layout.setContentsMargins(0, 0, 0, 0)
-		
+		self.setObjectName("GAME")
+
 		self._top_bar = GameTopBarWidget()
+		self._top_bar.setStyleSheet(".GameTopBarWidget{background-color: white}")
 		self._main_layout.addWidget(self._top_bar,0,20)
 		self._game_frame = TakeDragGame(1920, 1080)
 		self._game_frame.init_game(os.path.join(CURRENT_PATH, 'resources/final_game1/final_game1.json'))
 		self._main_layout.addWidget(self._game_frame, 1,20)
+		# palette = self.palette()
+		# brush = QBrush(QImage(os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")))
+		# palette.setBrush(QPalette.Background, brush)
+		# self.setPalette(palette)
+
+		# self.setStyleSheet("GameWidget {font-weight: bold; background-color: red;}")
+		self.setAutoFillBackground(True)
+		style_sheet_string = "GameWidget {background-image: url("+os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")+");}"
+		print(style_sheet_string)
+		self.setStyleSheet(style_sheet_string)
 
 
-
+	# def paintEvent(self, event):
+	# 	painter = QPainter(self)
+	# 	img = QImage(os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg"))
+	# 	painter.drawImage(QRectF(0,0,self.width(),self.height()),img,QRectF(0,0,img.width(),img.height()))
+	# 	super(GameWidget, self).paintEvent(event)
 
 	def show_on_second_screen(self):
 		desktop_widget = QApplication.desktop()
@@ -68,7 +78,14 @@ class GameWidget(QWidget):
 			self.move(second_screen_size.left(), second_screen_size.top())
 			# self.resize(second_screen_size.width(), second_screen_size.height())
 			self.showFullScreen()
-		
+
+	def paintEvent(self, event):
+		opt = QStyleOption()
+		opt.init(self)
+		p = QPainter(self)
+		self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
+		QWidget.paintEvent(self, event)
+
 
 
 
@@ -243,17 +260,6 @@ class Pointer(QObject):
 		self._lost_timer.stop()
 
 
-	# @property
-	# def lost_ticks(self):
-	# 	return self._lost_ticks
-	#
-	# @lost_ticks.setter
-	# def lost_ticks(self, new_value):
-	# 	assert (isinstance(new_value,
-	# 					   int)), "Pointer.lost_ticks must be of QGraphicsPixmapItem derivated"
-	# 	self._lost_ticks = new_value
-
-
 
 class TakeDragGame(QWidget):
 	touch_signal = Signal(list)
@@ -279,12 +285,12 @@ class TakeDragGame(QWidget):
 		# self.view.setViewport(QtOpenGL.QGLWidget())
 		self.main_layout.addWidget(self.view)
 
-		self.clock = ClockWidget()
-		self.clock_proxy = self.scene.addWidget(self.clock)
-		self.clock.hide()
-		self.clock_proxy.setPos(self.width - self.clock_proxy.boundingRect().width(), 0)
-		self.clock_proxy.setZValue(60)
-		self.clock.timeout.connect(self.game_timeout)
+		# self.clock = ClockWidget()
+		# self.clock_proxy = self.scene.addWidget(self.clock)
+		# self.clock.hide()
+		# self.clock_proxy.setPos(self.width - self.clock_proxy.boundingRect().width(), 0)
+		# self.clock_proxy.setZValue(60)
+		# self.clock.timeout.connect(self.game_timeout)
 		self._pieces = []
 		self._destinations = []
 		self._already_set = []
@@ -351,11 +357,11 @@ class TakeDragGame(QWidget):
 		self.resize(self.game_config["size"][0], self.game_config["size"][1])
 		self.create_and_add_images()
 		# self.draw_position(self.scene.width()/2, self.scene.height()/2, False)
-		self.clock.set_time(int(self.game_config["time"]))
+		# self.clock.set_time(int(self.game_config["time"]))
 		# self.clock.set_time(3)
 		self.end_message.hide()
 		self.setWindowState(Qt.WindowMaximized)
-		self.clock.show()
+		# self.clock.show()
 
 	# Detecting touch events on multitouch screen
 	def event(self, event):
@@ -571,7 +577,7 @@ class TakeDragGame(QWidget):
 			return
 		if event.oldSize().width() < 0 or event.oldSize().height() < 0:
 			return
-		self.clock_proxy.setPos(self.view.width() - self.clock_proxy.boundingRect().width() * 1.1, 0)
+		# self.clock_proxy.setPos(self.view.width() - self.clock_proxy.boundingRect().width() * 1.1, 0)
 		self.end_message.setPos(self.view.width() / 2 - self.end_message.boundingRect().width() / 2,
 								self.view.height() / 2 - self.end_message.boundingRect().height() / 2)
 		# images
@@ -608,8 +614,11 @@ def main():
 	# Again, this is boilerplate, it's going to be the same on
 	# almost every app you write
 	app = QApplication(sys.argv)
-	main_widget = GameWidget()
-	main_widget.show_on_second_screen()
+	the_label = GameWidget()
+	the_label.show()
+
+	# main_widget = GameWidget()
+	# main_widget.show_on_second_screen()
 	# window = TakeDragGame(1920, 1080)
 	# window.show()
 

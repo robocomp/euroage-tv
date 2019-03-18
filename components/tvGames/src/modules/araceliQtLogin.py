@@ -10,9 +10,10 @@ from pprint import pprint
 import passwordmeter
 from PySide2.QtCore import QObject, Signal, QFile
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox, QCompleter, QMainWindow, QToolBar, \
+    QComboBox, QListWidgetItem, QListWidget
 
-from admin_widgets import LoginWindow, RegisterWindow
+from admin_widgets import LoginWindow, RegisterWindow,UsersWindow
 
 FILE_PATH = os.path.abspath(__file__)
 print(FILE_PATH)
@@ -22,6 +23,8 @@ SHADOWS_FILE_PATH = "../../resources/shadows.json"
 # print FILE_PATH
 #print os.getcwd()
 
+list_of_users =  []
+list_of_players =  ["Albus Dumbledore", "Minerva Mcgonnagal","Severus Snape"]
 
 # SQL_USER_TABLE_CREATION='create table if not exists users ' \
 # 						'(id int unsigned not null,' \
@@ -119,7 +122,8 @@ class QUserManager(QObject):
         with open(USERS_FILE_PATH) as f:
             print ("[INFO] Loading users ...")
             self.users_data = json.load(f)
-
+            for user,algo in self.users_data.items():
+                list_of_users.append(user)
         pprint(self.users_data)
 
     def check_user_password(self, username, password_to_check):
@@ -132,6 +136,7 @@ class QUserManager(QObject):
                         if self.users_data[username][2] == '_':
                             hash = stored_passwords[username]
                             if pbkdf2_sha256.verify(password_to_check, hash):
+
                                 return True
                             else:
                                 print ("WARNING: check_user_password: password mismatch")
@@ -167,7 +172,7 @@ class QUserManager(QObject):
 
 
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow):
     login_executed = Signal(bool)
 
     def __init__(self, parent=None):
@@ -178,20 +183,25 @@ class MainWindow(QWidget):
         self.user_ddbb_connector.status_changed.connect(self.ddbb_status_changed)
         self.user_ddbb_connector.load_users()
 
-
         #Load widget from ui
-        self.mylayout = QVBoxLayout()
-        self.setLayout(self.mylayout)
+        # self.mylayout = QVBoxLayout()
+        # self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(LoginWindow)
         loader.registerCustomWidget(RegisterWindow)
+        loader.registerCustomWidget(UsersWindow)
         file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/modules/mainUI.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
-        self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0, 0, 0, 0)
-        self.ui.stackedWidget.setCurrentIndex(0)
-        
+        # self.mylayout.addWidget(self.ui)
+        # self.mylayout.setContentsMargins(0, 0, 0, 0)
+        self.setCentralWidget(self.ui.stackedWidget)
+        self.ui.stackedWidget.setCurrentIndex(2)
+
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu('&Menú')
+
+
         file.close()
 
         ## Login window
@@ -199,11 +209,47 @@ class MainWindow(QWidget):
         self.ui.newuser_button_2.clicked.connect(self.newuser_clicked)
         self.login_executed.connect(self.update_login_status)
 
+        completer = QCompleter(list_of_users)
+        self.ui.username_lineedit.setCompleter(completer)
+
         ## Register window
         self.ui.password_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.password_2_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.createuser_button_reg.clicked.connect(self.create_new_user)
         self.ui.back_button_reg.clicked.connect(self.back_clicked)
+
+        ##Users window
+        completer2 = QCompleter(list_of_players)
+        self.ui.selplayer_combobox.setCompleter(completer2)
+        self.ui.selplayer_combobox.addItems(list_of_players)
+        self.ui.selplayer_combobox.lineEdit().setPlaceholderText("Selecciona jugador...")
+        self.selected_player_incombo = ""
+        self.ui.selected_player_inlist = ""
+        self.ui.selgame_combobox.lineEdit().setPlaceholderText("Selecciona juego...")
+
+        self.ui.selplayer_combobox.currentIndexChanged.connect(self.selectedplayer_changed)
+        self.ui.addplayer_button.clicked.connect(self.addusertolist)
+        self.ui.deleteplayer_buttton.clicked.connect(self.deleteuserfromlist)
+
+    def deleteuserfromlist(self):
+        item_to_delete = self.ui.listplayer_list.currentRow()
+        self.ui.listplayer_list.takeItem(item_to_delete)
+
+    def selectedplayer_changed(self):
+        self.selected_player = self.ui.selplayer_combobox.currentText()
+        if (self.ui.selplayer_combobox.currentIndex() == 1): #Nuevo jugador
+            reply = QMessageBox.question(self.focusWidget(), '',
+                                         ' Do you want to add a new player?', QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.No:
+                return False
+
+            else:
+                print("Crear nueva ventana para añadir a viejitos")
+                return True
+
+
+    def addusertolist(self):
+        self.ui.listplayer_list.addItem(self.selected_player)
 
 
     def ddbb_status_changed(self, string):
@@ -214,10 +260,12 @@ class MainWindow(QWidget):
         print ("[INFO] Checking login ...")
 
         username = unicode(self.ui.username_lineedit.text())
+        # username = username.strip().lower() ##The username is stored and checked in lower case
         password = unicode(self.ui.password_lineedit.text())
 
         if self.user_ddbb_connector.check_user_password(username, password):
-            print("Yess")
+            self.ui.stackedWidget.setCurrentIndex(2)
+
             self.login_executed.emit(True)
         else:
             QMessageBox().information(self.focusWidget(), 'Error',
@@ -272,6 +320,7 @@ class MainWindow(QWidget):
 
         if self.password_strength_check():
             username = unicode(self.ui.username_lineedit_reg.text())
+            # username = username.strip().lower()
             password = unicode(self.ui.password_lineedit_reg.text())
 
             if (self.user_ddbb_connector.check_user(username) == True): #The user already exist
@@ -281,7 +330,14 @@ class MainWindow(QWidget):
                 return False
             else:
                 self.user_ddbb_connector.set_username_password(username, password)
-                print ("[INFO] User created correctly")
+                QMessageBox().information(self.focusWidget(), 'Yupi',
+                                          'User created correctly',
+                                          QMessageBox.Ok)
+
+                self.user_ddbb_connector.load_users() ##Reload the users
+                completer = QCompleter(list_of_users)
+                self.ui.username_lineedit.setCompleter(completer)
+                self.ui.stackedWidget.setCurrentIndex(0)
                 return True
         else:
             print ("[ERROR] The user couldn't be created ")
@@ -299,6 +355,5 @@ if __name__ == '__main__':
 
     main = MainWindow()
     main.show()
-
 
     app.exec_()

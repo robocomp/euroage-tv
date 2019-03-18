@@ -9,10 +9,12 @@ import sys
 from os import listdir
 from os.path import isfile, join
 
-from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize, QRectF
+from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize, QRectF, QUrl
 from PySide2.QtGui import QImage, QPixmap, QPainter, QFont, QPen, QBrush, QColor, QPalette
+from PySide2.QtMultimedia import QMediaPlayer
+from PySide2.QtMultimediaWidgets import QGraphicsVideoItem
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QWidget, QHBoxLayout, QGraphicsView, \
-	QGraphicsTextItem, QApplication, QGridLayout, QLabel, QStyleOption, QStyle
+	QGraphicsTextItem, QApplication, QGridLayout, QLabel, QStyleOption, QStyle, QGraphicsRectItem
 from numpy.random.mtrand import randint
 
 # Create a class for our main window
@@ -37,9 +39,9 @@ SPEECH_COMMAND = "gtts es "
 GREEN_TITTLE_COLOR = "#91C69A"
 
 
-class GameWidget(QWidget):
+class GameScreen(QWidget):
 	def __init__(self, parent = None):
-		super(GameWidget, self).__init__(parent)
+		super(GameScreen, self).__init__(parent)
 		self._main_layout = QGridLayout()
 		self.setLayout(self._main_layout)
 		self.setContentsMargins(0, 0, 0, 0)
@@ -174,6 +176,41 @@ class DraggableItem(QGraphicsPixmapItem):
 
 	def clone(self):
 		return DraggableItem(self.id, self.image_path, self.width, self.height, self.draggable)
+
+
+class PlayableItem(DraggableItem):
+	def __init__(self, id, image_path, clip_path, width, height, draggable=False, parent=None):
+		super(PlayableItem, self).__init__(id, image_path, width, height, draggable, parent)
+		self._media_player = QMediaPlayer()
+		self._media_player.setMuted(True)
+		self._video_background = QGraphicsRectItem(self.boundingRect(), self)
+		self._video_background.setZValue(-100)
+		self._video_widget = QGraphicsVideoItem(self)
+		self._video_widget.setZValue(100)
+		self._media_player.setVideoOutput(self._video_widget)
+		self._media_player.setMedia(QUrl.fromLocalFile(clip_path))
+		self.stop_item()
+		# self._video_widget.setSize(QSize(0, 0))
+		# self.setOpacity(0.9)
+
+
+	def play_item(self):
+		self._video_background.setBrush(QColor("black"))
+		self._video_background.update()
+		self._video_widget.setSize(QSize(self.boundingRect().width()-1,self.boundingRect().height()-1))
+		self._video_widget.setPos(1,0)
+		self._media_player.play()
+
+	def stop_item(self):
+		self._video_background.setBrush(QBrush())
+		self._video_background.update()
+		self._video_widget.setSize(QSize(0, 0))
+		self._media_player.stop()
+
+
+
+
+
 
 
 class Pointer(QObject):
@@ -472,10 +509,14 @@ class TakeDragGame(QWidget):
 				# check if there is any items unde rthe new pointer position and if it's draggable
 				items = self.scene.items(QPointF(xpos, ypos))
 				if len(items) > 1:
-					if items[1].draggable:
-						self._pointers[pointer_id].taken = items[1]
-						# Set the Z position of the object take under the pointer Z value
-						self._pointers[pointer_id].taken.setZValue(int(self.game_config["depth"]["mouse"]) - 1)
+					for item in items:
+						if isinstance(item, PlayableItem):
+							if item.draggable:
+								self._pointers[pointer_id].taken = item
+								# Set the Z position of the object take under the pointer Z value
+								self._pointers[pointer_id].taken.setZValue(int(self.game_config["depth"]["mouse"]) - 1)
+							item.play_item()
+							break
 		# The pointer is open/ released
 		else:
 			# If there's something grabbed we need to release it
@@ -513,8 +554,10 @@ class TakeDragGame(QWidget):
 					self._pointers[pointer_id].taken.correct_position = False
 					self.correct_images = self.correct_images - 1
 				# self._pointers[pointer_id].taken.set_overlay(False)
+				self._pointers[pointer_id].taken.stop_item()
 				self._pointers[pointer_id].taken = None
 				self._video_player.stop()
+
 
 		# self.game_config["images"]["handOpen"]["widget"].show()
 		# self.game_config["images"]["handClose"]["widget"].hide()
@@ -548,16 +591,21 @@ class TakeDragGame(QWidget):
 		if self.game_config is not None:
 			for image_id, item in self.game_config["images"].items():
 				image_path = os.path.join(CURRENT_PATH, item["image_path"])
+				# if "video_path" in item:
+				# 	clip_path = os.path.join(CURRENT_PATH, item["video_path"])
+				# 	if "index" in item:
+				# 		action_index = item["index"]
+				# 	else:
+				# 		action_index = -1
+				# 	self._video_player.add_action(image_id, clip_path, action_index)
+
+
 				if "video_path" in item:
 					clip_path = os.path.join(CURRENT_PATH, item["video_path"])
-					if "index" in item:
-						action_index = item["index"]
-					else:
-						action_index = -1
-					self._video_player.add_action(image_id, clip_path, action_index)
-
-				new_image = DraggableItem(image_id, image_path, item["size"][0], item["size"][1],
-										  item["category"] == "piece")
+					new_image = PlayableItem(image_id, image_path, clip_path, item["size"][0], item["size"][1], item["category"] == "piece")
+				else:
+					new_image = DraggableItem(image_id, image_path, item["size"][0], item["size"][1],
+											  item["category"] == "piece")
 				new_image.setPos(item["initial_pose"][0], item["initial_pose"][1])
 				new_image.setZValue(int(self.game_config["depth"][item["category"]]))
 				self.game_config["images"][image_id]["widget"] = new_image
@@ -614,7 +662,7 @@ def main():
 	# Again, this is boilerplate, it's going to be the same on
 	# almost every app you write
 	app = QApplication(sys.argv)
-	the_label = GameWidget()
+	the_label = GameScreen()
 	the_label.show()
 
 	# main_widget = GameWidget()

@@ -1,20 +1,52 @@
 import os
 import sys
+from time import sleep
 
-from PySide2.QtCore import Signal, QTimer, QDateTime, QRectF, Qt, QSize, QPoint
+from PySide2.QtCore import Signal, QTimer, QDateTime, QRectF, Qt, QSize, QPoint, QCoreApplication, QEventLoop
 from PySide2.QtGui import QFont, QColor, QPainter, QPen, QBrush, QPalette, QFontMetrics
 from PySide2.QtWidgets import QLabel, QApplication, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QPushButton, \
 	QStyleOption, QStyle, QSizePolicy, QFrame
+from AnalogClock import AnalogClock
 
 CURRENT_PATH = os.path.dirname(__file__)
 
+GREEN_TITTLE_COLOR = "#91C69A"
+
+class GameTopBarWidget(QWidget):
+	def __init__(self, parent=None):
+		super(GameTopBarWidget, self).__init__(parent)
+		self._main_layout = QHBoxLayout()
+		self.setLayout(self._main_layout)
+		self._clock = ClockWidget()
+		self._analog_clock = AnalogClock()
+		self._game_name_label = GameNameWidget("El nombre del juego")
+		self._game_scores = GameScores()
+		self._main_layout.addWidget(self._game_name_label)
+		self._main_layout.addWidget(self._game_scores)
+		self._main_layout.addWidget(self._clock)
+		self._main_layout.addWidget(self._analog_clock)
+		self._analog_clock.setFixedSize(40, 40)
+		# self._main_layout.setStretchFactor(self._game_scores,100)
+		# self.setMaximumHeight(100)
+		# self._game_scores.setMinimumHeight(100)
+
+	def paintEvent(self, event):
+		opt = QStyleOption()
+		opt.init(self)
+		p = QPainter(self)
+		self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
+		QWidget.paintEvent(self, event)
+
+
+	# def resizeEvent(self, event):
+	# 	self._game_scores.setFixedHeight(event.size().height()-20)
 
 class ClockWidget(QLabel):
 	timeout = Signal()
 
 	def __init__(self, parent=None):
 		super(ClockWidget, self).__init__("00:00", parent)
-		self.setFont(QFont("Arial", 70, QFont.Bold))
+		self.setFont(QFont("Arial", 40, QFont.Bold))
 		self._time = 0
 		self._timer = QTimer()
 		self._timer.timeout.connect(self.update_timer)
@@ -46,28 +78,6 @@ def time_out_clock():
 	print("Ringing")
 
 
-GREEN_TITTLE_COLOR = "#91C69A"
-
-
-class GameTopBarWidget(QWidget):
-	def __init__(self, parent=None):
-		super(GameTopBarWidget, self).__init__(parent)
-		self._main_layout = QHBoxLayout()
-		self.setLayout(self._main_layout)
-		self._clock = ClockWidget()
-		self._game_name_label = GameNameWidget("El nombre del juego")
-		self._main_layout.addWidget(self._game_name_label)
-		self._main_layout.addStretch()
-		self._main_layout.addWidget(self._clock)
-		self.setMaximumHeight(100)
-
-	def paintEvent(self, event):
-		opt = QStyleOption()
-		opt.init(self)
-		p = QPainter(self)
-		self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
-		QWidget.paintEvent(self, event)
-
 
 class BullseyeWidget(QWidget):
 	def __init__(self, color=QColor(GREEN_TITTLE_COLOR), out_color=None, parent=None):
@@ -84,7 +94,7 @@ class BullseyeWidget(QWidget):
 		self.setSizePolicy(sizePolicy)
 
 	def heightForWidth(self, width):
-		return width * 1.5
+		return width
 
 	def minimumSizeHint(self):
 		return QSize(10, 10)
@@ -129,12 +139,6 @@ class BullseyeWidget(QWidget):
 		super(BullseyeWidget, self).paintEvent(event)
 
 
-class ScoreWidget(QWidget):
-
-	def __init__(self):
-		super(ScoreWidget, self).__init__()
-
-
 class GameNameWidget(QWidget):
 	def __init__(self, text, size=30, parent=None):
 		super(GameNameWidget, self).__init__(parent)
@@ -169,13 +173,21 @@ class GameScores(QFrame):
 	def __init__(self, parent=None):
 		super(GameScores, self).__init__(parent)
 		self._main_layout = QHBoxLayout()
+		self._main_layout.setContentsMargins(0,0,0,0)
 		self.setLayout(self._main_layout)
-		self._bad_score = GameScoreCircle()
+		self._bad_score = GameScoreCircleLabel()
 		self._bad_score.set_colors(QColor("Red"), QColor("White"))
-		self._good_score = GameScoreCircle()
+		self._good_score = GameScoreCircleLabel()
 		self._good_score.set_colors(QColor("Green"), QColor("Black"))
+		self._main_layout.setAlignment(self._good_score,Qt.AlignRight)
+		self._main_layout.addStretch(3)
 		self._main_layout.addWidget(self._good_score)
 		self._main_layout.addWidget(self._bad_score)
+		self._main_layout.setStretch(1,1)
+		self._main_layout.setStretch(2,1)
+		sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+		self.setSizePolicy(sizePolicy)
+		# self.setStyleSheet(".GameScores{ border : 1px solid blue; border-top : 2px solid red;border-bottom : 4px solid yelow;}")
 
 	def set_score(self, index, value):
 		if index==0:
@@ -185,8 +197,10 @@ class GameScores(QFrame):
 		else:
 			raise IndexError("Index error for scores")
 
-
-
+	# def sizeHint(self):
+	# 	sum_size = self._bad_score.sizeHint()+self._good_score.sizeHint()
+	# 	print(sum_size)
+	# 	return sum_size
 
 
 	def paintEvent(self, event):
@@ -196,7 +210,7 @@ class GameScores(QFrame):
 		self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
 		QWidget.paintEvent(self, event)
 
-class GameScoreCircle(QWidget):
+class GameScoreCircle(QLabel):
 	def __init__(self, value=0, parent=None):
 		super(GameScoreCircle, self).__init__(parent)
 		self._font = QFont("times", 24)
@@ -207,6 +221,61 @@ class GameScoreCircle(QWidget):
 		self._color = QColor("Red")
 		self._text_color = QColor("White")
 		self._border_width = 1
+		self.setBackgroundRole(QPalette.Base)
+		sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+		sizePolicy.setHeightForWidth(True)
+		self.setSizePolicy(sizePolicy)
+		# self.setStyleSheet("border: 1px solid black")
+
+	def minimumSizeHint(self):
+		return QSize(30, 30)
+	#
+	#
+	def sizeHint(self):
+		if self.parent():
+			max_s = max(self.parent().width(), self.parent().height())
+			return QSize(max_s, max_s)
+		else:
+			width = self._font_metrics.width(str(self._value))
+			return QSize(width, width)
+		# min_s = min(self.width(), self.height())
+		# print(self.width(), self.height(), min_s)
+	# 	return QSize(30, 30)
+
+	# def sizeHint(self):
+	# 	return QSize(self._font_metrics.width(str(self._value)),self._font_metrics.height())
+	#
+
+
+	def paintEvent(self, event):
+		inital_rect = self.rect()
+		diameter = min(inital_rect.width(), inital_rect.height())
+		self.resize_font()
+		painter = QPainter(self)
+		painter.save()
+		outer_pen = QPen(self._border_color)
+		outer_pen.setWidth(self._border_width)
+		painter.setPen(outer_pen)
+		color_brush = QBrush(self._color)
+		painter.setBrush(color_brush)
+		painter.drawEllipse(0,0,diameter,diameter)
+		# painter.translate(diameter/2,diameter/2)
+
+		painter.setBrush(QBrush(QColor("Black")))
+
+		painter.setBrush(QBrush(self._text_color))
+		outer_pen = QPen(self._text_color)
+		painter.setPen(outer_pen)
+		# painter.drawText(self._font_metrics.width(str(self._value))/2, self._font_metrics.height()/2, str(self._value))
+		painter.drawText(QRectF(0,0,diameter,diameter),Qt.AlignCenter|Qt.AlignTop,str(self._value) )
+		opt = QStyleOption()
+		opt.init(self)
+		self.style().drawPrimitive(QStyle.PE_Widget, opt, painter, self)
+		painter.restore()
+		super(GameScoreCircle, self).paintEvent(event)
+
+	def set_value(self, value):
+		self._value = value
 
 
 	def set_font(self, font):
@@ -228,6 +297,12 @@ class GameScoreCircle(QWidget):
 		else:
 			self._border_color = color
 
+	def set_border_width(self, width):
+		self._border_width = width
+
+
+
+
 	def resize_font(self):
 		inital_rect = self.rect()
 		diameter = min(inital_rect.width() - 4, inital_rect.height() - 4)
@@ -239,15 +314,34 @@ class GameScoreCircle(QWidget):
 				next_point_size = next_point_size * 0.9
 				self._font.setPointSize(next_point_size)
 				self._font_metrics = QFontMetrics(self._font)
+			next_point_size = next_point_size * 0.9
+			self._font.setPointSize(next_point_size)
+			self._font_metrics = QFontMetrics(self._font)
 			self.setFont(self._font)
 
-	def set_border_width(self, width):
-		self._border_width = width
+
+class GameScoreCircleLabel(QLabel):
+	def __init__(self, value=0, parent=None):
+		super(GameScoreCircleLabel, self).__init__(parent)
+		self._font = QFont("times", 24)
+		self.setFont(self._font)
+		self._font_metrics = self.fontMetrics()
+		self.set_value(value)
+		self._border_color = QColor("Red")
+		self._color = QColor("Red")
+		# self._text_color = QColor("White")
+		self._border_width = 1
+		# self.setBackgroundRole(QPalette.Base)
+		# sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+		# sizePolicy.setHeightForWidth(True)
+		# self.setSizePolicy(sizePolicy)
+		# self.setStyleSheet("border: 1px solid black")
+		self.setAlignment(Qt.AlignCenter)
 
 	def paintEvent(self, event):
 		inital_rect = self.rect()
-		diameter = min(inital_rect.width() - 4, inital_rect.height() - 4)
-		self.resize_font()
+		diameter = min(inital_rect.width(), inital_rect.height())
+		# self.resize_font()
 		painter = QPainter(self)
 		painter.save()
 		outer_pen = QPen(self._border_color)
@@ -255,21 +349,70 @@ class GameScoreCircle(QWidget):
 		painter.setPen(outer_pen)
 		color_brush = QBrush(self._color)
 		painter.setBrush(color_brush)
-		painter.drawEllipse(0,0,diameter,diameter)
-		# painter.translate(diameter/2,diameter/2)
-
-		painter.setBrush(QBrush(QColor("Black")))
-
-		painter.setBrush(QBrush(self._text_color))
-		outer_pen = QPen(self._text_color)
-		painter.setPen(outer_pen)
-		# painter.drawText(self._font_metrics.width(str(self._value))/2, self._font_metrics.height()/2, str(self._value))
-		painter.drawText(QRectF(0,0,diameter,diameter),Qt.AlignCenter|Qt.AlignTop,str(self._value) )
+		painter.drawEllipse((self.width()-diameter)/2, (self.height()-diameter)/2, diameter, diameter)
+		# # painter.translate(diameter/2,diameter/2)
+		#
+		# painter.setBrush(QBrush(QColor("Black")))
+		#
+		# painter.setBrush(QBrush(self._text_color))
+		# outer_pen = QPen(self._text_color)
+		# painter.setPen(outer_pen)
+		# # painter.drawText(self._font_metrics.width(str(self._value))/2, self._font_metrics.height()/2, str(self._value))
+		# painter.drawText(QRectF(0, 0, diameter, diameter), Qt.AlignCenter | Qt.AlignTop, str(self._value))
+		# opt = QStyleOption()
+		# opt.init(self)
+		# self.style().drawPrimitive(QStyle.PE_Widget, opt, painter, self)
 		painter.restore()
-		super(GameScoreCircle, self).paintEvent(event)
+		super(GameScoreCircleLabel, self).paintEvent(event)
 
-	def sizeHint(self):
-		return QSize(self._font_metrics.width(str(self._value)),self._font_metrics.height())
+	def set_value(self, value):
+		self.setText(str(value))
+
+	def set_font(self, font):
+		self._font = font
+		self.resize_font()
+
+	def set_color(self, color):
+		self._color = color
+		self._border_color = color
+
+	def set_text_color(self, text_color):
+		self._text_color = text_color
+		palette = self.palette()
+		palette.setColor(self.foregroundRole(), text_color)
+		self.setPalette(palette)
+
+	def set_colors(self, color, text_color, border_color = None):
+		self.set_color(color)
+		self.set_text_color(text_color)
+		if border_color is not None:
+			self._border_color = border_color
+		else:
+			self._border_color = color
+
+	def set_border_width(self, width):
+		self._border_width = width
+
+	# def resizeEvent(self, event):
+	# 	self.resize_font()
+	# 	super(GameScoreCircleLabel, self).resizeEvent(event)
+
+	# def resize_font(self):
+	# 	inital_rect = self.rect()
+	# 	diameter = min(inital_rect.width() - 4, inital_rect.height() - 4)
+	# 	if diameter > 1:
+	# 		next_point_size = float(diameter)
+	# 		self._font.setPointSize(next_point_size)
+	# 		self._font_metrics = QFontMetrics(self._font)
+	# 		while self._font_metrics.width(str(self.text())) > diameter and next_point_size > 3:
+	# 			next_point_size = next_point_size * 0.9
+	# 			self._font.setPointSize(next_point_size)
+	# 			self._font_metrics = QFontMetrics(self._font)
+	# 		next_point_size = next_point_size * 0.9
+	# 		self._font.setPointSize(next_point_size)
+	# 		self._font_metrics = QFontMetrics(self._font)
+	# 		self.setFont(self._font)
+
 
 class other(QWidget):
 	def __init__(self, parent=None):
@@ -324,13 +467,12 @@ if __name__ == '__main__':
 	#
 	# ####
 	#
-	# top_bar = GameTopBarWidget()
-	# top_bar.setStyleSheet(".GameTopBarWidget{background-color: black}")
-	# top_bar.show()
+	top_bar = GameTopBarWidget()
+	top_bar.show()
 	#
 	# ###
 	#
-	# score_circle = GameScoreCircle(200000)
+	# score_circle = GameScoreCircleLabel(200000)
 	# score_circle.set_colors(QColor("black"), QColor("White"), QColor("Red"))
 	# score_circle.set_border_width(5)
 	# score_circle.setWindowTitle("Score circle")
@@ -338,7 +480,22 @@ if __name__ == '__main__':
 
 	######
 
-	scores = GameScores()
-	scores.show()
+	# scores = GameScores()
+	# scores.set_score(0, 40000)
+	# scores.set_score(1, 100000000)
+	# scores.show()
+
+	# for points in range(0,100):
+	# 	if points % 3:
+	# 		scores.set_score(0,points)
+	# 	else:
+	# 		scores.set_score(1, points)
+	# 	QCoreApplication.processEvents(QEventLoop.AllEvents, 100)
+	# 	sleep(1)
+
+	######
+
+	analog_clock = AnalogClock()
+	analog_clock.show()
 
 	sys.exit(app.exec_())

@@ -2,7 +2,7 @@ import os
 import sys
 
 from PySide2.QtCore import Signal, QTimer, Qt, QPoint, QTime
-from PySide2.QtGui import QColor, QPainter, QBrush
+from PySide2.QtGui import QColor, QPainter, QBrush, QPen
 from PySide2.QtWidgets import QApplication, QWidget
 
 hourHand = [QPoint(7, 8),
@@ -22,15 +22,19 @@ class AnalogClock(QWidget):
         self.color_clock = QColor(127, 0, 127)
 
     def paintEvent(self, event):
-        side = min(self.width(), self.height())
+        side = min(self.width(), self.height())-2
         time = QTime().currentTime()
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
+        pen = QPen(self.color_clock)
+        pen.setWidth(4)
+        painter.setPen(pen)
+
+        painter.drawEllipse(((self.width()-side)/2.)+1, ((self.height()-side)/2.)+1, side-2, side-2)
         painter.translate(self.width() / 2, self.height() / 2)
         painter.scale(side / 200.0, side / 200.0)
 
-        painter.setPen(Qt.NoPen)
         painter.setBrush(QBrush(self.color_clock))
 
         painter.save()
@@ -41,7 +45,7 @@ class AnalogClock(QWidget):
         painter.setPen(self.color_clock)
 
         for i in range(0, 12):
-            painter.drawLine(88, 0, 96, 0)
+            painter.drawRect(70,0, 15, 10)
             painter.rotate(30.0)
 
         super(AnalogClock, self).paintEvent(event)

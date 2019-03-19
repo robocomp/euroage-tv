@@ -52,3 +52,5 @@ components/integratedHand/cmake_install\.cmake
 components/integratedHand/CMakeCache\.txt
 
 components/integratedHand/Makefile
+
+\.idea/

@@ -2,8 +2,6 @@
 """The user interface for our app"""
 
 import sys
-import random
-from copy import copy
 
 from PySide2.QtCore import QRect, Qt, QSize
 from PySide2.QtGui import QRegion, QColor

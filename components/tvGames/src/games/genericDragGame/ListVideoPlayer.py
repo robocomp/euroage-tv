@@ -1,13 +1,21 @@
 import errno
+import sys
 import os
-from time import sleep
+
+from os import listdir
+from os.path import isfile, join
+
 from collections import OrderedDict
-from ptyprocess.ptyprocess import FileNotFoundError
+from time import sleep
 
 from PySide2.QtCore import QUrl, Qt
 from PySide2.QtMultimedia import QMediaPlayer, QMediaPlaylist, QMediaContent
 from PySide2.QtMultimediaWidgets import QVideoWidget
 from PySide2.QtWidgets import QVBoxLayout, QFrame, QWidget, QApplication, QLabel
+
+# Python 2 only
+if sys.version_info < (3, 0):
+    from ptyprocess.ptyprocess import FileNotFoundError
 
 
 class ListVideoPlayer(QWidget):
@@ -35,8 +43,8 @@ class ListVideoPlayer(QWidget):
         self._frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self.setLayout(self._main_layout)
         self.setMaximumSize(640,480)
-        print  self.sizeHint()
-        print  self._frame.sizeHint()
+        print(self.sizeHint())
+        print(self._frame.sizeHint())
         # self._played_videos = 0
         # # self.audio.setVolume(50)
         self._media_player.stateChanged.connect(self.handle_state_changed)
@@ -121,17 +129,17 @@ class ActionsVideoPlayer(ListVideoPlayer):
     def play_one_action(self, action_key):
         play_list_index = self._index_to_playlist[action_key]
         if [play_list_index] != self._currently_playing or self._media_player.state() != QMediaPlayer.PlayingState:
-            print "To play"
+            print("To play")
             self.play_indexes_list([play_list_index])
             self._currently_playing = [play_list_index]
 
     def stop(self):
-        print "To stop"
+        print("To stop")
         self._media_player.stop()
         self._current_play_list.clear()
 
     def clear(self):
-        print "To clear"
+        print("To clear")
         self._actions_list = OrderedDict()
         # index from index number of actions to action keys (names)
         self._index_to_key = {}
@@ -145,13 +153,8 @@ class ActionsVideoPlayer(ListVideoPlayer):
 
 
 if __name__ == '__main__':
-    import sys
-
-
     app = QApplication(sys.argv)
     window = ActionsVideoPlayer()
-    from os import listdir
-    from os.path import isfile, join
 
 
     window.add_action("action_1", "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/videos/action_1.MP4", 1)

@@ -10,10 +10,9 @@ from pprint import pprint
 import passwordmeter
 from PySide2.QtCore import QObject, Signal, QFile
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox, QCompleter, QMainWindow, QToolBar, \
-    QComboBox, QListWidgetItem, QListWidget
+from PySide2.QtWidgets import QApplication, QMessageBox, QCompleter, QMainWindow
 
-from admin_widgets import LoginWindow, RegisterWindow,UsersWindow
+from admin_widgets import LoginWindow, RegisterWindow, UsersWindow
 
 FILE_PATH = os.path.abspath(__file__)
 print(FILE_PATH)
@@ -24,7 +23,8 @@ SHADOWS_FILE_PATH = "../../resources/shadows.json"
 #print os.getcwd()
 
 list_of_users =  []
-list_of_players =  ["Albus Dumbledore", "Minerva Mcgonnagal","Severus Snape"]
+list_of_players =  ["Persona 1", "Persona 2","Persona 3","Persona 4"]
+list_of_games = ["Juego 1","Juego 2","Juego 3","Juego 4"]
 
 # SQL_USER_TABLE_CREATION='create table if not exists users ' \
 # 						'(id int unsigned not null,' \
@@ -220,36 +220,26 @@ class MainWindow(QMainWindow):
 
         ##Users window
         completer2 = QCompleter(list_of_players)
-        self.ui.selplayer_combobox.setCompleter(completer2)
         self.ui.selplayer_combobox.addItems(list_of_players)
+        self.ui.selplayer_combobox.setCompleter(completer2)
         self.ui.selplayer_combobox.lineEdit().setPlaceholderText("Selecciona jugador...")
         self.selected_player_incombo = ""
         self.ui.selected_player_inlist = ""
         self.ui.selgame_combobox.lineEdit().setPlaceholderText("Selecciona juego...")
 
+        completer3 = QCompleter(list_of_games)
+        self.ui.selgame_combobox.addItems(list_of_games)
+        self.ui.selgame_combobox.setCompleter(completer3)
+
+        self.selected_item_inlist = ""
+
+        self.ui.listplayer_list.currentItemChanged.connect(self.selectediteminlist_changed)
         self.ui.selplayer_combobox.currentIndexChanged.connect(self.selectedplayer_changed)
         self.ui.addplayer_button.clicked.connect(self.addusertolist)
         self.ui.deleteplayer_buttton.clicked.connect(self.deleteuserfromlist)
+        self.ui.startgame_button.clicked.connect(self.start_game)
+        self.ui.seedata_button.clicked.connect(self.see_userdata)
 
-    def deleteuserfromlist(self):
-        item_to_delete = self.ui.listplayer_list.currentRow()
-        self.ui.listplayer_list.takeItem(item_to_delete)
-
-    def selectedplayer_changed(self):
-        self.selected_player = self.ui.selplayer_combobox.currentText()
-        if (self.ui.selplayer_combobox.currentIndex() == 1): #Nuevo jugador
-            reply = QMessageBox.question(self.focusWidget(), '',
-                                         ' Do you want to add a new player?', QMessageBox.Yes, QMessageBox.No)
-            if reply == QMessageBox.No:
-                return False
-
-            else:
-                print("Crear nueva ventana para añadir a viejitos")
-                return True
-
-
-    def addusertolist(self):
-        self.ui.listplayer_list.addItem(self.selected_player)
 
 
     def ddbb_status_changed(self, string):
@@ -346,7 +336,45 @@ class MainWindow(QMainWindow):
     def back_clicked(self):
         self.ui.stackedWidget.setCurrentIndex(0)
 
+    #Users window functions
+    def deleteuserfromlist(self):
+        item_to_delete = self.ui.listplayer_list.currentRow()
+        self.ui.listplayer_list.takeItem(item_to_delete)
 
+    def selectedplayer_changed(self):
+        self.selected_player_incombo = self.ui.selplayer_combobox.currentText()
+        if (self.ui.selplayer_combobox.currentIndex() == 1): #Nuevo jugador
+            reply = QMessageBox.question(self.focusWidget(), '',
+                                         ' Do you want to add a new player?', QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.No:
+                self.ui.selplayer_combobox.setCurrentIndex(0)
+                return False
+
+            else:
+                print("Crear nueva ventana para añadir a viejitos")
+                return True
+
+    def selectediteminlist_changed(self):
+        self.selected_item_inlist =  self.ui.listplayer_list.currentItem().text()
+
+    def addusertolist(self):
+        if (self.selected_player_incombo != "" ):
+            self.ui.listplayer_list.addItem(self.selected_player_incombo)
+            return True
+        else:
+            QMessageBox().information(self.focusWidget(), 'Error',
+                                      'No player selected',
+                                      QMessageBox.Ok)
+            return False
+
+    def start_game(self):
+        print(self.ui.selgame_combobox.currentText())
+
+    def see_userdata(self):
+        if (self.selected_item != ""):
+            print ("Ver datos del usuario ",self.selected_item)
+        else:
+            print("No item selected")
 
 if __name__ == '__main__':
 

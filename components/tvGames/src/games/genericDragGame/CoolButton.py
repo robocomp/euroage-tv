@@ -5,24 +5,24 @@ import sys
 import random
 from copy import copy
 
-from PySide2.QtCore import QRect, Qt
+from PySide2.QtCore import QRect, Qt, QSize
 from PySide2.QtGui import QRegion
 from PySide2.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QGraphicsDropShadowEffect
 
-SIZE = 200
-OFFSET = 20
 
 
 class CoolButton(QPushButton):
-    def __init__(self, text="", parent=None):
+    def __init__(self, text="", size =200, offset = 20, parent=None):
         super(CoolButton, self).__init__(text, parent)
-        self.setFixedWidth(SIZE)
-        self.setFixedHeight(SIZE)
+        self._size = size
+        self._offset = offset
+        self.setFixedSize(QSize(size, size))
+
         self.setStyleSheet(
             "QPushButton:hover {background-color: green; border: none;} QPushButton:!hover { background-color:#74ad5a;  }")
-        # self.setMask(QRegion(QRect(OFFSET/4, OFFSET/4, SIZE-OFFSET, SIZE-OFFSET), QRegion.Ellipse))
+        # self.setMask(QRegion(QRect(OFFSET/4, OFFSET/4, self._size-OFFSET, self._size-OFFSET), QRegion.Ellipse))
         self.setMask(
-            QRegion(QRect((SIZE - (SIZE - OFFSET)) / 2, (SIZE - (SIZE - OFFSET)) / 2, SIZE - OFFSET, SIZE - OFFSET),
+            QRegion(QRect((self._size - (self._size - self._offset)) / 2, (self._size - (self._size - self._offset)) / 2, self._size - self._offset, self._size - self._offset),
                     QRegion.Ellipse))
 
         self.pressed.connect(self._button_pressed)
@@ -30,6 +30,8 @@ class CoolButton(QPushButton):
 
         # Shadow
         self._set_released_shadow()
+
+
 
     def _set_pressed_shadow(self):
         pressed_shadow = QGraphicsDropShadowEffect(self)
@@ -48,12 +50,12 @@ class CoolButton(QPushButton):
 
     def _button_pressed(self):
         current_button = self.sender()
-        current_button.w, current_button.h = current_button.width() - OFFSET, current_button.height() - OFFSET
-        current_button.offset = OFFSET / 2
+        current_button.w, current_button.h = current_button.width() - self._offset, current_button.height() - self._offset
+        current_button.offset = self._offset / 2
 
         current_button.setMask(QRegion(QRect(
-            (SIZE - (current_button.w + current_button.offset)) / 2,
-            (SIZE - (current_button.h + current_button.offset)) / 2,
+            (self._size - (current_button.w + current_button.offset)) / 2,
+            (self._size - (current_button.h + current_button.offset)) / 2,
             current_button.w + current_button.offset,
             current_button.h + current_button.offset), QRegion.Ellipse))
 
@@ -63,7 +65,7 @@ class CoolButton(QPushButton):
     def _button_released(self):
         current_button = self.sender()
         current_button.setMask(
-            QRegion(QRect((SIZE - (SIZE - OFFSET)) / 2, (SIZE - (SIZE - OFFSET)) / 2, SIZE - OFFSET, SIZE - OFFSET),
+            QRegion(QRect((self._size - (self._size - self._offset)) / 2, (self._size - (self._size - self._offset)) / 2, self._size - self._offset, self._size - self._offset),
                     QRegion.Ellipse))
 
         self._set_released_shadow()

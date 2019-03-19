@@ -3,6 +3,8 @@
 
 import sys
 import random
+from copy import copy
+
 from PySide2 import QtCore
 from PySide2.QtCore import QRect
 from PySide2.QtGui import QRegion
@@ -19,15 +21,16 @@ class CoolButton(QWidget):
         self.button = QPushButton("Click me, Im green!")
         self.button.setFixedWidth(200)
         self.button.setFixedHeight(200)
-        self.button.setStyleSheet(" background-color:#74ad5a;;")
-
-        self.button.setMask(QRegion(QRect(5,5,180,180), QRegion.Ellipse))
+        self.button.setStyleSheet("QPushButton:hover {background-color: green; border: none;} QPushButton:!hover { background-color:#74ad5a;  }")
+        self.button.setMask(QRegion(QRect(5, 5, 180, 180), QRegion.Ellipse))
 
         self.button2 = QPushButton("Click me, Im red!")
         self.button2.setFixedWidth(200)
         self.button2.setFixedHeight(200)
-        self.button2.setStyleSheet(" background-color:#d0451b;")
-        self.button2.setMask(QRegion(QRect(5,5,180,180), QRegion.Ellipse))
+
+        self.button2.setStyleSheet("QPushButton:hover {background-color: red; border: none;} QPushButton:!hover { background-color:#d0451b;  }")
+
+        self.button2.setMask(QRegion(QRect(5, 5, 180, 180), QRegion.Ellipse))
 
         self.text = QLabel("Hello World")
         self.text.setAlignment(QtCore.Qt.AlignCenter)
@@ -40,13 +43,18 @@ class CoolButton(QWidget):
 
         self.button.pressed.connect(self.magic)
         self.button.released.connect(self.magic2)
-        self.button2.clicked.connect(self.magic)
+        self.button2.pressed.connect(self.magic)
+        self.button2.released.connect(self.magic2)
 
-        # TODO: Shadow
+        # Shadow
         self.buttonShadow = QGraphicsDropShadowEffect(self)
         self.buttonShadow.setBlurRadius(22)
         self.buttonShadow.setOffset(10)
+        self.buttonShadow2 = QGraphicsDropShadowEffect(self)
+        self.buttonShadow2.setBlurRadius(22)
+        self.buttonShadow2.setOffset(10)
         self.button.setGraphicsEffect(self.buttonShadow)
+        self.button2.setGraphicsEffect(self.buttonShadow2)
 
 
     def magic(self):

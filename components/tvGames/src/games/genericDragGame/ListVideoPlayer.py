@@ -154,8 +154,8 @@ if __name__ == '__main__':
     from os.path import isfile, join
 
 
-    window.add_action("action_1", "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/clothclean/LEJOS/action_1.mp4", 1)
-    window.add_action("action_2", "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/clothclean/LEJOS/action_2.mp4", 2)
+    window.add_action("action_1", "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/videos/action_1.MP4", 1)
+    window.add_action("action_2", "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/videos/action_2.MP4", 2)
     window.play_one_action("action_1")
     # window.setFixedSize(200,240)
 

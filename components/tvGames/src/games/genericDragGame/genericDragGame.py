@@ -198,7 +198,7 @@ class PlayableItem(DraggableItem):
 		self._video_background.setBrush(QColor("black"))
 		self._video_background.update()
 		self._video_widget.setSize(QSize(self.boundingRect().width()-1,self.boundingRect().height()-1))
-		self._video_widget.setPos(1,0)
+		self._video_widget.setPos(1 , 0)
 		self._media_player.play()
 
 	def stop_item(self):

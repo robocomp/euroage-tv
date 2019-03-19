@@ -6,20 +6,19 @@ import random
 from copy import copy
 
 from PySide2.QtCore import QRect, Qt, QSize
-from PySide2.QtGui import QRegion
+from PySide2.QtGui import QRegion, QColor
 from PySide2.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QGraphicsDropShadowEffect
 
 
 
 class CoolButton(QPushButton):
-    def __init__(self, text="", size =200, offset = 20, parent=None):
+    def __init__(self, text="", size =200, offset = 20, color = QColor("green"), parent=None):
         super(CoolButton, self).__init__(text, parent)
         self._size = size
         self._offset = offset
         self.setFixedSize(QSize(size, size))
+        self.set_color(color)
 
-        self.setStyleSheet(
-            "QPushButton:hover {background-color: green; border: none;} QPushButton:!hover { background-color:#74ad5a;  }")
         # self.setMask(QRegion(QRect(OFFSET/4, OFFSET/4, self._size-OFFSET, self._size-OFFSET), QRegion.Ellipse))
         self.setMask(
             QRegion(QRect((self._size - (self._size - self._offset)) / 2, (self._size - (self._size - self._offset)) / 2, self._size - self._offset, self._size - self._offset),
@@ -31,6 +30,13 @@ class CoolButton(QPushButton):
         # Shadow
         self._set_released_shadow()
 
+    def set_color(self, color):
+        if isinstance(color, QColor):
+            self.setStyleSheet(
+                "QPushButton:hover {background-color: "+color.darker().name()+"; border: none;} QPushButton:!hover { background-color:"+color.name()+";  }")
+            self.update()
+        else:
+            raise Exception("color must be a QColor class")
 
 
     def _set_pressed_shadow(self):

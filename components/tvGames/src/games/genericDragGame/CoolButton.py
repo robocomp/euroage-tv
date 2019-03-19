@@ -13,60 +13,40 @@ SIZE = 200
 OFFSET = 20
 
 
-class CoolButton(QWidget):
-    def __init__(self, parent=None):
-        QWidget.__init__(self)
-
-        self.hello = ["Hallo Welt", "你好，世界", "Hei maailma",
-                      "Hola Mundo", "Привет мир"]
-
-        self.button = QPushButton("Click me, Im greeeeeeeen!")
-        self.button.setFixedWidth(SIZE)
-        self.button.setFixedHeight(SIZE)
-        self.button.setStyleSheet(
+class CoolButton(QPushButton):
+    def __init__(self, text="", parent=None):
+        super(CoolButton, self).__init__(text, parent)
+        self.setFixedWidth(SIZE)
+        self.setFixedHeight(SIZE)
+        self.setStyleSheet(
             "QPushButton:hover {background-color: green; border: none;} QPushButton:!hover { background-color:#74ad5a;  }")
-        # self.button.setMask(QRegion(QRect(OFFSET/4, OFFSET/4, SIZE-OFFSET, SIZE-OFFSET), QRegion.Ellipse))
-        self.button.setMask(
+        # self.setMask(QRegion(QRect(OFFSET/4, OFFSET/4, SIZE-OFFSET, SIZE-OFFSET), QRegion.Ellipse))
+        self.setMask(
             QRegion(QRect((SIZE - (SIZE - OFFSET)) / 2, (SIZE - (SIZE - OFFSET)) / 2, SIZE - OFFSET, SIZE - OFFSET),
                     QRegion.Ellipse))
 
-        self.button2 = QPushButton("Click me, Im reeeeeed!")
-        self.button2.setFixedWidth(SIZE)
-        self.button2.setFixedHeight(SIZE)
-
-        self.button2.setStyleSheet(
-            "QPushButton:hover {background-color: red; border: none;} QPushButton:!hover { background-color:#d0451b;  }")
-
-        self.button2.setMask(
-            QRegion(QRect((SIZE - (SIZE - OFFSET)) / 2, (SIZE - (SIZE - OFFSET)) / 2, SIZE - OFFSET, SIZE - OFFSET),
-                    QRegion.Ellipse))
-
-        self.text = QLabel("Hello World")
-
-        self.text.setAlignment(Qt.AlignCenter)
-
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.text)
-        self.layout.addWidget(self.button)
-        self.layout.addWidget(self.button2)
-        self.setLayout(self.layout)
-
-        self.button.pressed.connect(self.magic)
-        self.button.released.connect(self.magic2)
-        self.button2.pressed.connect(self.magic)
-        self.button2.released.connect(self.magic2)
+        self.pressed.connect(self._button_pressed)
+        self.released.connect(self._button_released)
 
         # Shadow
-        self.buttonShadow = QGraphicsDropShadowEffect(self)
-        self.buttonShadow.setBlurRadius(22)
-        self.buttonShadow.setOffset(10)
-        self.buttonShadow2 = QGraphicsDropShadowEffect(self)
-        self.buttonShadow2.setBlurRadius(22)
-        self.buttonShadow2.setOffset(10)
-        self.button.setGraphicsEffect(self.buttonShadow)
-        self.button2.setGraphicsEffect(self.buttonShadow2)
+        self._set_released_shadow()
 
-    def magic(self):
+    def _set_pressed_shadow(self):
+        pressed_shadow = QGraphicsDropShadowEffect(self)
+        pressed_shadow.setBlurRadius(10)
+        pressed_shadow.setOffset(2)
+        self.setGraphicsEffect(pressed_shadow)
+        self.update()
+
+    def _set_released_shadow(self):
+        released_shadow = QGraphicsDropShadowEffect(self)
+        released_shadow.setBlurRadius(22)
+        released_shadow.setOffset(10)
+        self.setGraphicsEffect(released_shadow)
+        self.update()
+
+
+    def _button_pressed(self):
         current_button = self.sender()
         current_button.w, current_button.h = current_button.width() - OFFSET, current_button.height() - OFFSET
         current_button.offset = OFFSET / 2
@@ -77,28 +57,30 @@ class CoolButton(QWidget):
             current_button.w + current_button.offset,
             current_button.h + current_button.offset), QRegion.Ellipse))
 
-        self.buttonShadow = QGraphicsDropShadowEffect(self)
-        self.buttonShadow.setBlurRadius(10)
-        self.buttonShadow.setOffset(2)
 
-        current_button.setGraphicsEffect(self.buttonShadow)
-        current_button.update()
-        self.text.setText(random.choice(self.hello))
+        self._set_pressed_shadow()
 
-    def magic2(self):
+    def _button_released(self):
         current_button = self.sender()
         current_button.setMask(
             QRegion(QRect((SIZE - (SIZE - OFFSET)) / 2, (SIZE - (SIZE - OFFSET)) / 2, SIZE - OFFSET, SIZE - OFFSET),
                     QRegion.Ellipse))
-        self.buttonShadow = QGraphicsDropShadowEffect(self)
-        self.buttonShadow.setBlurRadius(22)
-        self.buttonShadow.setOffset(10)
-        current_button.setGraphicsEffect(self.buttonShadow)
-        current_button.update()
+
+        self._set_released_shadow()
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    w = CoolButton()
-    w.show()
+    widget = QWidget()
+    text = QLabel()
+    text = QLabel("Hello World")
+    text.setAlignment(Qt.AlignCenter)
+    button = CoolButton()
+    button2 = CoolButton()
+    layout = QVBoxLayout()
+    layout.addWidget(text)
+    layout.addWidget(button)
+    layout.addWidget(button2)
+    widget.setLayout(layout)
+    widget.show()
     sys.exit(app.exec_())

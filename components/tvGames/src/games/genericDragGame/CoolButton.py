@@ -7,12 +7,12 @@ from copy import copy
 
 from PySide2.QtCore import QRect, Qt, QSize
 from PySide2.QtGui import QRegion, QColor
-from PySide2.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QGraphicsDropShadowEffect
-
+from PySide2.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QGraphicsDropShadowEffect, \
+    QHBoxLayout
 
 
 class CoolButton(QPushButton):
-    def __init__(self, text="", size =200, offset = 20, color = QColor("green"), parent=None):
+    def __init__(self, text="", size=200, offset=20, color=QColor("green"), parent=None):
         super(CoolButton, self).__init__(text, parent)
         self._size = size
         self._offset = offset
@@ -21,8 +21,10 @@ class CoolButton(QPushButton):
 
         # self.setMask(QRegion(QRect(OFFSET/4, OFFSET/4, self._size-OFFSET, self._size-OFFSET), QRegion.Ellipse))
         self.setMask(
-            QRegion(QRect((self._size - (self._size - self._offset)) / 2, (self._size - (self._size - self._offset)) / 2, self._size - self._offset, self._size - self._offset),
-                    QRegion.Ellipse))
+            QRegion(
+                QRect((self._size - (self._size - self._offset)) / 2, (self._size - (self._size - self._offset)) / 2,
+                      self._size - self._offset, self._size - self._offset),
+                QRegion.Ellipse))
 
         self.pressed.connect(self._button_pressed)
         self.released.connect(self._button_released)
@@ -33,11 +35,10 @@ class CoolButton(QPushButton):
     def set_color(self, color):
         if isinstance(color, QColor):
             self.setStyleSheet(
-                "QPushButton:hover {background-color: "+color.darker().name()+"; border: none;} QPushButton:!hover { background-color:"+color.name()+";  }")
+                "QPushButton:hover {background-color: " + color.darker().name() + "; border: none;} QPushButton:!hover { background-color:" + color.name() + ";  }")
             self.update()
         else:
             raise Exception("color must be a QColor class")
-
 
     def _set_pressed_shadow(self):
         pressed_shadow = QGraphicsDropShadowEffect(self)
@@ -53,26 +54,24 @@ class CoolButton(QPushButton):
         self.setGraphicsEffect(released_shadow)
         self.update()
 
-
     def _button_pressed(self):
-        current_button = self.sender()
-        current_button.w, current_button.h = current_button.width() - self._offset, current_button.height() - self._offset
-        current_button.offset = self._offset / 2
+        self.w, self.h = self.width() - self._offset, self.height() - self._offset
+        self.offset = self._offset / 2
 
-        current_button.setMask(QRegion(QRect(
-            (self._size - (current_button.w + current_button.offset)) / 2,
-            (self._size - (current_button.h + current_button.offset)) / 2,
-            current_button.w + current_button.offset,
-            current_button.h + current_button.offset), QRegion.Ellipse))
-
+        self.setMask(QRegion(QRect(
+            (self._size - (self.w + self.offset)) / 2,
+            (self._size - (self.h + self.offset)) / 2,
+            self.w + self.offset,
+            self.h + self.offset), QRegion.Ellipse))
 
         self._set_pressed_shadow()
 
     def _button_released(self):
-        current_button = self.sender()
-        current_button.setMask(
-            QRegion(QRect((self._size - (self._size - self._offset)) / 2, (self._size - (self._size - self._offset)) / 2, self._size - self._offset, self._size - self._offset),
-                    QRegion.Ellipse))
+        self.setMask(
+            QRegion(
+                QRect((self._size - (self._size - self._offset)) / 2, (self._size - (self._size - self._offset)) / 2,
+                      self._size - self._offset, self._size - self._offset),
+                QRegion.Ellipse))
 
         self._set_released_shadow()
 
@@ -85,10 +84,13 @@ if __name__ == '__main__':
     text.setAlignment(Qt.AlignCenter)
     button = CoolButton()
     button2 = CoolButton()
-    layout = QVBoxLayout()
-    layout.addWidget(text)
-    layout.addWidget(button)
-    layout.addWidget(button2)
-    widget.setLayout(layout)
+    layout_h = QHBoxLayout()
+    layout_h.addWidget(button)
+    layout_h.addWidget(button2)
+
+    layout_v = QVBoxLayout()
+    layout_v.addWidget(text)
+    layout_v.addLayout(layout_h)
+    widget.setLayout(layout_v)
     widget.show()
     sys.exit(app.exec_())

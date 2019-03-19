@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""The user interface for our app"""
+
 import sys
 import random
 from PySide2 import QtCore
@@ -35,17 +38,33 @@ class CoolButton(QWidget):
         self.layout.addWidget(self.button2)
         self.setLayout(self.layout)
 
-        self.button.clicked.connect(self.magic)
+        self.button.pressed.connect(self.magic)
+        self.button.released.connect(self.magic2)
         self.button2.clicked.connect(self.magic)
 
         # TODO: Shadow
-        # self.buttonShadow = QGraphicsDropShadowEffect(self)
-        # self.buttonShadow.setBlurRadius(5)
-        # self.button.setGraphicsEffect(self.buttonShadow)
+        self.buttonShadow = QGraphicsDropShadowEffect(self)
+        self.buttonShadow.setBlurRadius(22)
+        self.buttonShadow.setOffset(10)
+        self.button.setGraphicsEffect(self.buttonShadow)
 
 
     def magic(self):
+        current_button = self.sender()
+        self.buttonShadow = QGraphicsDropShadowEffect(self)
+        self.buttonShadow.setBlurRadius(10)
+        self.buttonShadow.setOffset(2)
+        current_button.setGraphicsEffect(self.buttonShadow)
+        current_button.update()
         self.text.setText(random.choice(self.hello))
+
+    def magic2(self):
+        current_button = self.sender()
+        self.buttonShadow = QGraphicsDropShadowEffect(self)
+        self.buttonShadow.setBlurRadius(22)
+        self.buttonShadow.setOffset(10)
+        current_button.setGraphicsEffect(self.buttonShadow)
+        current_button.update()
 
 
 if __name__ == '__main__':

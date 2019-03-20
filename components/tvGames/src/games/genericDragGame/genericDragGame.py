@@ -14,10 +14,12 @@ from PySide2.QtGui import QImage, QPixmap, QPainter, QFont, QPen, QBrush, QColor
 from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtMultimediaWidgets import QGraphicsVideoItem
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QWidget, QHBoxLayout, QGraphicsView, \
-	QGraphicsTextItem, QApplication, QGridLayout, QLabel, QStyleOption, QStyle, QGraphicsRectItem
+	QGraphicsTextItem, QApplication, QGridLayout, QLabel, QStyleOption, QStyle, QGraphicsRectItem, \
+	QGraphicsSimpleTextItem, QGraphicsItem
 from numpy.random.mtrand import randint
 
 # Create a class for our main window
+from games.genericDragGame.CoolButton import CoolButton
 from games.genericDragGame.GameWidgets import GameTopBarWidget
 from games.genericDragGame.QGraphicsVideoListItem import ActionsVideoPlayer
 
@@ -50,10 +52,17 @@ class GameScreen(QWidget):
 
 		self._top_bar = GameTopBarWidget()
 		self._top_bar.setStyleSheet(".GameTopBarWidget{background-color: white}")
-		self._main_layout.addWidget(self._top_bar,0,20)
+		self._top_bar.setFixedHeight(45)
+		self._main_layout.addWidget(self._top_bar,0,0,1,20)
 		self._game_frame = TakeDragGame(1920, 1080)
 		self._game_frame.init_game(os.path.join(CURRENT_PATH, 'resources/final_game1/final_game1.json'))
-		self._main_layout.addWidget(self._game_frame, 1,20)
+		self._main_layout.addWidget(self._game_frame, 1,1, 1, 18)
+		self._button1 = CoolButton(text="AYUDA", size=150)
+		self._button1.set_color(QColor("Green"))
+		self._button2 = CoolButton(text="TERMINAR", size=150)
+		self._button1.set_color(QColor("Red"))
+		self._main_layout.addWidget(self._button1, 2,1,1,2, Qt.AlignRight)
+		self._main_layout.addWidget(self._button2, 2, 3, 1, 2)
 		# palette = self.palette()
 		# brush = QBrush(QImage(os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")))
 		# palette.setBrush(QPalette.Background, brush)
@@ -61,7 +70,7 @@ class GameScreen(QWidget):
 
 		# self.setStyleSheet("GameWidget {font-weight: bold; background-color: red;}")
 		self.setAutoFillBackground(True)
-		style_sheet_string = "GameWidget {background-image: url("+os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")+");}"
+		style_sheet_string = "GameScreen {background-image: url("+os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")+");}"
 		print(style_sheet_string)
 		self.setStyleSheet(style_sheet_string)
 
@@ -105,19 +114,21 @@ class MyQGraphicsScene(QGraphicsScene):
 		self.moved.emit(-1, event.scenePos().x(), event.scenePos().y(), event.buttons() == Qt.LeftButton)
 
 
+
 # It's the item to be moved on the game
 class DraggableItem(QGraphicsPixmapItem):
 
 	def __init__(self, id, image_path, width, height, draggable=False, parent=None):
 		super(DraggableItem, self).__init__(parent)
 		self.id = id
-		self.width = width
-		self.height = height
+		self._width = width
+		self._height = height
 		self.image_path = image_path
 		self.draggable = draggable
 		self.correct_position = False
 		self.image = QImage(image_path).scaled(width, height, Qt.KeepAspectRatio)
 		self.setPixmap(QPixmap.fromImage(self.image))
+		self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
 		# self.setAcceptTouchEvents(True)
 		# self.pixmap().setAttribute(Qt.WA_AcceptTouchEvents)
 		self.c_image = None
@@ -133,18 +144,18 @@ class DraggableItem(QGraphicsPixmapItem):
 
 	# image with overlay
 	def create_overlary_image(self):
-		self.c_image = QImage(self.width, self.height, QImage.Format_ARGB32)
+		self.c_image = QImage(self._width, self._height, QImage.Format_ARGB32)
 		painter = QPainter(self.c_image)
 		painter.setCompositionMode(QPainter.CompositionMode_Source)
 		painter.fillRect(self.c_image.rect(), Qt.transparent)
 		painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
 		painter.drawImage(0, 0, self.image)
 		painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
-		aux_image = QImage(os.path.join(CURRENT_PATH, "resources/check-mark.png")).scaled(self.width / 2,
-																						  self.height / 2,
+		aux_image = QImage(os.path.join(CURRENT_PATH, "resources/check-mark.png")).scaled(self._width / 2,
+																						  self._height / 2,
 																						  Qt.KeepAspectRatio)
-		painter.drawImage(self.width / 4,
-						  self.height / 4,
+		painter.drawImage(self._width / 4,
+						  self._height / 4,
 						  aux_image)
 		painter.end()
 
@@ -157,15 +168,26 @@ class DraggableItem(QGraphicsPixmapItem):
 			self.setPixmap(QPixmap.fromImage(self.image))
 
 	def resize(self, width, height):
-		self.width = width
-		self.height = height
-		self.image = QImage(self.image_path).scaled(self.width, self.height, Qt.KeepAspectRatio)
+		self._width = width
+		self._height = height
+		self.image = QImage(self.image_path).scaled(self._width, self._height, Qt.KeepAspectRatio)
 		if self.c_image:
 			self.create_overlary_image()
 		if self.overlay:
 			self.setPixmap(QPixmap.fromImage(self.c_image))
 		else:
 			self.setPixmap(QPixmap.fromImage(self.image))
+
+	def itemChange(self, change, value ):
+		print(change, value)
+		if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
+			newPos = value
+			rect = self.scene().sceneRect()
+			if not rect.contains(newPos):
+				newPos.setX(min(rect.right(), max(newPos.x(), rect.left())))
+				newPos.setY(min(rect.bottom(), max(newPos.y(), rect.top())))
+				return newPos
+		return super(DraggableItem, self).itemChange(change, value)
 			
 		
 	# def paint(self, painter, style, widget):
@@ -175,7 +197,13 @@ class DraggableItem(QGraphicsPixmapItem):
 	# 	super(DraggableItem, self).paint(painter, style, widget)
 
 	def clone(self):
-		return DraggableItem(self.id, self.image_path, self.width, self.height, self.draggable)
+		return DraggableItem(self.id, self.image_path, self._width, self._height, self.draggable)
+
+	def width(self):
+		return self.boundingRect().width()
+
+	def height(self):
+		return self.boundingRect().height()
 
 
 class PlayableItem(DraggableItem):
@@ -204,13 +232,30 @@ class PlayableItem(DraggableItem):
 	def stop_item(self):
 		self._video_background.setBrush(QBrush())
 		self._video_background.update()
-		self._video_widget.setSize(QSize(0, 0))
+		self._video_widget.setSize(QSize(10, 10))
 		self._media_player.stop()
 
 
 
 
 
+class DestinationItem(QGraphicsRectItem):
+	def __init__(self, rect, text='', parent = None):
+		super(DestinationItem, self).__init__(rect, parent)
+		self._text = text
+
+	def paint(self, painter, option, widget):
+		painter.save()
+		painter.setBrush(QColor("black"))
+		painter.drawText(self.rect(), self._text, Qt.AlignCenter | Qt.AlignVCenter)
+		painter.restore()
+		super(DestinationItem, self).paint(painter,option, widget)
+
+	def width(self):
+		return self.boundingRect().width()
+
+	def height(self):
+		return self.boundingRect().height()
 
 
 class Pointer(QObject):
@@ -304,23 +349,24 @@ class TakeDragGame(QWidget):
 		super(TakeDragGame, self).__init__(parent)
 		# ui
 		self.resize(width, height)
-		self.width = width
-		self.height = height
-		self.main_layout = QHBoxLayout()
-		self.setLayout(self.main_layout)
-		self.scene = MyQGraphicsScene()
+		self._width = width
+		self._height = height
+		self._main_layout = QHBoxLayout()
+		self.setLayout(self._main_layout)
+		self._scene = MyQGraphicsScene()
 		# DISCONNECT MOUSE
-		self.scene.moved.connect(self.update_pointer)
+		self._scene.moved.connect(self.update_pointer)
 		self.setCursor(Qt.BlankCursor)
-		self.view = QGraphicsView()
-		self.view.setMouseTracking(True)
-		self.view.setScene(self.scene)
-		self.view.setAlignment(Qt.AlignTop | Qt.AlignLeft)
-		self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-		self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+		self._view = QGraphicsView()
+		self._view.setMouseTracking(True)
+		self._view.setScene(self._scene)
+		self._view.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+		self._view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+		self._view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 		# TODO: Check if its better with opengl or not
 		# self.view.setViewport(QtOpenGL.QGLWidget())
-		self.main_layout.addWidget(self.view)
+		self._main_layout.addWidget(self._view)
+		self._main_layout.setContentsMargins(0, 0, 0, 0)
 
 		# self.clock = ClockWidget()
 		# self.clock_proxy = self.scene.addWidget(self.clock)
@@ -337,36 +383,20 @@ class TakeDragGame(QWidget):
 		#TODO: do on the game initialization
 		# mypath = "//home//robolab//robocomp//components//euroage-tv//components//tvGames//src//games//genericDragGame//resources//videos"
 		# onlyfiles = [os.path.join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
-		self._video_player = ActionsVideoPlayer()
-		# self._video_player.show()
-		# self.video_player.set_video_list(onlyfiles)
-		#TODO: Problem with QVideoWidget and QGraphicScene  https://forum.qt.io/topic/100437/problem-with-qgraphicsscene-and-qvideowidget-in-qt5-python2-pyside2
-		self.scene.addItem(self._video_player)
-		# self.video_player.reproduce_all()
 
-		self._video_player.setSize(QSize(320, 240))
-		# TODO: Problem with QVideoWidget and QGraphicScene  https://forum.qt.io/topic/100437/problem-with-qgraphicsscene-and-qvideowidget-in-qt5-python2-pyside2
-		self._video_player.setPos(1200, 100)
-		desktop_widget = QApplication.desktop()
-		# if desktop_widget.screenCount() > 1:
-		# 	second_screen_size = desktop_widget.screenGeometry(1)
-		# 	self._video_player.move(second_screen_size.left()+1200, 200)
-		# else:
-		# 	self._video_player.move(1200, 200)
-		# self._video_player.show()
 
 		self.end_message = QGraphicsTextItem(u"¡Has perdido!")
 		self.end_message.hide()
 		self.end_message.setFont(QFont("Arial", 90, QFont.Bold))
-		self.end_message.setPos(self.width / 2 - self.end_message.boundingRect().width() / 2,
-								self.height / 2 - self.end_message.boundingRect().height() / 2)
+		self.end_message.setPos(self._width / 2 - self.end_message.boundingRect().width() / 2,
+								self._height / 2 - self.end_message.boundingRect().height() / 2)
 		self.end_message.setZValue(60)
-		self.scene.addItem(self.end_message)
+		self._scene.addItem(self.end_message)
 		# game data
 		self.total_images = 0
 		self.correct_images = 0
 
-		self.scene.setSceneRect(0, 0, width, height)
+		self._scene.setSceneRect(0, 0, width, height)
 		self.grabbed = None
 		self.game_config = None
 		self.config = ""
@@ -374,13 +404,12 @@ class TakeDragGame(QWidget):
 		# self.init_game(os.path.join(CURRENT_PATH, 'resources/game1.json'))
 		# print("mplayer " + "\"" + os.path.join(CURRENT_PATH, WINNING_SOUNDS[0]) + "\"")
 		# subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, WINNING_SOUNDS[0]) + "\"", stdout=DEVNULL, shell=True)
-		self.view.setAttribute(Qt.WA_AcceptTouchEvents)
-		self.view.viewport().setAttribute(Qt.WA_AcceptTouchEvents)
+		self._view.setAttribute(Qt.WA_AcceptTouchEvents)
+		self._view.viewport().setAttribute(Qt.WA_AcceptTouchEvents)
 		self.setAttribute(Qt.WA_AcceptTouchEvents)
 
 	def init_game(self, config_file='resources/game1.json'):
 		self.clear_scene()
-		self._video_player.clear()
 		self.game_config = None
 		self.grabbed = None
 		self.correct_images = 0
@@ -391,7 +420,7 @@ class TakeDragGame(QWidget):
 		# load config game file
 		with open(os.path.join(CURRENT_PATH, config_file)) as file_path:
 			self.game_config = json.load(file_path)
-		self.resize(self.game_config["size"][0], self.game_config["size"][1])
+		# self.resize(self.game_config["size"][0], self.game_config["size"][1])
 		self.create_and_add_images()
 		# self.draw_position(self.scene.width()/2, self.scene.height()/2, False)
 		# self.clock.set_time(int(self.game_config["time"]))
@@ -412,7 +441,7 @@ class TakeDragGame(QWidget):
 	def clear_scene(self):
 		if self.game_config:
 			for key, item in self.game_config["images"].items():
-				self.scene.removeItem(item["widget"])
+				self._scene.removeItem(item["widget"])
 		if self._pointers is not None and len(self._pointers) > 0:
 			for pointer in self._pointers.values():
 				self.remove_pointer(pointer)
@@ -440,8 +469,8 @@ class TakeDragGame(QWidget):
 		if the_pointer.id in self._pointers:
 			print("Removing pointer id %d"%(the_pointer.id))
 			the_pointer.stop()
-			self.scene.removeItem(the_pointer.open_widget)
-			self.scene.removeItem(the_pointer.closed_widget)
+			self._scene.removeItem(the_pointer.open_widget)
+			self._scene.removeItem(the_pointer.closed_widget)
 			del self._pointers[the_pointer.id]
 
 	def show(self):
@@ -467,7 +496,6 @@ class TakeDragGame(QWidget):
 			subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
 		self.clock.hide()
 		self.end_message.show()
-		self._video_player.hide()
 		#        self.scene.update()
 		#        time.sleep(3)
 		self.clear_scene()
@@ -482,8 +510,8 @@ class TakeDragGame(QWidget):
 		close_pointer_widget.setZValue(int(self.game_config["depth"]["mouse"]))
 		self._pointers[pointer_id] = Pointer(pointer_id, xpos, ypos, grab, open_pointer_widget, close_pointer_widget)
 		self._pointers[pointer_id]._lost_timer.timeout.connect(self.remove_pointer)
-		self.scene.addItem(self._pointers[pointer_id].open_widget)
-		self.scene.addItem(self._pointers[pointer_id].closed_widget)
+		self._scene.addItem(self._pointers[pointer_id].open_widget)
+		self._scene.addItem(self._pointers[pointer_id].closed_widget)
 
 	def update_pointer(self, pointer_id, xpos, ypos, grab):
 		if pointer_id not in self._pointers:
@@ -502,12 +530,10 @@ class TakeDragGame(QWidget):
 
 				# Set the position of the grabbed object to the center of the new position of the pointer
 				element_taken.setPos(new_xpos, new_ypos)
-				if element_taken.id in self._video_player:
-					self._video_player.play_one_action(element_taken.id)
 			# Nothing taken
 			else:
 				# check if there is any items unde rthe new pointer position and if it's draggable
-				items = self.scene.items(QPointF(xpos, ypos))
+				items = self._scene.items(QPointF(xpos, ypos))
 				if len(items) > 1:
 					for item in items:
 						if isinstance(item, PlayableItem):
@@ -523,7 +549,7 @@ class TakeDragGame(QWidget):
 			if self._pointers[pointer_id].taken:
 				# dropping item
 				# adjust Z value
-				items = self.scene.items(QPointF(xpos, ypos))
+				items = self._scene.items(QPointF(xpos, ypos))
 				zvalue = int(self.game_config["depth"]["piece"])
 				if len(items) > 1:
 					# set the z value over any background image
@@ -556,7 +582,6 @@ class TakeDragGame(QWidget):
 				# self._pointers[pointer_id].taken.set_overlay(False)
 				self._pointers[pointer_id].taken.stop_item()
 				self._pointers[pointer_id].taken = None
-				self._video_player.stop()
 
 
 		# self.game_config["images"]["handOpen"]["widget"].show()
@@ -568,11 +593,18 @@ class TakeDragGame(QWidget):
 	def adjust_to_nearest_destination(self, pointer_id):
 		lowest_distance = sys.maxint
 		nearest_dest = None
+		taken_widget = self._pointers[pointer_id].taken
 		for dest in self._destinations:
-			xdistance = (self._pointers[pointer_id].taken.scenePos().x() + self._pointers[pointer_id].taken.width / 2.) - \
-						(dest["initial_pose"][0]+ dest["size"][0]/2.)
-			ydistance = (self._pointers[pointer_id].taken.scenePos().y() + self._pointers[pointer_id].taken.height / 2.) - \
-						(dest["initial_pose"][1] + dest["size"][1]/2.)
+			piece_center_x = taken_widget.scenePos().x() + self._pointers[
+				pointer_id].taken.width() / 2.
+			dest_center_x = dest.scenePos().x()+ dest.width()/2.
+			xdistance = piece_center_x - dest_center_x
+
+			piece_center_y = taken_widget.scenePos().y() + self._pointers[
+				pointer_id].taken.height() / 2.
+			dest_center_y = dest.scenePos().y() + dest.height() / 2.
+			ydistance = piece_center_y - dest_center_y
+
 			distance = math.sqrt(pow(xdistance, 2) + pow(ydistance, 2))
 			if distance < lowest_distance:
 				lowest_distance = distance
@@ -581,72 +613,72 @@ class TakeDragGame(QWidget):
 		# If the distance to the correct position is less that a configured threshold
 		if nearest_dest is not None and lowest_distance < int(self.game_config["difficult"]):
 			# Adjust the position of the taken object to the exact correct one
-			widths_diff = (self._pointers[pointer_id].taken.width -dest["size"][0])/2
-			heights_diff = (self._pointers[pointer_id].taken.height- dest["size"][1]) / 2
-			new_xpos = nearest_dest["initial_pose"][0] - widths_diff
-			new_ypos = nearest_dest["initial_pose"][1] - heights_diff
-			self._pointers[pointer_id].taken.setPos(new_xpos, new_ypos)
+			widths_diff = int((taken_widget.width() - dest.width())/2)
+			heights_diff = int((taken_widget.height()- dest.height()) / 2)
+			new_xpos = nearest_dest.scenePos().x() - widths_diff
+			new_ypos = nearest_dest.scenePos().y() - heights_diff
+			taken_widget.setPos(new_xpos, new_ypos)
 
 	def create_and_add_images(self):
 		if self.game_config is not None:
 			for image_id, item in self.game_config["images"].items():
 				image_path = os.path.join(CURRENT_PATH, item["image_path"])
-				# if "video_path" in item:
-				# 	clip_path = os.path.join(CURRENT_PATH, item["video_path"])
-				# 	if "index" in item:
-				# 		action_index = item["index"]
-				# 	else:
-				# 		action_index = -1
-				# 	self._video_player.add_action(image_id, clip_path, action_index)
-
 
 				if "video_path" in item:
 					clip_path = os.path.join(CURRENT_PATH, item["video_path"])
-					new_image = PlayableItem(image_id, image_path, clip_path, item["size"][0], item["size"][1], item["category"] == "piece")
+					new_image = PlayableItem(image_id, image_path, clip_path, item["size"][0], item["size"][1],
+											 item["category"] == "piece")
 				else:
 					new_image = DraggableItem(image_id, image_path, item["size"][0], item["size"][1],
 											  item["category"] == "piece")
+
+
 				new_image.setPos(item["initial_pose"][0], item["initial_pose"][1])
 				new_image.setZValue(int(self.game_config["depth"][item["category"]]))
 				self.game_config["images"][image_id]["widget"] = new_image
 				if item["category"] != "mouse":
-					self.scene.addItem(new_image)
+					self._scene.addItem(new_image)
 				if item["category"] == "piece":
-					new_image.set_final_pose(item["final_pose"][0], item["final_pose"][1])
-					self._pieces.append(item)
+					dest_image = DestinationItem(new_image.boundingRect(), str(item["index"]))
+					dest_image.setPos(item["final_pose"][0], item["final_pose"][1])
+					self._pieces.append(new_image)
+					self._destinations.append(dest_image)
 					self.total_images = self.total_images + 1
-				if item["category"] == "destination":
-					self._destinations.append(item)
+					self._scene.addItem(dest_image)
+
+
 
 	def resizeEvent(self, event):
 		# skip initial entry
+		self._view.fitInView(self._scene.itemsBoundingRect(), Qt.KeepAspectRatio)
+		self._scene.setSceneRect(self._scene.itemsBoundingRect())
 		super(TakeDragGame, self).resizeEvent(event)
-		if self.game_config is None:
-			return
-		if event.oldSize().width() < 0 or event.oldSize().height() < 0:
-			return
-		# self.clock_proxy.setPos(self.view.width() - self.clock_proxy.boundingRect().width() * 1.1, 0)
-		self.end_message.setPos(self.view.width() / 2 - self.end_message.boundingRect().width() / 2,
-								self.view.height() / 2 - self.end_message.boundingRect().height() / 2)
-		# images
-		xfactor = float(event.size().width()) / float(event.oldSize().width())
-		yfactor = float(event.size().height()) / float(event.oldSize().height())
-		for key, item in self.game_config["images"].items():
-			# TODO: resize called before widget creation
-			if "widget" in item:
-				# update size
-				new_xsize = item["widget"].width * xfactor
-				new_ysize = item["widget"].height * yfactor
-				item["widget"].resize(new_xsize, new_ysize)
-				# update position
-				new_xpos = float(item["widget"].scenePos().x()) * xfactor
-				new_ypos = float(item["widget"].scenePos().y()) * yfactor
-				item["widget"].setPos(new_xpos, new_ypos)
-				# update final pose
-				if item["widget"].draggable:
-					new_finalx = item["widget"].final_pose_x * xfactor
-					new_finaly = item["widget"].final_pose_y * yfactor
-					item["widget"].set_final_pose(new_finalx, new_finaly)
+		# if self.game_config is None:
+		# 	return
+		# if event.oldSize().width() < 0 or event.oldSize().height() < 0:
+		# 	return
+		# # self.clock_proxy.setPos(self.view.width() - self.clock_proxy.boundingRect().width() * 1.1, 0)
+		# self.end_message.setPos(self.view.width() / 2 - self.end_message.boundingRect().width() / 2,
+		# 						self.view.height() / 2 - self.end_message.boundingRect().height() / 2)
+		# # images
+		# xfactor = float(event.size().width()) / float(event.oldSize().width())
+		# yfactor = float(event.size().height()) / float(event.oldSize().height())
+		# for key, item in self.game_config["images"].items():
+		# 	# TODO: resize called before widget creation
+		# 	if "widget" in item:
+		# 		# update size
+		# 		new_xsize = item["widget"].width * xfactor
+		# 		new_ysize = item["widget"].height * yfactor
+		# 		item["widget"].resize(new_xsize, new_ysize)
+		# 		# update position
+		# 		new_xpos = float(item["widget"].scenePos().x()) * xfactor
+		# 		new_ypos = float(item["widget"].scenePos().y()) * yfactor
+		# 		item["widget"].setPos(new_xpos, new_ypos)
+		# 		# update final pose
+		# 		if item["widget"].draggable:
+		# 			new_finalx = item["widget"].final_pose_x * xfactor
+		# 			new_finaly = item["widget"].final_pose_y * yfactor
+		# 			item["widget"].set_final_pose(new_finalx, new_finaly)
 
 	def show_on_second_screen(self):
 		desktop_widget = QApplication.desktop()

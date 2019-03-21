@@ -4,6 +4,7 @@ import os
 
 from os import listdir, PathLike
 from os.path import isfile, join
+from os import listdir
 
 from collections import OrderedDict
 from time import sleep
@@ -217,6 +218,10 @@ class ActionsVideoPlayer(ListVideoPlayer):
         # save the index in the playlist
         self._index_to_playlist[action_key] = self.add_path_to_video_list(clip_path)
 
+    def play_list(self, playlist):
+        self.play_indexes_list(self._index_to_playlist.values())
+
+
     def play_one_action(self, action_key):
         play_list_index = self._index_to_playlist[action_key]
         if [play_list_index] != self._currently_playing or self._media_player.state() != QMediaPlayer.PlayingState:
@@ -225,12 +230,12 @@ class ActionsVideoPlayer(ListVideoPlayer):
             self._currently_playing = [play_list_index]
 
     def play_pause(self):
-        print("play_pause")
+        print("play_pause", self._media_player.state())
         if self._media_player.state() == QMediaPlayer.PlayingState:
             self._media_player.pause()
         else:
             self._media_player.play()
-        print(self._media_player.state())
+
 
 
     def stop(self):
@@ -254,14 +259,14 @@ class ActionsVideoPlayer(ListVideoPlayer):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = ActionsVideoPlayer()
+    path = "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/videos/"
+    files = {f[:-4]:f for f in listdir(path) if isfile(join(path, f))}
+    for k in sorted(files):
+        print(k,files[k])
+        window.add_action(k, path+files[k])
 
-    window.add_action("action_1",
-                      "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/videos/action_1.MP4",
-                      1)
-    window.add_action("action_2",
-                      "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/videos/action_2.MP4",
-                      2)
     window.play_one_action("action_1")
+    window.play_list(sorted(files.keys()))
     # window.setFixedSize(200,240)
 
     # mypath = "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/clothclean/LEJOS"

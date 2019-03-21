@@ -21,7 +21,8 @@ if sys.version_info < (3, 0):
 
 
 class FrameButton(QPushButton):
-    def __init__(self, text="", text_size=10, h=150, w=250, offset=20, color="green", parent=None, style=None):
+    def __init__(self, text="", text_size=10, h=150, w=250, offset=20, color="green", style=None, parent=None):
+        self.parent  = parent
         super(FrameButton, self).__init__(text, parent)
         self._size = str(h) + "x" + str(w)
         self._offset = offset
@@ -68,17 +69,17 @@ class FrameButton(QPushButton):
 
 
 class PlayButton(FrameButton):
-    def __init__(self, text="", text_size=30, h=150, w=250, offset=20, color="#3cc21b", parent=None, style=None):
+    def __init__(self, text="", text_size=30, h=150, w=250, offset=20, color="#3cc21b", style=None,  parent=None):
         super(PlayButton, self).__init__(text, text_size, h, w, offset, color, style, parent)
         self.pressed.connect(self._play_pause)
 
     def _play_pause(self):
         print("Play/Pause")
-        # Call parent
+
 
 
 class CloseButton(FrameButton):
-    def __init__(self, text="", text_size=30, h=150, w=250, offset=20, color="#c21b1b", parent=None, style=None):
+    def __init__(self, text="", text_size=30, h=150, w=250, offset=20, color="#c21b1b", style=None,  parent=None):
         super(CloseButton, self).__init__(text, text_size, h, w, offset, color, style, parent)
         self.pressed.connect(self._close)
     def _close(self):
@@ -94,7 +95,6 @@ class ListVideoPlayer(QWidget):
         self._video_widget = QVideoWidget(self._frame)
         self._current_play_list = QMediaPlaylist()
         self._media_player = QMediaPlayer(self)
-
         self._media_player.setVideoOutput(self._video_widget)
         self._media_player.setPlaylist(self._current_play_list)
 
@@ -110,10 +110,11 @@ class ListVideoPlayer(QWidget):
         self._main_layout = QVBoxLayout(self)
         self._main_layout.addWidget(self._frame, 1)
 
-        self.play_button = PlayButton(text="PAUSAR")
-        self.close_button = CloseButton(text="CERRAR")
+        self.play_button = PlayButton(text="PAUSAR", parent=self)
+        self.close_button = CloseButton(text="CERRAR", parent=self)
         self._button_layout.addWidget(self.play_button)
         self._button_layout.addWidget(self.close_button)
+
         self._main_layout.addLayout(self._button_layout)
         self._main_layout.setAlignment(self.play_button, Qt.AlignCenter)
         self._main_layout.setContentsMargins(4, 4, 4, 8)
@@ -126,7 +127,7 @@ class ListVideoPlayer(QWidget):
         self.setFixedSize(desktop_widget.width() * margin, desktop_widget.height() * margin)
         self.setMaximumSize(desktop_widget.width() * margin, desktop_widget.height() * margin)
         self.move(desktop_widget.width() * (1 - margin) / 2, desktop_widget.height() * (1 - margin) / 2)
-        print(desktop_widget.center())
+
         print(self.sizeHint())
         print(self._frame.sizeHint())
         # self._played_videos = 0
@@ -197,6 +198,9 @@ class ActionsVideoPlayer(ListVideoPlayer):
         self._currently_playing = []
         # TODO: Only needed becuase the problem with QVideoWidget and QGraphicScene
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.play_button.clicked.connect(self.play_pause)
+        self.close_button.clicked.connect(self.stop)
+
 
     def add_action(self, action_key, clip_path, action_index=-1):
         if action_index < 0:
@@ -219,6 +223,15 @@ class ActionsVideoPlayer(ListVideoPlayer):
             print("To play")
             self.play_indexes_list([play_list_index])
             self._currently_playing = [play_list_index]
+
+    def play_pause(self):
+        print("play_pause")
+        if self._media_player.state() == QMediaPlayer.PlayingState:
+            self._media_player.pause()
+        else:
+            self._media_player.play()
+        print(self._media_player.state())
+
 
     def stop(self):
         print("To stop")

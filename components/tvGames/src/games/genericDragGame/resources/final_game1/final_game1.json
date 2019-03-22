@@ -1,7 +1,8 @@
 {
+  "title": "Prepara la tortilla",
   "size":[1900, 1070],
   "difficult": "100",
-  "time": "200",
+  "time": "120",
   "depth":{
     "destination": "0",
     "piece": "10",
@@ -11,7 +12,7 @@
     "action_1": {
       "index": 1,
       "size": [320,240],
-      "initial_pose": [320,160],
+      "initial_pose": [250,400],
       "final_pose": [250, 685],
       "image_path": "resources/final_game1/photos/action_1.jpg",
       "video_path": "resources/final_game1/videos/action_1.MP4",
@@ -21,7 +22,7 @@
     "action_2": {
       "index": 2,
       "size": [320,240],
-      "initial_pose": [350,160],
+      "initial_pose": [576,400],
       "final_pose": [576,685],
       "image_path": "resources/final_game1/photos/action_2.jpg",
       "video_path": "resources/final_game1/videos/action_2.MP4",
@@ -31,7 +32,7 @@
     "action_3": {
       "index": 3,
       "size": [320,240],
-      "initial_pose": [190,240],
+      "initial_pose": [902,400],
       "final_pose": [902,685],
       "image_path": "resources/final_game1/photos/action_3.jpg",
       "video_path": "resources/final_game1/videos/action_3.MP4",
@@ -41,7 +42,7 @@
     "action_4": {
       "index": 4,
       "size": [320,240],
-      "initial_pose": [230,170],
+      "initial_pose": [1228,400],
       "final_pose": [1228,685],
       "image_path": "resources/final_game1/photos/action_4.jpg",
       "video_path": "resources/final_game1/videos/action_4.MP4",
@@ -51,7 +52,7 @@
     "action_5": {
       "index": 5,
       "size": [320,240],
-      "initial_pose": [220,250],
+      "initial_pose": [1554,400],
       "final_pose": [1554,685],
       "image_path": "resources/final_game1/photos/action_5.jpg",
       "video_path": "resources/final_game1/videos/action_5.MP4",
@@ -61,7 +62,7 @@
     "action_6": {
       "index": 6,
       "size": [320,240],
-      "initial_pose": [220,250],
+      "initial_pose": [1554,400],
       "final_pose": [1554,685],
       "image_path": "resources/final_game1/photos/action_6.jpg",
       "video_path": "resources/final_game1/videos/action_6.MP4",
@@ -71,7 +72,7 @@
     "action_7": {
       "index": 7,
       "size": [320,240],
-      "initial_pose": [220,250],
+      "initial_pose": [1554,400],
       "final_pose": [1554,685],
       "image_path": "resources/final_game1/photos/action_7.jpg",
       "video_path": "resources/final_game1/videos/action_7.MP4",

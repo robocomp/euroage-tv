@@ -1,0 +1,26 @@
+module RoboCompIntegratedHand{
+
+	struct Pos2D{
+		float x;
+		float y;
+	};	
+	struct Pos3D{
+		float x;
+		float y;
+		float z;
+	};	
+
+	struct Hand{
+		int id;
+		bool touched;
+ 		bool fist;
+		Pos2D touchPos;
+		Pos3D centerMass;
+  	};
+	sequence<Hand> Hands;
+	
+	interface IntegratedHand
+	{
+		void detectedHands(Hands handList);
+	};
+};

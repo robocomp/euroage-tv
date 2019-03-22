@@ -1,19 +1,15 @@
 import errno
-import sys
 import os
-
-from os import listdir, PathLike
-from os.path import isfile, join
-from os import listdir
-
+import sys
 from collections import OrderedDict
-from time import sleep
+from os import listdir
+from os.path import isfile, join
 
 from PySide2.QtCore import QUrl, Qt, QSize
 from PySide2.QtGui import QColor
 from PySide2.QtMultimedia import QMediaPlayer, QMediaPlaylist, QMediaContent
 from PySide2.QtMultimediaWidgets import QVideoWidget
-from PySide2.QtWidgets import QVBoxLayout, QFrame, QWidget, QApplication, QLabel, QPushButton, \
+from PySide2.QtWidgets import QVBoxLayout, QFrame, QWidget, QApplication, QPushButton, \
     QGraphicsDropShadowEffect, QHBoxLayout
 
 # Python 2 only
@@ -23,7 +19,7 @@ if sys.version_info < (3, 0):
 
 class FrameButton(QPushButton):
     def __init__(self, text="", text_size=10, h=150, w=250, offset=20, color="green", style=None, parent=None):
-        self.parent  = parent
+        self.parent = parent
         super(FrameButton, self).__init__(text, parent)
         self._size = str(h) + "x" + str(w)
         self._offset = offset
@@ -40,7 +36,8 @@ class FrameButton(QPushButton):
     def set_color(self, color, text_size):
         if isinstance(color, QColor):
             self.setStyleSheet(
-                "QPushButton{border-radius:15px; border:2px solid #000000; color:#ffffff; font-size:" + str(text_size) + "px; font-weight:bold; padding:16px 31px; } QPushButton:hover {background-color: " + color.name() + ";} QPushButton:!hover { background-color:" + color.darker(
+                "QPushButton{border-radius:15px; border:2px solid #000000; color:#ffffff; font-size:" + str(
+                    text_size) + "px; font-weight:bold; padding:16px 31px; } QPushButton:hover {background-color: " + color.name() + ";} QPushButton:!hover { background-color:" + color.darker(
                     150).name() + ";  }")
             self.update()
         else:
@@ -69,27 +66,8 @@ class FrameButton(QPushButton):
         self._set_released_shadow()
 
 
-class PlayButton(FrameButton):
-    def __init__(self, text="", text_size=30, h=150, w=250, offset=20, color="#3cc21b", style=None,  parent=None):
-        super(PlayButton, self).__init__(text, text_size, h, w, offset, color, style, parent)
-        self.pressed.connect(self._play_pause)
-
-    def _play_pause(self):
-        print("Play/Pause")
-
-
-
-class CloseButton(FrameButton):
-    def __init__(self, text="", text_size=30, h=150, w=250, offset=20, color="#c21b1b", style=None,  parent=None):
-        super(CloseButton, self).__init__(text, text_size, h, w, offset, color, style, parent)
-        self.pressed.connect(self._close)
-    def _close(self):
-        print("Close")
-        sys.exit(app.exec_())
-
-
 class ListVideoPlayer(QWidget):
-    def __init__(self, graphic_item=False, parent=None, margin=0.8):
+    def __init__(self, relative_width=0.8, relative_height=0.8, parent=None):
         super(ListVideoPlayer, self).__init__(parent=parent)
         self._frame = QFrame()
 
@@ -111,10 +89,10 @@ class ListVideoPlayer(QWidget):
         self._main_layout = QVBoxLayout(self)
         self._main_layout.addWidget(self._frame, 1)
 
-        self.play_button = PlayButton(text="PAUSAR", parent=self)
-        self.close_button = CloseButton(text="CERRAR", parent=self)
+        self.play_button = FrameButton(text="PAUSAR", text_size=30, color="#3cc21b", parent=self)
+        self.stop_button = FrameButton(text="CERRAR", text_size=30, color="#c21b1b", parent=self)
         self._button_layout.addWidget(self.play_button)
-        self._button_layout.addWidget(self.close_button)
+        self._button_layout.addWidget(self.stop_button)
 
         self._main_layout.addLayout(self._button_layout)
         self._main_layout.setAlignment(self.play_button, Qt.AlignCenter)
@@ -125,35 +103,18 @@ class ListVideoPlayer(QWidget):
         self.setLayout(self._main_layout)
 
         desktop_widget = QApplication.desktop().screenGeometry(0)
-        self.setFixedSize(desktop_widget.width() * margin, desktop_widget.height() * margin)
-        self.setMaximumSize(desktop_widget.width() * margin, desktop_widget.height() * margin)
-        self.move(desktop_widget.width() * (1 - margin) / 2, desktop_widget.height() * (1 - margin) / 2)
+        self.setFixedSize(desktop_widget.width() * relative_width, desktop_widget.height() * relative_height)
+        self.setMaximumSize(desktop_widget.width() * relative_width, desktop_widget.height() * relative_height)
+        self.move(desktop_widget.width() * (1 - relative_width) / 2, desktop_widget.height() * (1 - relative_height) / 2)
 
-        print(self.sizeHint())
-        print(self._frame.sizeHint())
         # self._played_videos = 0
         # # self.audio.setVolume(50)
         self._media_player.stateChanged.connect(self.handle_state_changed)
         # self._reproduce_multiple = False
 
-    # def handleButton(self):
-    #     if self._media_player.state() == QMediaPlayer.PlayingState:
-    #         self._media_player.stop()
-    #     else:
-    #         path = QtGui.QFileDialog.getOpenFileName(self, self.button.text())
-    #         if path:
-    #             self._media_player.setCurrentSource(QMediaPlayer.MediaSource(path))
-    #             self._media_player.play()
-    #
     def handle_state_changed(self, newstate):
         print(newstate)
 
-    #
-    def set_video_list(self, video_list_path):
-        for path in video_list_path:
-            self.add_path_to_video_list(path)
-
-    #
     def add_path_to_video_list(self, video_path):
         if os.path.exists(video_path):
             self._full_media_list.append(video_path)
@@ -162,8 +123,6 @@ class ListVideoPlayer(QWidget):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), video_path)
             return -1
 
-    #
-    #
     def play_indexes_list(self, video_indexes):
         self._current_play_list.clear()
         for index in video_indexes:
@@ -172,39 +131,29 @@ class ListVideoPlayer(QWidget):
                 self._current_play_list.addMedia(QMediaContent(QUrl.fromLocalFile(path)))
         self._media_player.play()
 
-    #
     def reproduce_all(self):
         self._current_play_list.addMedia(self._full_media_list)
 
     def clear(self):
         self._current_play_list.clear()
 
-    #
-    # def check_and_play(self, video_index):
-    #     if video_index in range(len(self._video_list)):
-    #         next_path = self._video_list[video_index]
-    #         self._media_player.setCurrentSource(Phonon.MediaSource(next_path))
-    #         self._media_player.play()
-    #     else:
-    #         print("Video index out of video list (%d of %d)"%(len(video_index, len(self._video_list))))
-
 
 class ActionsVideoPlayer(ListVideoPlayer):
-    def __init__(self, parent=None):
-        super(ActionsVideoPlayer, self).__init__(parent)
+    def __init__(self, relative_width=0.8, relative_height=0.8, parent=None):
+        super(ActionsVideoPlayer, self).__init__(relative_width, relative_height, parent)
         self._actions_list = OrderedDict()
-        # index from index number of actions to action keys (names)
-        self._index_to_key = {}
+
+        self._index_to_key = {}  # index from index number of actions to action keys (names)
         self._index_to_playlist = {}
         self._currently_playing = []
-        # TODO: Only needed becuase the problem with QVideoWidget and QGraphicScene
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        self.play_button.clicked.connect(self.play_pause)
-        self.close_button.clicked.connect(self.stop)
 
+        self.setWindowFlags(
+            Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)  # TODO: Only needed because the problem with QVideoWidget and QGraphicScene
+        self.play_button.clicked.connect(self._play_pause)
+        self.stop_button.clicked.connect(self._stop)
 
-    def add_action(self, action_key, clip_path, action_index=-1):
-        if action_index < 0:
+    def add_action(self, action_key, clip_path, action_index=None):
+        if action_index is None:
             next_index = len(self._actions_list)
         else:
             if action_index not in self._index_to_key.keys():
@@ -212,39 +161,39 @@ class ActionsVideoPlayer(ListVideoPlayer):
             else:
                 raise IndexError("Trying to use already existing index %d for action '%s'" % (action_index, action_key))
 
-        self._actions_list[action_key] = {"index": next_index, "clip_path": clip_path}
-        # save the action name by index
-        self._index_to_key[next_index] = action_key
-        # save the index in the playlist
+        self._actions_list[action_key] = {"index": next_index, "clip_path": clip_path}  # save the action name by index
+        self._index_to_key[next_index] = action_key  # save the index in the playlist
         self._index_to_playlist[action_key] = self.add_path_to_video_list(clip_path)
 
-    def play_list(self, playlist):
-        self.play_indexes_list(self._index_to_playlist.values())
+    def set_video_list(self, path, format=".mp4"):
+        files = {f[:-4]: f for f in listdir(path) if isfile(join(path, f)) and f.upper().endswith(format.upper())}
+        for k in sorted(files):
+            window.add_action(k, path + files[k])
 
+    def play_all_actions(self):
+        self.play_indexes_list(self._index_to_playlist.values())
 
     def play_one_action(self, action_key):
         play_list_index = self._index_to_playlist[action_key]
         if [play_list_index] != self._currently_playing or self._media_player.state() != QMediaPlayer.PlayingState:
-            print("To play")
             self.play_indexes_list([play_list_index])
             self._currently_playing = [play_list_index]
 
-    def play_pause(self):
-        print("play_pause", self._media_player.state())
+    def _play_pause(self):
         if self._media_player.state() == QMediaPlayer.PlayingState:
             self._media_player.pause()
         else:
             self._media_player.play()
 
-
-
-    def stop(self):
-        print("To stop")
+    def _stop(self):
         self._media_player.stop()
         self._current_play_list.clear()
+        self._close()
+
+    def _close(self):
+        sys.exit(app.exec_())
 
     def clear(self):
-        print("To clear")
         self._actions_list = OrderedDict()
         # index from index number of actions to action keys (names)
         self._index_to_key = {}
@@ -258,20 +207,11 @@ class ActionsVideoPlayer(ListVideoPlayer):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = ActionsVideoPlayer()
+    window = ActionsVideoPlayer(0.55, 0.71)
     path = "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/videos/"
-    files = {f[:-4]:f for f in listdir(path) if isfile(join(path, f))}
-    for k in sorted(files):
-        print(k,files[k])
-        window.add_action(k, path+files[k])
-
-    window.play_one_action("action_1")
-    window.play_list(sorted(files.keys()))
+    window.set_video_list(path)
+    # window.play_all_actions()
     # window.setFixedSize(200,240)
-
-    # mypath = "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/clothclean/LEJOS"
-    # onlyfiles = [os.path.join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f)) and f.endswith(".mp4")]
-    # window.set_video_list(onlyfiles)
     window.show()
-    # window.play_indexes_list([0,1,4])
+    # window.play_indexes_list([4,1,4])
     sys.exit(app.exec_())

@@ -29,7 +29,8 @@
 class SpecificMonitor : public GenericMonitor
 {
   Q_OBJECT
-  
+
+
   public:
 	SpecificMonitor(GenericWorker *_worker, Ice::CommunicatorPtr _communicator);
 	~SpecificMonitor();

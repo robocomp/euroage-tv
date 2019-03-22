@@ -29,6 +29,7 @@ QObject()
 
 {
 	handdetection_proxy = (*(HandDetectionPrx*)mprx["HandDetectionProxy"]);
+	integratedhand_pubproxy = (*(IntegratedHandPrx*)mprx["IntegratedHandPub"]);
 
 	mutex = new QMutex(QMutex::Recursive);
 

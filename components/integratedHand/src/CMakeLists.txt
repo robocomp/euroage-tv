@@ -34,7 +34,7 @@ SET ( SOURCES
 
 #ROBOCOMP
 ROBOCOMP_INITIALIZE( $ENV{ROBOCOMP}/ )
-ROBOCOMP_WRAP_ICE( CommonBehavior AprilTags  GenericBase  JointMotor  HandDetection  TouchPoints )
+ROBOCOMP_WRAP_ICE( CommonBehavior GenericBase JointMotor IntegratedHand HandDetection AprilTags TouchPoints)
 SET (EXECUTABLE_OUTPUT_PATH ${RC_COMPONENT_DEVEL_PATH}/bin)
 
 QT_WRAP_UI( UI_HEADERS mainUI.ui )

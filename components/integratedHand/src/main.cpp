@@ -84,11 +84,8 @@
 #include <apriltagsI.h>
 #include <touchpointsI.h>
 
-#include <AprilTags.h>
 #include <GenericBase.h>
 #include <JointMotor.h>
-#include <HandDetection.h>
-#include <TouchPoints.h>
 
 
 // User includes here
@@ -140,6 +137,7 @@ int ::IntegratedHand::run(int argc, char* argv[])
 
 	int status=EXIT_SUCCESS;
 
+	IntegratedHandPrx integratedhand_pubproxy;
 	HandDetectionPrx handdetection_proxy;
 
 	string proxy, tmp;
@@ -172,6 +170,31 @@ int ::IntegratedHand::run(int argc, char* argv[])
 		cout << "[" << PROGRAM_NAME << "]: Exception: STORM not running: " << ex << endl;
 		return EXIT_FAILURE;
 	}
+	IceStorm::TopicPrx integratedhand_topic;
+
+	while (!integratedhand_topic)
+	{
+		try
+		{
+			integratedhand_topic = topicManager->retrieve("IntegratedHand");
+		}
+		catch (const IceStorm::NoSuchTopic&)
+		{
+			cout << "[" << PROGRAM_NAME << "]: ERROR retrieving IntegratedHand topic. \n";
+			try
+			{
+				integratedhand_topic = topicManager->create("IntegratedHand");
+			}
+			catch (const IceStorm::TopicExists&){
+				// Another client created the topic.
+				cout << "[" << PROGRAM_NAME << "]: ERROR publishing the IntegratedHand topic. It's possible that other component have created\n";
+			}
+		}
+	}
+
+	Ice::ObjectPrx integratedhand_pub = integratedhand_topic->getPublisher()->ice_oneway();
+	integratedhand_pubproxy = IntegratedHandPrx::uncheckedCast(integratedhand_pub);
+	mprx["IntegratedHandPub"] = (::IceProxy::Ice::Object*)(&integratedhand_pubproxy);
 
 	SpecificWorker *worker = new SpecificWorker(mprx);
 	//Monitor thread

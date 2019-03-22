@@ -33,7 +33,7 @@ class CoolButton(QPushButton):
     def set_color(self, color):
         if isinstance(color, QColor):
             self.setStyleSheet(
-                "QPushButton:hover {background-color: " + color.darker().name() + "; border: none;} QPushButton:!hover { background-color:" + color.name() + ";  }")
+                "QPushButton:!hover { background-color:" + color.name() + ";  }")
             self.update()
         else:
             raise Exception("color must be a QColor class")
@@ -81,6 +81,7 @@ if __name__ == '__main__':
     text = QLabel("Hello World")
     text.setAlignment(Qt.AlignCenter)
     button = CoolButton()
+    button.set_color(QColor("Orange"))
     button2 = CoolButton()
     layout_h = QHBoxLayout()
     layout_h.addWidget(button)

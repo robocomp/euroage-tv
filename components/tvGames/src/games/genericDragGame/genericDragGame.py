@@ -60,7 +60,7 @@ class GameScreen(QWidget):
 		self._button1 = CoolButton(text="AYUDA", size=150)
 		self._button1.set_color(QColor("Green"))
 		self._button2 = CoolButton(text="TERMINAR", size=150)
-		self._button1.set_color(QColor("Red"))
+		self._button1.set_color(QColor("Orange"))
 		self._main_layout.addWidget(self._button1, 2,1,1,2, Qt.AlignRight)
 		self._main_layout.addWidget(self._button2, 2, 3, 1, 2)
 		# palette = self.palette()

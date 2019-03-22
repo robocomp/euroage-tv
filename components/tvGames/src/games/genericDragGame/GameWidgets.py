@@ -13,6 +13,7 @@ GREEN_TITTLE_COLOR = "#91C69A"
 
 
 class GameTopBarWidget(QWidget):
+    clock_timeout = Signal()
     """	Top bar for the game integrating all the other bar widgets (name, scores, timer)...
 
     """
@@ -29,6 +30,9 @@ class GameTopBarWidget(QWidget):
         self._main_layout.addWidget(self._clock)
         self._game_scores.setFixedWidth(90)
         self._main_layout.setContentsMargins(0, 0, 10, 0)
+        self._clock.timeout.connect(self.clock_timeout.emit)
+
+
 
     # self._main_layout.setStretchFactor(self._game_scores,100)
     # self.setMaximumHeight(100)
@@ -40,6 +44,22 @@ class GameTopBarWidget(QWidget):
         p = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, opt, p, self)
         QWidget.paintEvent(self, event)
+
+    def set_game_name(self, text):
+        self._game_name_label.set_text(text)
+
+    def set_time(self, seconds):
+        self._clock.set_time(seconds)
+
+    def set_good_score(self, value):
+        self._game_scores.set_score(0, value)
+
+    def set_bad_score(self, value):
+        self._game_scores.set_score(1, value)
+
+    def start_clock(self):
+        self._clock.start()
+
 
 # def resizeEvent(self, event):
 # 	self._game_scores.setFixedHeight(event.size().height()-20)
@@ -63,7 +83,7 @@ class AnalogClock(QWidget):
         super(AnalogClock, self).__init__(parent)
         self._timer = QTimer()
         self._timer.timeout.connect(self.update)
-        self._timer.start(200)
+        self._timer.start(1000)
         self.setWindowTitle("Clock test")
         self.resize(200, 200)
         self.color_clock = QColor(127, 0, 127)
@@ -85,7 +105,7 @@ class AnalogClock(QWidget):
         painter.setBrush(QBrush(self.color_clock))
 
         painter.save()
-        painter.rotate(30.0 * time.second())
+        painter.rotate(30.0 * -time.second())
         painter.drawConvexPolygon(hourHand)
         painter.restore()
 
@@ -144,15 +164,12 @@ class ClockLabelWidget(QLabel):
         self._timer.start(1000)
 
 
-def time_out_clock():
-    print("Ringing")
-
 
 class CountDownWidget(QFrame):
     """Frame with layout to integrate the clock label and the analog clock animation.
 
     """
-
+    timeout = Signal()
     def __init__(self, parent=None):
         super(CountDownWidget, self).__init__(parent)
         self._main_layout = QHBoxLayout()
@@ -166,7 +183,16 @@ class CountDownWidget(QFrame):
         self.setLayout(self._main_layout)
         self.setStyleSheet(
             ".CountDownWidget{ background-color: lightgray; border : 0px solid blue; border-right : 2px solid gray;border-left : 2px solid gray;}")
+        self._clock_label.timeout.connect(self.timeout.emit)
 
+
+
+
+    def set_time(self, value):
+        self._clock_label.set_time(value)
+
+    def start(self):
+        self._clock_label.start()
 
 class BullseyeWidget(QWidget):
     """	Just a widget illustration for the bullseye icon
@@ -244,7 +270,7 @@ class BullseyeWidget(QWidget):
 
 
 class GameNameWidget(QWidget):
-    def __init__(self, text, size=30, parent=None):
+    def __init__(self, text, size=25, parent=None):
         super(GameNameWidget, self).__init__(parent)
         self._main_layout = QHBoxLayout()
         self.setLayout(self._main_layout)
@@ -259,6 +285,9 @@ class GameNameWidget(QWidget):
         self._main_layout.addStretch(100)
         self.setContentsMargins(2, 2, 2, 2)
         self._main_layout.setContentsMargins(2, 2, 2, 2)
+
+    def set_text(self, text):
+        self._label.setText(text)
 
     # #
     def resizeEvent(self, event):

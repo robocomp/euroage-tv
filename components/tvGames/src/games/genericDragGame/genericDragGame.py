@@ -15,7 +15,7 @@ from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtMultimediaWidgets import QGraphicsVideoItem
 from PySide2.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QWidget, QHBoxLayout, QGraphicsView, \
 	QGraphicsTextItem, QApplication, QGridLayout, QLabel, QStyleOption, QStyle, QGraphicsRectItem, \
-	QGraphicsSimpleTextItem, QGraphicsItem
+	QGraphicsSimpleTextItem, QGraphicsItem, QStackedLayout, QFrame
 from numpy.random.mtrand import randint
 
 # Create a class for our main window
@@ -42,37 +42,79 @@ GREEN_TITTLE_COLOR = "#91C69A"
 
 
 class GameScreen(QWidget):
-	def __init__(self, parent = None):
+	def __init__(self, width, height, parent = None):
 		super(GameScreen, self).__init__(parent)
-		self._main_layout = QGridLayout()
+
+		self._main_layout = QStackedLayout()
+		self._game_widget = QFrame()
+		self._game_layout = QGridLayout()
+		self._game_widget.setLayout(self._game_layout)
+		self._main_layout.addWidget(self._game_widget)
 		self.setLayout(self._main_layout)
 		self.setContentsMargins(0, 0, 0, 0)
-		self._main_layout.setContentsMargins(0, 0, 0, 0)
+		self._game_layout.setContentsMargins(0, 0, 0, 0)
 		self.setObjectName("GAME")
 
 		self._top_bar = GameTopBarWidget()
 		self._top_bar.setStyleSheet(".GameTopBarWidget{background-color: white}")
 		self._top_bar.setFixedHeight(45)
-		self._main_layout.addWidget(self._top_bar,0,0,1,20)
-		self._game_frame = TakeDragGame(1920, 1080)
-		self._game_frame.init_game(os.path.join(CURRENT_PATH, 'resources/final_game1/final_game1.json'))
-		self._main_layout.addWidget(self._game_frame, 1,1, 1, 18)
+		self._game_layout.addWidget(self._top_bar, 0, 0, 1, 20)
+		self._game_frame = TakeDragGame(width, height)
+		self._game_layout.addWidget(self._game_frame, 1, 1, 1, 18)
 		self._button1 = CoolButton(text="AYUDA", size=150)
 		self._button1.set_color(QColor("Green"))
 		self._button2 = CoolButton(text="TERMINAR", size=150)
 		self._button1.set_color(QColor("Red"))
-		self._main_layout.addWidget(self._button1, 2,1,1,2, Qt.AlignRight)
-		self._main_layout.addWidget(self._button2, 2, 3, 1, 2)
-		# palette = self.palette()
-		# brush = QBrush(QImage(os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")))
-		# palette.setBrush(QPalette.Background, brush)
-		# self.setPalette(palette)
+		self._game_layout.addWidget(self._button1, 2, 1, 1, 2, Qt.AlignRight)
+		self._game_layout.addWidget(self._button2, 2, 3, 1, 2)
 
 		# self.setStyleSheet("GameWidget {font-weight: bold; background-color: red;}")
 		self.setAutoFillBackground(True)
 		style_sheet_string = "GameScreen {background-image: url("+os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")+");}"
 		print(style_sheet_string)
 		self.setStyleSheet(style_sheet_string)
+
+		self.end_message = QLabel(u"¡Has perdido!")
+
+		self.end_message.setFont(QFont("Arial", 90, QFont.Bold))
+		self.end_message.setAlignment(Qt.AlignCenter)
+
+		self._game_config = {}
+		self._main_layout.addWidget(self.end_message)
+		self._main_layout.setCurrentIndex(0)
+		self._top_bar.clock_timeout.connect(self.game_timeout)
+
+
+
+
+	def game_timeout(self):
+		# TODO: CHECK WIN OR LOSSE
+		self.end_game(False)
+
+	def end_game(self, value):
+		if value:
+			self.end_message.setText(u"<font color='green'>¡Has ganado!</font>")
+			index = randint(0, len(WINNING_SOUNDS))
+			file = WINNING_SOUNDS[index]
+			subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
+		else:
+			self.end_message.setText(u"<font color='red'>¡Has perdido!</font>")
+			index = randint(0, len(LOST_SOUNDS))
+			file = LOST_SOUNDS[index]
+			subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
+		self._game_frame.end_game(value)
+		self._main_layout.setCurrentIndex(1)
+
+
+	def init_game(self, path):
+		with open(os.path.join(CURRENT_PATH, path)) as file_path:
+			self._game_config = json.load(file_path)
+		self._game_frame.init_game(path)
+		self._top_bar.set_game_name(self._game_config["title"])
+		self._top_bar.set_time(int(self._game_config["time"]))
+		self._top_bar.start_clock()
+
+
 
 
 	# def paintEvent(self, event):
@@ -179,7 +221,6 @@ class DraggableItem(QGraphicsPixmapItem):
 			self.setPixmap(QPixmap.fromImage(self.image))
 
 	def itemChange(self, change, value ):
-		print(change, value)
 		if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
 			newPos = value
 			rect = self.scene().sceneRect()
@@ -247,6 +288,9 @@ class DestinationItem(QGraphicsRectItem):
 	def paint(self, painter, option, widget):
 		painter.save()
 		painter.setBrush(QColor("black"))
+		font = painter.font()
+		font.setPointSize(100)
+		painter.setFont(font)
 		painter.drawText(self.rect(), self._text, Qt.AlignCenter | Qt.AlignVCenter)
 		painter.restore()
 		super(DestinationItem, self).paint(painter,option, widget)
@@ -368,12 +412,6 @@ class TakeDragGame(QWidget):
 		self._main_layout.addWidget(self._view)
 		self._main_layout.setContentsMargins(0, 0, 0, 0)
 
-		# self.clock = ClockWidget()
-		# self.clock_proxy = self.scene.addWidget(self.clock)
-		# self.clock.hide()
-		# self.clock_proxy.setPos(self.width - self.clock_proxy.boundingRect().width(), 0)
-		# self.clock_proxy.setZValue(60)
-		# self.clock.timeout.connect(self.game_timeout)
 		self._pieces = []
 		self._destinations = []
 		self._already_set = []
@@ -385,13 +423,7 @@ class TakeDragGame(QWidget):
 		# onlyfiles = [os.path.join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
 
-		self.end_message = QGraphicsTextItem(u"¡Has perdido!")
-		self.end_message.hide()
-		self.end_message.setFont(QFont("Arial", 90, QFont.Bold))
-		self.end_message.setPos(self._width / 2 - self.end_message.boundingRect().width() / 2,
-								self._height / 2 - self.end_message.boundingRect().height() / 2)
-		self.end_message.setZValue(60)
-		self._scene.addItem(self.end_message)
+
 		# game data
 		self.total_images = 0
 		self.correct_images = 0
@@ -425,9 +457,14 @@ class TakeDragGame(QWidget):
 		# self.draw_position(self.scene.width()/2, self.scene.height()/2, False)
 		# self.clock.set_time(int(self.game_config["time"]))
 		# self.clock.set_time(3)
-		self.end_message.hide()
 		self.setWindowState(Qt.WindowMaximized)
 		# self.clock.show()
+
+		# TODO: Fix it
+		# to avoid the resize to the exact escen we create a invisible item at 0,0 in the scene
+		# it's beacuse the wai the resizeEvent is implemented
+		self._invisible_00_item = QGraphicsRectItem(250,230,0,0)
+		self._scene.addItem(self._invisible_00_item)
 
 	# Detecting touch events on multitouch screen
 	def event(self, event):
@@ -484,25 +521,14 @@ class TakeDragGame(QWidget):
 		self.end_game(False)
 
 	def end_game(self, value):
-		if value:
-			self.end_message.setHtml(u"<font color='green'>¡Has ganado!</font>")
-			index = randint(0, len(WINNING_SOUNDS))
-			file = WINNING_SOUNDS[index]
-			subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
-		else:
-			self.end_message.setHtml(u"<font color='red'>¡Has perdido!</font>")
-			index = randint(0, len(LOST_SOUNDS))
-			file = LOST_SOUNDS[index]
-			subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
-		self.clock.hide()
-		self.end_message.show()
+
 		#        self.scene.update()
 		#        time.sleep(3)
 		self.clear_scene()
 
 
 
-	def add_new_pointer(self, pointer_id, xpos, ypos, grab):
+	def add_new_pointer(self, pointer_id, xpos, ypos, grab, visible=False):
 		print "TakeDragGame.add_new_pointer: ID=%d"%pointer_id
 		open_pointer_widget = self.game_config["images"]["handOpen"]["widget"].clone()
 		close_pointer_widget = self.game_config["images"]["handClose"]["widget"].clone()
@@ -510,8 +536,9 @@ class TakeDragGame(QWidget):
 		close_pointer_widget.setZValue(int(self.game_config["depth"]["mouse"]))
 		self._pointers[pointer_id] = Pointer(pointer_id, xpos, ypos, grab, open_pointer_widget, close_pointer_widget)
 		self._pointers[pointer_id]._lost_timer.timeout.connect(self.remove_pointer)
-		self._scene.addItem(self._pointers[pointer_id].open_widget)
-		self._scene.addItem(self._pointers[pointer_id].closed_widget)
+		if visible:
+			self._scene.addItem(self._pointers[pointer_id].open_widget)
+			self._scene.addItem(self._pointers[pointer_id].closed_widget)
 
 	def update_pointer(self, pointer_id, xpos, ypos, grab):
 		if pointer_id not in self._pointers:
@@ -620,6 +647,10 @@ class TakeDragGame(QWidget):
 			taken_widget.setPos(new_xpos, new_ypos)
 
 	def create_and_add_images(self):
+
+
+
+
 		if self.game_config is not None:
 			for image_id, item in self.game_config["images"].items():
 				image_path = os.path.join(CURRENT_PATH, item["image_path"])
@@ -694,8 +725,9 @@ def main():
 	# Again, this is boilerplate, it's going to be the same on
 	# almost every app you write
 	app = QApplication(sys.argv)
-	the_label = GameScreen()
-	the_label.show()
+	game = GameScreen(1920, 1080)
+	game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/final_game1.json")
+	game.show()
 
 	# main_widget = GameWidget()
 	# main_widget.show_on_second_screen()

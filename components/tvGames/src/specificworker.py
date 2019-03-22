@@ -25,7 +25,7 @@ import imutils
 import numpy as np
 from PySide2.QtCore import Slot, Qt
 
-from games.genericDragGame.genericDragGame import TakeDragGame
+from games.genericDragGame.genericDragGame import GameScreen
 from games.PaintGame.PaintGame import PaintGame
 from genericworker import *
 from modules.AdminInterface import AdminInterface
@@ -90,23 +90,23 @@ class SpecificWorker(GenericWorker):
 		# self._game.show()
 		self._available_games = {
 			u"Lavar Ropa cerca":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame_far.json"],
+				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame_far.json"],
 			u"Lavar Ropa lejos":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame_near.json"],
+				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame_near.json"],
 			u"Painting":
 				["PaintGame(self.screen_1_height, self.screen_1_width)", ""],
 			u"Puzzle1":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game2.json"],
+				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game2.json"],
 			u"Puzzle2":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game3.json"],
+				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game3.json"],
 			u"Clothes":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game5.json"],
+				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game5.json"],
 			u"Sorting":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game4.json"],
+				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game4.json"],
 			u"Testing2":
-				["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game4.json"]
+				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game4.json"]
 			# u"Looser":
-			# 	["TakeDragGame(self.screen_1_height, self.screen_1_width)", "resources/game6.json"]
+			# 	["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game6.json"]
 
 		}
 		self._game = None

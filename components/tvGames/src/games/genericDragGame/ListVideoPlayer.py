@@ -105,7 +105,8 @@ class ListVideoPlayer(QWidget):
         desktop_widget = QApplication.desktop().screenGeometry(0)
         self.setFixedSize(desktop_widget.width() * relative_width, desktop_widget.height() * relative_height)
         self.setMaximumSize(desktop_widget.width() * relative_width, desktop_widget.height() * relative_height)
-        self.move(desktop_widget.width() * (1 - relative_width) / 2, desktop_widget.height() * (1 - relative_height) / 2)
+        self.move(desktop_widget.width() * (1 - relative_width) / 2,
+                  desktop_widget.height() * (1 - relative_height) / 2)
 
         # self._played_videos = 0
         # # self.audio.setVolume(50)
@@ -147,8 +148,8 @@ class ActionsVideoPlayer(ListVideoPlayer):
         self._index_to_playlist = {}
         self._currently_playing = []
 
-        self.setWindowFlags(
-            Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)  # TODO: Only needed because the problem with QVideoWidget and QGraphicScene
+        # self.setWindowFlags(
+        #     Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)  # TODO: Only needed because the problem with QVideoWidget and QGraphicScene
         self.play_button.clicked.connect(self._play_pause)
         self.stop_button.clicked.connect(self._stop)
 
@@ -167,8 +168,13 @@ class ActionsVideoPlayer(ListVideoPlayer):
 
     def set_video_list(self, path, format=".mp4"):
         files = {f[:-4]: f for f in listdir(path) if isfile(join(path, f)) and f.upper().endswith(format.upper())}
-        for k in sorted(files):
-            window.add_action(k, path + files[k])
+        try:
+            for k in sorted(files):
+                self.add_action(k, path + files[k])
+        except Exception as e:
+            print(str(e))
+
+
 
     def play_all_actions(self):
         self.play_indexes_list(self._index_to_playlist.values())
@@ -205,13 +211,29 @@ class ActionsVideoPlayer(ListVideoPlayer):
         return key in self._actions_list.keys()
 
 
+# def newTest(path, index=None):
+#     print("New test: ", index)
+#     window = ActionsVideoPlayer(0.55, 0.71)
+#     print(path)
+#     window.add_action()
+#     window.set_video_list(path)
+#     if index is not None:
+#         window.play_indexes_list([index])
+#     else:
+#         window.play_all_actions()
+#     window.show()
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = ActionsVideoPlayer(0.55, 0.71)
     path = "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/videos/"
+    window = ActionsVideoPlayer(0.55, 0.71)
     window.set_video_list(path)
-    # window.play_all_actions()
+    window.play_all_actions()
     # window.setFixedSize(200,240)
     window.show()
-    # window.play_indexes_list([4,1,4])
+
+    # for i in range(0, 5):
+    #     newTest(path, i)
+
     sys.exit(app.exec_())

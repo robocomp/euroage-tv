@@ -105,7 +105,7 @@ class AnalogClock(QWidget):
         painter.setBrush(QBrush(self.color_clock))
 
         painter.save()
-        painter.rotate(30.0 * -time.second())
+        painter.rotate(-30.0 * time.second())
         painter.drawConvexPolygon(hourHand)
         painter.restore()
 

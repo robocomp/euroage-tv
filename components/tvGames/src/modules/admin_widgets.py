@@ -21,6 +21,8 @@ class LoginWindow(QWidget): # crea widget vacio
         self.mylayout.setContentsMargins(0,0,0,0)
         file.close()
 
+
+
 class RegisterWindow(QWidget): # crea widget vacio
     def __init__(self,parent = None):
         super(RegisterWindow, self).__init__(parent)
@@ -49,6 +51,20 @@ class UsersWindow(QWidget): # crea widget vacio
         self.mylayout.setContentsMargins(0,0,0,0)
         file.close()
 
+class PlayersWindow(QWidget): # crea widget vacio
+    def __init__(self,parent = None):
+        super(PlayersWindow, self).__init__(parent)
+        self.mylayout = QVBoxLayout()
+        self.setLayout(self.mylayout)
+        loader = QUiLoader()
+        loader.registerCustomWidget(PlayersWindow)
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/modules/player.ui")
+        file.open(QFile.ReadOnly)
+        self.ui = loader.load(file, self.parent())
+        self.mylayout.addWidget(self.ui)
+        self.mylayout.setContentsMargins(0,0,0,0)
+        file.close()
+
 
 
 
@@ -65,5 +81,8 @@ if __name__ == '__main__':
 
     users = UsersWindow()
     users.show()
+
+    player = PlayersWindow()
+    player.show()
 
     app.exec_()

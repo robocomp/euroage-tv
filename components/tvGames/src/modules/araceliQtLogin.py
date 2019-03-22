@@ -10,9 +10,10 @@ from pprint import pprint
 import passwordmeter
 from PySide2.QtCore import QObject, Signal, QFile
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QApplication, QMessageBox, QCompleter, QMainWindow
+from PySide2.QtWidgets import QApplication, QMessageBox, QCompleter, QMainWindow, QAction, qApp
 
-from admin_widgets import LoginWindow, RegisterWindow, UsersWindow
+from admin_widgets import LoginWindow, RegisterWindow, UsersWindow,PlayersWindow
+from metrics import *
 
 FILE_PATH = os.path.abspath(__file__)
 print(FILE_PATH)
@@ -26,23 +27,6 @@ list_of_users =  []
 list_of_players =  ["Persona 1", "Persona 2","Persona 3","Persona 4"]
 list_of_games = ["Juego 1","Juego 2","Juego 3","Juego 4"]
 
-# SQL_USER_TABLE_CREATION='create table if not exists users ' \
-# 						'(id int unsigned not null,' \
-# 						'username varchar(100) not null' \
-# 						', password binary(60) not null,' \
-# 						' primary key(id), unique(username) ' \
-# 						');' \
-# 						'create table if not exists roles (' \
-# 						'id int unsigned not null,' \
-# 						'role varchar(100) not null,' \
-# 						'primary key(id),' \
-# 						'unique(role)' \
-# 						');' \
-# 						'create table if not exists user_roles (' \
-# 						'user_id int unsigned not null,' \
-# 						'role_id int unsigned not null,' \
-# 						'unique(user_id, role_id)' \
-# 						');'
 
 class DDBBStatus:
     connected = 1
@@ -71,52 +55,6 @@ class QUserManager(QObject):
         # self.users_db.setDatabaseName(DATABASE_PATH)
         # self.status = DDBBStatus.disconneted
         self.users_data = {}
-
-    # def init_ddbb(self):
-    # 	if self.status != DDBBStatus.connected:
-    # 		if os.path.isfile(DATABASE_PATH):
-    # 			self.open_ddbb()
-    # 		else:
-    # 			self.status_changed.emit("[!]Creating DDBB file.")
-    # 			self.status_changed.emit("[!]Creating DDBB file.")
-    # 			try:
-    # 				conn = sqlite3.connect(DATABASE_PATH)
-    # 				print(sqlite3.version)
-    # 			except sqlite3.Error as e:
-    # 				print(e)
-    # 				self.status_changed.emit("[!]DDBB Creation failed")
-    # 			finally:
-    # 				conn.close()
-    # 				self.status_changed.emit("[!]DDBB Created")
-    # 				self.open_ddbb()
-    # 				query = QSqlQuery(SQL_USER_TABLE_CREATION)
-    # 				if not query.exec_():
-    # 					print "Creation failed"
-    # 				else:
-    # 					print "DDBB creation done"
-    #
-    # 				query.prepare("select * from users")
-    # 				if not query.exec_():
-    # 					print "Select failed"
-    # 				else:
-    # 					while query.next():
-    # 						print query.value(0).toString()
-    # 	else:
-    # 		self.status_changed.emit("[+]Connected to DDBB")
-    # 		self.status = DDBBStatus.connected
-
-    # def open_ddbb(self):
-    # if self.users_db.open():
-    # 	self.status_changed.emit("[+]Connected to DDBB")
-    # 	self.status = DDBBStatus.connected
-    # 	return True
-    # else:
-    # 	self.status_changed.emit("[!]Fail connecting to DDBB")
-    # 	self.status = DDBBStatus.disconneted
-    # 	return False
-
-    # open file
-    # pass
 
     def load_users(self):
         with open(USERS_FILE_PATH) as f:
@@ -190,19 +128,30 @@ class MainWindow(QMainWindow):
         loader.registerCustomWidget(LoginWindow)
         loader.registerCustomWidget(RegisterWindow)
         loader.registerCustomWidget(UsersWindow)
+        loader.registerCustomWidget(PlayersWindow)
         file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/modules/mainUI.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
+        file.close()
         # self.mylayout.addWidget(self.ui)
         # self.mylayout.setContentsMargins(0, 0, 0, 0)
-        self.setCentralWidget(self.ui.stackedWidget)
-        self.ui.stackedWidget.setCurrentIndex(2)
 
-        mainMenu = self.menuBar()
-        fileMenu = mainMenu.addMenu('&Menú')
+        self.setCentralWidget(self.ui)
+        self.ui.stackedWidget.setCurrentIndex(3) #Poner a 0
 
+        ##Menu
+        self.mainMenu = self.menuBar()
+        fileMenu = self.mainMenu.addMenu('&Menú')
+        self.mainMenu.setEnabled(False)
 
-        file.close()
+        exitAction = QAction( '&Salir', self)
+        exitAction.triggered.connect(qApp.quit)
+        fileMenu.addAction(exitAction)
+
+        closeAction = QAction ('&Cerrar sesión', self)
+        closeAction.triggered.connect (self.close_session_clicked)
+        fileMenu.addAction(closeAction)
+
 
         ## Login window
         self.ui.login_button_2.clicked.connect(self.check_login)
@@ -218,20 +167,24 @@ class MainWindow(QMainWindow):
         self.ui.createuser_button_reg.clicked.connect(self.create_new_user)
         self.ui.back_button_reg.clicked.connect(self.back_clicked)
 
+
         ##Users window
-        completer2 = QCompleter(list_of_players)
-        self.ui.selplayer_combobox.addItems(list_of_players)
+
+        self.admin = Admin_Elderly()
+        list = self.admin.get_list_elderly()
+
+        completer2 = QCompleter(list)
+        self.ui.selplayer_combobox.addItems(list)
         self.ui.selplayer_combobox.setCompleter(completer2)
         self.ui.selplayer_combobox.lineEdit().setPlaceholderText("Selecciona jugador...")
         self.selected_player_incombo = ""
-        self.ui.selected_player_inlist = ""
         self.ui.selgame_combobox.lineEdit().setPlaceholderText("Selecciona juego...")
 
         completer3 = QCompleter(list_of_games)
         self.ui.selgame_combobox.addItems(list_of_games)
         self.ui.selgame_combobox.setCompleter(completer3)
 
-        self.selected_item_inlist = ""
+        self.selected_player_inlist = ""
 
         self.ui.listplayer_list.currentItemChanged.connect(self.selectediteminlist_changed)
         self.ui.selplayer_combobox.currentIndexChanged.connect(self.selectedplayer_changed)
@@ -240,7 +193,9 @@ class MainWindow(QMainWindow):
         self.ui.startgame_button.clicked.connect(self.start_game)
         self.ui.seedata_button.clicked.connect(self.see_userdata)
 
-
+        ##Player window
+        self.ui.back_player_button.clicked.connect(self.back_clicked)
+        self.ui.create_player_button.clicked.connect(self.create_player)
 
     def ddbb_status_changed(self, string):
         self.ui.login_status.setText(string)
@@ -254,12 +209,13 @@ class MainWindow(QMainWindow):
         password = unicode(self.ui.password_lineedit.text())
 
         if self.user_ddbb_connector.check_user_password(username, password):
-            self.ui.stackedWidget.setCurrentIndex(2)
 
+            self.ui.stackedWidget.setCurrentIndex(2)
+            self.mainMenu.setEnabled(True)
             self.login_executed.emit(True)
         else:
             QMessageBox().information(self.focusWidget(), 'Error',
-                                      'Username or password incorrect',
+                                      'El usuario o la contraseña son incorrectos',
                                       QMessageBox.Ok)
             self.login_executed.emit(False)
 
@@ -295,16 +251,6 @@ class MainWindow(QMainWindow):
         return True
 
 
-    def check_username(self):
-        # user is not empty
-        # user doen't exist
-        pass
-
-    def check_all(self):
-        # check username
-        # check password
-        pass
-
     def create_new_user(self):
         print ("[INFO] Trying to create new user ...")
 
@@ -315,13 +261,13 @@ class MainWindow(QMainWindow):
 
             if (self.user_ddbb_connector.check_user(username) == True): #The user already exist
                 QMessageBox().information(self.focusWidget(), 'Error',
-                                          'The username already exist',
+                                          'El nombre de usuario ya existe',
                                           QMessageBox.Ok)
                 return False
             else:
                 self.user_ddbb_connector.set_username_password(username, password)
-                QMessageBox().information(self.focusWidget(), 'Yupi',
-                                          'User created correctly',
+                QMessageBox().information(self.focusWidget(), '',
+                                          'Usuario creado correctamente',
                                           QMessageBox.Ok)
 
                 self.user_ddbb_connector.load_users() ##Reload the users
@@ -333,8 +279,18 @@ class MainWindow(QMainWindow):
             print ("[ERROR] The user couldn't be created ")
             return False
 
-    def back_clicked(self):
+    def close_session_clicked(self):
+        self.mainMenu.setEnabled(False)
         self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.password_lineedit.clear()
+
+    def back_clicked(self):
+        index = self.ui.stackedWidget.currentIndex()
+        if (index != 0):
+            index = index - 1
+            if (index == 0):
+                self.mainMenu.setEnabled(False)
+            self.ui.stackedWidget.setCurrentIndex(index)
 
     #Users window functions
     def deleteuserfromlist(self):
@@ -345,17 +301,17 @@ class MainWindow(QMainWindow):
         self.selected_player_incombo = self.ui.selplayer_combobox.currentText()
         if (self.ui.selplayer_combobox.currentIndex() == 1): #Nuevo jugador
             reply = QMessageBox.question(self.focusWidget(), '',
-                                         ' Do you want to add a new player?', QMessageBox.Yes, QMessageBox.No)
+                                         ' Quiere añadir a un nuevo jugador?', QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.No:
                 self.ui.selplayer_combobox.setCurrentIndex(0)
                 return False
 
             else:
-                print("Crear nueva ventana para añadir a viejitos")
+                self.new_player_window()
                 return True
 
     def selectediteminlist_changed(self):
-        self.selected_item_inlist =  self.ui.listplayer_list.currentItem().text()
+        self.selected_player_inlist =  self.ui.listplayer_list.currentItem().text()
 
     def addusertolist(self):
         if (self.selected_player_incombo != "" ):
@@ -363,18 +319,58 @@ class MainWindow(QMainWindow):
             return True
         else:
             QMessageBox().information(self.focusWidget(), 'Error',
-                                      'No player selected',
+                                      'No se han seleccionado jugadores',
                                       QMessageBox.Ok)
             return False
 
     def start_game(self):
-        print(self.ui.selgame_combobox.currentText())
+        items = []
+        for index in xrange(self.ui.listplayer_list.count()):
+            items.append(self.ui.listplayer_list.item(index).text())
 
-    def see_userdata(self):
-        if (self.selected_item != ""):
-            print ("Ver datos del usuario ",self.selected_item)
+        if(self.ui.selgame_combobox.currentText() ==""):
+            print("No se ha seleccionado ningún juego")
+        else:
+            print("Jugadores : ", items, "jugaran a: ", self.ui.selgame_combobox.currentText())
+
+
+    def see_userdata(self): ##get the id of the user to get the metrics
+        if (self.selected_player_inlist != ""):
+            print ("Ver datos del usuario ",self.selected_player_inlist)
         else:
             print("No item selected")
+
+    def new_player_window(self):
+        self.ui.stackedWidget.setCurrentIndex(3)
+
+    def create_player(self):
+
+        name = unicode(self.ui.name_player_lineedit.text())
+        s1 = unicode(self.ui.surname1_player_lineedit.text())
+        s2 = unicode(self.ui.surname2_player_lineedit.text())
+        age = float(self.ui.age_player_lineedit.text())
+
+        id = self.admin.add_elderly(name,s1,s2,age)
+
+        new_list = self.admin.get_list_elderly()
+        completer = QCompleter(new_list)
+
+        #cambiar esto
+        last_element = []
+        last_element.append(new_list[-1])
+        self.ui.selplayer_combobox.addItems(last_element)
+
+
+        self.ui.selplayer_combobox.setCompleter(completer)
+        self.ui.selplayer_combobox.setCurrentIndex(0)
+        self.ui.stackedWidget.setCurrentIndex(2)
+
+        self.ui.name_player_lineedit.clear()
+        self.ui.surname1_player_lineedit.clear()
+        self.ui.surname2_player_lineedit.clear()
+        self.ui.age_player_lineedit.clear()
+
+
 
 if __name__ == '__main__':
 

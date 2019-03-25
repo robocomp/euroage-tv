@@ -4,6 +4,7 @@ import json
 import math
 import numbers
 import os
+import random
 import subprocess
 import sys
 from os import listdir
@@ -65,8 +66,8 @@ class GameScreen(QWidget):
 		self._button1.set_color(QColor("Green"))
 		self._button2 = CoolButton(text="TERMINAR", size=150)
 		self._button1.set_color(QColor("Orange"))
-		self._main_layout.addWidget(self._button1, 2,1,1,2, Qt.AlignRight)
-		self._main_layout.addWidget(self._button2, 2, 3, 1, 2)
+		self._game_layout.addWidget(self._button1, 2,1,1,2, Qt.AlignRight)
+		self._game_layout.addWidget(self._button2, 2, 3, 1, 2)
 		# palette = self.palette()
 		# brush = QBrush(QImage(os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")))
 		# palette.setBrush(QPalette.Background, brush)
@@ -92,7 +93,7 @@ class GameScreen(QWidget):
 
 
 	def game_timeout(self):
-		# TODO: CHECK WIN OR LOSSE
+		# TODO: CHECK WIN OR LOSE
 		self.end_game(False)
 
 	def end_game(self, value):
@@ -458,6 +459,7 @@ class TakeDragGame(QWidget):
 			self.game_config = json.load(file_path)
 		# self.resize(self.game_config["size"][0], self.game_config["size"][1])
 		self.create_and_add_images()
+
 		# self.draw_position(self.scene.width()/2, self.scene.height()/2, False)
 		# self.clock.set_time(int(self.game_config["time"]))
 		# self.clock.set_time(3)
@@ -653,9 +655,8 @@ class TakeDragGame(QWidget):
 	def create_and_add_images(self):
 
 
-
-
 		if self.game_config is not None:
+			temp_pieces_pos = []
 			for image_id, item in self.game_config["images"].items():
 				image_path = os.path.join(CURRENT_PATH, item["image_path"])
 
@@ -674,13 +675,18 @@ class TakeDragGame(QWidget):
 				if item["category"] != "mouse":
 					self._scene.addItem(new_image)
 				if item["category"] == "piece":
+					temp_pieces_pos.append((item["initial_pose"][0], item["initial_pose"][1]))
 					dest_image = DestinationItem(new_image.boundingRect(), str(item["index"]))
 					dest_image.setPos(item["final_pose"][0], item["final_pose"][1])
 					self._pieces.append(new_image)
 					self._destinations.append(dest_image)
 					self.total_images = self.total_images + 1
 					self._scene.addItem(dest_image)
-
+			#Randomize initial position
+			random.shuffle(temp_pieces_pos)
+			for piece in self._pieces:
+				random_new_pos = temp_pieces_pos.pop()
+				piece.setPos(random_new_pos[0], random_new_pos[1])
 
 
 	def resizeEvent(self, event):

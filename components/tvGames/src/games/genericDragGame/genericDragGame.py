@@ -62,12 +62,14 @@ class GameScreen(QWidget):
 		self._game_layout.addWidget(self._top_bar, 0, 0, 1, 20)
 		self._game_frame = TakeDragGame(width, height)
 		self._game_layout.addWidget(self._game_frame, 1, 1, 1, 18)
-		self._button1 = CoolButton(text="AYUDA", size=150)
-		self._button1.set_color(QColor("Green"))
-		self._button2 = CoolButton(text="TERMINAR", size=150)
-		self._button1.set_color(QColor("Orange"))
-		self._game_layout.addWidget(self._button1, 2,1,1,2, Qt.AlignRight)
-		self._game_layout.addWidget(self._button2, 2, 3, 1, 2)
+		self._help_button = CoolButton(text="AYUDA", size=150)
+		self._help_button.set_color(QColor("Green"))
+		self._check_button = CoolButton(text="TERMINAR", size=150)
+		self._help_button.set_color(QColor("Orange"))
+		self._game_layout.addWidget(self._help_button, 2, 1, 1, 2, Qt.AlignRight)
+		self._game_layout.addWidget(self._check_button, 2, 3, 1, 2)
+		self._game_frame.score_update.connect(self._top_bar.set_scores)
+		self._check_button.clicked.connect(self._game_frame.check_scores)
 		# palette = self.palette()
 		# brush = QBrush(QImage(os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")))
 		# palette.setBrush(QPalette.Background, brush)
@@ -180,14 +182,17 @@ class DraggableItem(QGraphicsPixmapItem):
 		# self.pixmap().setAttribute(Qt.WA_AcceptTouchEvents)
 		self.c_image = None
 		self.overlay = False
-		self.final_pose_x = 0
-		self.final_pose_y = 0
+		self._destination = None
 		if draggable:
 			self.create_overlary_image()
 
-	def set_final_pose(self, x, y):
-		self.final_pose_x = x
-		self.final_pose_y = y
+	@property
+	def destination(self):
+		return self._destination
+
+	@destination.setter
+	def destination(self, dest):
+		self._destination = dest
 
 	# image with overlay
 	def create_overlary_image(self):
@@ -263,24 +268,44 @@ class PlayableItem(DraggableItem):
 		self._video_widget.setZValue(100)
 		self._media_player.setVideoOutput(self._video_widget)
 		self._media_player.setMedia(QUrl.fromLocalFile(clip_path))
-		self.stop_item()
+		self._media_player.mediaStatusChanged.connect(self._update_media_status)
+		self._media_player.stateChanged.connect(self._update_state)
+		self._hide_video()
 		# self._video_widget.setSize(QSize(0, 0))
 		# self.setOpacity(0.9)
 
 
 	def play_item(self):
-		self._video_background.setBrush(QColor("black"))
-		self._video_background.update()
-		self._video_widget.setSize(QSize(self.boundingRect().width()-1,self.boundingRect().height()-1))
-		self._video_widget.setPos(1 , 0)
 		self._media_player.play()
 
+	def _show_video(self):
+		self._video_background.setBrush(QColor("black"))
+		self._video_background.update()
+		self._video_widget.setSize(QSize(self.boundingRect().width() - 1, self.boundingRect().height() - 1))
+		self._video_widget.setPos(1, 0)
+
 	def stop_item(self):
+		self._media_player.stop()
+
+	def _hide_video(self):
 		self._video_background.setBrush(QBrush())
 		self._video_background.update()
 		self._video_widget.setSize(QSize(10, 10))
-		self._media_player.stop()
 
+	def is_playing(self):
+		return self._media_player.state() == QMediaPlayer.PlayingState
+
+	def _update_media_status(self, status):
+		print(status)
+		# if status == QMediaPlayer.EndOfMedia:
+		# 	self._hide_video()
+
+	def _update_state(self, state):
+		print(state)
+		if state == QMediaPlayer.PlayingState:
+			self._show_video()
+		if state == QMediaPlayer.StoppedState:
+			self._hide_video()
 
 
 
@@ -394,6 +419,8 @@ class Pointer(QObject):
 
 class TakeDragGame(QWidget):
 	touch_signal = Signal(list)
+	score_update = Signal(int, int)
+	game_win = Signal()
 	def __init__(self, width=1920, height=1080, parent=None):
 		super(TakeDragGame, self).__init__(parent)
 		# ui
@@ -445,6 +472,7 @@ class TakeDragGame(QWidget):
 		self._view.viewport().setAttribute(Qt.WA_AcceptTouchEvents)
 		self.setAttribute(Qt.WA_AcceptTouchEvents)
 
+
 	def init_game(self, config_file='resources/game1.json'):
 		self.clear_scene()
 		self.game_config = None
@@ -464,6 +492,7 @@ class TakeDragGame(QWidget):
 		# self.clock.set_time(int(self.game_config["time"]))
 		# self.clock.set_time(3)
 		self.setWindowState(Qt.WindowMaximized)
+		# self._update_scores()
 		# self.clock.show()
 
 		# TODO: Fix it
@@ -524,12 +553,18 @@ class TakeDragGame(QWidget):
 		self.clock.start()
 
 	def game_timeout(self):
-		self.end_game(False)
+		result = self.check_win()
+		self.end_game(result)
 
-	def end_game(self, value):
+	def check_scores(self):
+		self._update_scores()
 
-		#        self.scene.update()
-		#        time.sleep(3)
+	def _update_scores(self):
+		right, wrong = self.right_wrong_pieces()
+		self.score_update.emit(right, wrong)
+
+	def end_game(self):
+
 		self.clear_scene()
 
 
@@ -574,7 +609,10 @@ class TakeDragGame(QWidget):
 								self._pointers[pointer_id].taken = item
 								# Set the Z position of the object take under the pointer Z value
 								self._pointers[pointer_id].taken.setZValue(int(self.game_config["depth"]["mouse"]) - 1)
-							item.play_item()
+							if item.is_playing():
+								item.stop_item()
+							else:
+								item.play_item()
 							break
 		# The pointer is open/ released
 		else:
@@ -590,6 +628,7 @@ class TakeDragGame(QWidget):
 				self._pointers[pointer_id].taken.setZValue(zvalue)
 				# check correct position
 				self.adjust_to_nearest_destination(pointer_id)
+				# self._update_scores()
 
 				# TODO: REMOVE individual pieces check and anchoring
 			# 	# Set the overlay of the "right" sign over the object
@@ -613,7 +652,7 @@ class TakeDragGame(QWidget):
 					self._pointers[pointer_id].taken.correct_position = False
 					self.correct_images = self.correct_images - 1
 				# self._pointers[pointer_id].taken.set_overlay(False)
-				self._pointers[pointer_id].taken.stop_item()
+				# self._pointers[pointer_id].taken.stop_item()
 				self._pointers[pointer_id].taken = None
 
 
@@ -623,22 +662,13 @@ class TakeDragGame(QWidget):
 	# self.game_config["images"]["handOpen"]["widget"].setPos(new_xpos, new_ypos)
 	# self.game_config["images"]["handClose"]["widget"].setPos(new_xpos, new_ypos)
 
+
 	def adjust_to_nearest_destination(self, pointer_id):
 		lowest_distance = sys.maxint
 		nearest_dest = None
 		taken_widget = self._pointers[pointer_id].taken
 		for dest in self._destinations:
-			piece_center_x = taken_widget.scenePos().x() + self._pointers[
-				pointer_id].taken.width() / 2.
-			dest_center_x = dest.scenePos().x()+ dest.width()/2.
-			xdistance = piece_center_x - dest_center_x
-
-			piece_center_y = taken_widget.scenePos().y() + self._pointers[
-				pointer_id].taken.height() / 2.
-			dest_center_y = dest.scenePos().y() + dest.height() / 2.
-			ydistance = piece_center_y - dest_center_y
-
-			distance = math.sqrt(pow(xdistance, 2) + pow(ydistance, 2))
+			distance = self.items_distance(taken_widget, dest)
 			if distance < lowest_distance:
 				lowest_distance = distance
 				nearest_dest = dest
@@ -652,8 +682,19 @@ class TakeDragGame(QWidget):
 			new_ypos = nearest_dest.scenePos().y() - heights_diff
 			taken_widget.setPos(new_xpos, new_ypos)
 
-	def create_and_add_images(self):
+	def items_distance(self, item1, item2):
+		item1_center_x = item1.scenePos().x() + item1.width() / 2.
+		item2_center_x = item2.scenePos().x() + item2.width() / 2.
+		xdistance = item1_center_x - item2_center_x
 
+		item1_center_y = item1.scenePos().y() + item1.height() / 2.
+		item2_center_y = item2.scenePos().y() + item2.height() / 2.
+		ydistance = item1_center_y - item2_center_y
+
+		distance = math.sqrt(pow(xdistance, 2) + pow(ydistance, 2))
+		return distance
+
+	def create_and_add_images(self):
 
 		if self.game_config is not None:
 			temp_pieces_pos = []
@@ -676,18 +717,41 @@ class TakeDragGame(QWidget):
 					self._scene.addItem(new_image)
 				if item["category"] == "piece":
 					temp_pieces_pos.append((item["initial_pose"][0], item["initial_pose"][1]))
-					dest_image = DestinationItem(new_image.boundingRect(), str(item["index"]))
-					dest_image.setPos(item["final_pose"][0], item["final_pose"][1])
+					dest_item = DestinationItem(new_image.boundingRect(), str(item["index"]))
+					dest_item.setPos(item["final_pose"][0], item["final_pose"][1])
+					new_image.destination = dest_item
 					self._pieces.append(new_image)
-					self._destinations.append(dest_image)
+					self._destinations.append(dest_item)
 					self.total_images = self.total_images + 1
-					self._scene.addItem(dest_image)
+					self._scene.addItem(dest_item)
 			#Randomize initial position
 			random.shuffle(temp_pieces_pos)
 			for piece in self._pieces:
 				random_new_pos = temp_pieces_pos.pop()
 				piece.setPos(random_new_pos[0], random_new_pos[1])
 
+
+	def check_win(self):
+		right, wrong = self.right_wrong_pieces()
+		if right == len(self._pieces):
+			self.game_win.emit()
+			return True
+
+	def check_lose(self):
+		right, wrong = self.right_wrong_pieces()
+		if wrong > 0:
+			return True
+
+	def right_wrong_pieces(self):
+		right = 0
+		wrong = 0
+		for piece in self._pieces:
+			distance = self.items_distance(piece, piece.destination)
+			if distance <1:
+				right+=1
+			else:
+				wrong +=1
+		return right, wrong
 
 	def resizeEvent(self, event):
 		# skip initial entry

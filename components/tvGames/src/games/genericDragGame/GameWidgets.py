@@ -51,6 +51,10 @@ class GameTopBarWidget(QWidget):
     def set_time(self, seconds):
         self._clock.set_time(seconds)
 
+    def set_scores(self, value1, value2):
+        self._game_scores.set_score(1, value1)
+        self._game_scores.set_score(0, value2)
+
     def set_good_score(self, value):
         self._game_scores.set_score(0, value)
 

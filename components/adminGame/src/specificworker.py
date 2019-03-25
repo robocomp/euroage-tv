@@ -1,5 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+#
+# Copyright (C) 2019 by YOUR NAME HERE
+#
+#    This file is part of RoboComp
+#
+#    RoboComp is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    RoboComp is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+
+from genericworker import *
 import json
 import os
 import signal
@@ -15,11 +38,17 @@ from PySide2.QtWidgets import QApplication, QMessageBox, QCompleter, QMainWindow
 from admin_widgets import LoginWindow, RegisterWindow, UsersWindow,PlayersWindow
 from metrics import *
 
+# If RoboComp was compiled with Python bindings you can use InnerModel in Python
+# sys.path.append('/opt/robocomp/lib')
+# import librobocomp_qmat
+# import librobocomp_osgviewer
+# import librobocomp_innermodel
+
 FILE_PATH = os.path.abspath(__file__)
 print(FILE_PATH)
 # DATABASE_PATH = "resources/users_db.sqlite"
-USERS_FILE_PATH = "../../resources/passwords.json"
-SHADOWS_FILE_PATH = "../../resources/shadows.json"
+USERS_FILE_PATH = "src/passwords.json"
+SHADOWS_FILE_PATH = "src/shadows.json"
 # print FILE_PATH
 #print os.getcwd()
 
@@ -108,19 +137,21 @@ class QUserManager(QObject):
             return False
 
 
-
-class MainWindow(QMainWindow):
+class SpecificWorker(GenericWorker):
     login_executed = Signal(bool)
 
-    def __init__(self, parent=None):
-        super(MainWindow, self).__init__(parent)
+    def __init__(self, proxy_map):
 
-        #User Management
+        super(SpecificWorker, self).__init__(proxy_map)
+        self.timer.timeout.connect(self.compute)
+        self.Period = 2000
+
+
         self.user_ddbb_connector = QUserManager()
         self.user_ddbb_connector.status_changed.connect(self.ddbb_status_changed)
         self.user_ddbb_connector.load_users()
 
-        #Load widget from ui
+        # Load widget from ui
         # self.mylayout = QVBoxLayout()
         # self.setLayout(self.mylayout)
         loader = QUiLoader()
@@ -128,7 +159,7 @@ class MainWindow(QMainWindow):
         loader.registerCustomWidget(RegisterWindow)
         loader.registerCustomWidget(UsersWindow)
         loader.registerCustomWidget(PlayersWindow)
-        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/modules/mainUI.ui")
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/adminGame/src/stackedUI.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         file.close()
@@ -136,21 +167,20 @@ class MainWindow(QMainWindow):
         # self.mylayout.setContentsMargins(0, 0, 0, 0)
 
         self.setCentralWidget(self.ui)
-        self.ui.stackedWidget.setCurrentIndex(0) #Poner a 0
-
-        ##Menu
+        self.ui.stackedWidget.setCurrentIndex(0)  # Poner a 0
+        #
+        # ##Menu
         self.mainMenu = self.menuBar()
         fileMenu = self.mainMenu.addMenu('&Menú')
         self.mainMenu.setEnabled(False)
 
-        exitAction = QAction( '&Salir', self)
+        exitAction = QAction('&Salir', self)
         exitAction.triggered.connect(qApp.quit)
         fileMenu.addAction(exitAction)
 
-        closeAction = QAction ('&Cerrar sesión', self)
-        closeAction.triggered.connect (self.close_session_clicked)
+        closeAction = QAction('&Cerrar sesión', self)
+        closeAction.triggered.connect(self.close_session_clicked)
         fileMenu.addAction(closeAction)
-
 
         ## Login window
         self.ui.login_button_2.clicked.connect(self.check_login)
@@ -165,7 +195,6 @@ class MainWindow(QMainWindow):
         self.ui.password_2_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.createuser_button_reg.clicked.connect(self.create_new_user)
         self.ui.back_button_reg.clicked.connect(self.back_clicked)
-
 
         ##Users window
 
@@ -195,6 +224,9 @@ class MainWindow(QMainWindow):
         ##Player window
         self.ui.back_player_button.clicked.connect(self.back_clicked)
         self.ui.create_player_button.clicked.connect(self.create_player)
+
+        self.timer.start(self.Period)
+
 
     def ddbb_status_changed(self, string):
         self.ui.login_status.setText(string)
@@ -369,13 +401,17 @@ class MainWindow(QMainWindow):
         self.ui.age_player_lineedit.clear()
 
 
+    def setParams(self, params):
+        #try:
+        #	self.innermodel = InnerModel(params["InnerModelPath"])
+        #except:
+        #	traceback.print_exc()
+        #	print "Error reading config params"
+        return True
 
-if __name__ == '__main__':
+    @QtCore.Slot()
+    def compute(self):
+        print 'SpecificWorker.compute...'
 
-    app = QApplication(sys.argv)
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+        return True
 
-    main = MainWindow()
-    main.show()
-
-    app.exec_()

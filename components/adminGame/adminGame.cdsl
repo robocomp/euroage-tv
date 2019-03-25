@@ -1,0 +1,12 @@
+
+Component adminGame
+{
+    Communications
+    {
+    
+    };
+	language python;
+	gui Qt(QMainWindow);
+
+};
+

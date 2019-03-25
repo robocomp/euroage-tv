@@ -2,20 +2,31 @@
 """The user interface for our app"""
 
 import sys
+from builtins import super, tuple
 
-from PySide2.QtCore import QRect, Qt, QSize
-from PySide2.QtGui import QRegion, QColor
+from PySide2.QtCore import QRect, Qt, QSize, QPoint
+from PySide2.QtGui import QRegion, QColor, QIcon, QPixmap, QPainter, QFont
 from PySide2.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QGraphicsDropShadowEffect, \
     QHBoxLayout
 
 
 class CoolButton(QPushButton):
-    def __init__(self, text="", size=200, offset=20, color=QColor("green"), parent=None):
-        super(CoolButton, self).__init__(text, parent)
+    def __init__(self, text="", size=200, offset=20, color=QColor("green"), img=None, parent=None):
+        super(CoolButton, self).__init__(parent)
         self._size = size
         self._offset = offset
         self.setFixedSize(QSize(size, size))
         self.set_color(color)
+
+        pixmap = QPixmap("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/button/question1.png").scaled(QSize(size-size*0.08, size*size*0.08), Qt.KeepAspectRatio)
+        painter = QPainter(pixmap)
+        painter.setFont(QFont("Arial"))
+        painter.drawText(QPoint(size/2-len(text)*7, size*0.85), text.upper())
+        painter.end()
+        icon = QIcon(pixmap)
+
+        self.setIcon(icon)
+        self.setIconSize(pixmap.rect().size())
 
         # self.setMask(QRegion(QRect(OFFSET/4, OFFSET/4, self._size-OFFSET, self._size-OFFSET), QRegion.Ellipse))
         self.setMask(
@@ -29,6 +40,7 @@ class CoolButton(QPushButton):
 
         # Shadow
         self._set_released_shadow()
+
 
     def set_color(self, color):
         if isinstance(color, QColor):
@@ -80,7 +92,7 @@ if __name__ == '__main__':
     text = QLabel()
     text = QLabel("Hello World")
     text.setAlignment(Qt.AlignCenter)
-    button = CoolButton()
+    button = CoolButton(text="Ayuda")
     button.set_color(QColor("Orange"))
     button2 = CoolButton()
     layout_h = QHBoxLayout()

@@ -1,31 +1,30 @@
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from model import *
+from bbdd import *
 
 
-engine = create_engine('sqlite:///database.db', echo=True)
-Session = sessionmaker(bind=engine)
-session = Session()
+if __name__ == '__main__':
+    bbdd = BBDD()
 
-#create database
-Base.metadata.create_all(engine)
-
-
-ed_pat = Patient(name='Andres', surname='Lopez Lopez')
-print ed_pat
+    # create database
+#    bbdd.create_database("prueba.db")
+    #or open an existing one
+    bbdd.open_database("prueba.db")
 
 
-#add
-session.add(ed_pat)
+    #write
+    in_pat = bbdd.new_patient('Andres', 'Lopez Lopez', 12)
+    print in_pat
 
-session.commit()
+    #read
+    result, out_pat = bbdd.get_patient_by_name('Andres')
+    print result, out_pat
 
-#read
-our_user = session.query(Patient).filter_by(name='Andres').first()
-print our_user
+    #delete
+    result = bbdd.remove_patient("Andres")
+    print "Delete Andres", result
 
-
-# session.rollback()
-# session.delete(jack)
+    #read all
+    pat_list = bbdd.get_all_patients()
+    print "All patients"
+    for pat in pat_list:
+        print pat

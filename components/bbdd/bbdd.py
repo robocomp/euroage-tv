@@ -27,9 +27,12 @@ class BBDD():
     #PATIENT
     def new_patient(self, name, surname, april):
         patient = Patient(name=name, surname=surname, id_april=april)
-        self.session.add(patient)
-        self.session.commit()
-        return True, patient
+        try:
+            self.session.add(patient)
+            self.session.commit()
+            return True, patient
+        except:
+            return False, Patient()
 
     def get_patient_by_name(self, name):
         try:
@@ -52,9 +55,12 @@ class BBDD():
     # THERAPIST
     def new_therapist(self, name, surname):
         therapist = Therapist(name=name, surname=surname)
-        self.session.add(therapist)
-        self.session.commit()
-        return True, therapist
+        try:
+            self.session.add(therapist)
+            self.session.commit()
+            return True, therapist
+        except:
+            return False, Therapist()
 
     def get_therapist_by_name(self, name):
         try:
@@ -73,3 +79,28 @@ class BBDD():
         else:
             print "Therapist: ", name, " not found in database"
             return False
+
+    # GAME
+    def new_game(self, name, ntiles):
+        game = Game(name=name, ntiles=ntiles)
+        try:
+            self.session.add(game)
+            self.session.commit()
+            return True, game
+        except:
+            return False, Game()
+
+    # SESSION
+    def new_session(self, start, end, patient, therapist):
+        session = Session(start_time=start, end_time=end, patient_id=patient.id, therapist_id=therapist.id)
+        try:
+            self.session.add(session)
+            self.session.commit()
+            return True, session
+        except:
+            return False, Session()
+
+    def get_all_session_by_therapist_name(self, name):
+        return self.session.query(Session).join(Therapist).filter(Therapist.name == name).all()
+
+

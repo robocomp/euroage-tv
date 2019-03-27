@@ -79,9 +79,9 @@ class ListVideoPlayer(QGraphicsVideoItem):
     #     else:
     #         print("Video index out of video list (%d of %d)"%(len(video_index, len(self._video_list))))
 
-class ActionsVideoPlayer(ListVideoPlayer):
+class ActionsVideoItemPlayer(ListVideoPlayer):
     def __init__(self, parent = None):
-        super(ActionsVideoPlayer, self).__init__(parent)
+        super(ActionsVideoItemPlayer, self).__init__(parent)
         self._actions_list = OrderedDict()
         # index from index number of actions to action keys (names)
         self._index_to_key = {}
@@ -124,7 +124,7 @@ class ActionsVideoPlayer(ListVideoPlayer):
         self._index_to_key = {}
         self._index_to_playlist = {}
         self._currently_playing = []
-        super(ActionsVideoPlayer, self).clear()
+        super(ActionsVideoItemPlayer, self).clear()
 
     def __contains__(self, key):
         return key in self._actions_list.keys()
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
 
     app = QApplication(sys.argv)
-    window = ActionsVideoPlayer()
+    window = ActionsVideoItemPlayer()
     from os import listdir
     from os.path import isfile, join
 

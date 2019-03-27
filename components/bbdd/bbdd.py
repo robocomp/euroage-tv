@@ -90,6 +90,16 @@ class BBDD():
         except:
             return False, Game()
 
+    #GAME_STATE
+    def new_game_state(self, time, nmoved_tiles, ncorrect_tiles):
+        game_state = Game_State(start_time=time, nmoved_tiles=nmoved_tiles,ncorrect_tiles=ncorrect_tiles)
+        try:
+            self.session.add(game_state)
+            self.session.commit()
+            return True, game_state
+        except:
+            return False, Game_state()
+
     # SESSION
     def new_session(self, start, end, patient, therapist):
         session = Session(start_time=start, end_time=end, patient_id=patient.id, therapist_id=therapist.id)
@@ -103,4 +113,36 @@ class BBDD():
     def get_all_session_by_therapist_name(self, name):
         return self.session.query(Session).join(Therapist).filter(Therapist.name == name).all()
 
+
+    #HAND
+    def new_hand(self, poses, nopen, nclose):
+        hand = Hand(poses=poses, nopen=nopen, nclose=nclose)
+        try:
+            self.session.add(hand)
+            self.session.commit()
+            return True, hand
+        except:
+            return False, Hand()
+
+    #STOP
+    def new_stop(self, time, poseX, poseY, poseZ, open_hand, tile, round_id, game_state_id):
+        stop = Stop(time=time, poseX=poseX, poseY=poseY, poseZ=poseZ, open_hand=open_hand, tile=tile, round_id=round_id,
+                    game_state_id=game_state_id)
+        try:
+            self.session.add(stop)
+            self.session.commit()
+            return True, stop
+        except:
+             return False, Stop()
+
+    #ROUND
+    def new_round(self, stime, etime, nwins, nhelps, ntouch, result, game_id, hand_id, session_id):
+        round = Round(start_time=stime, end_time=etime, nwins=nwins, nhelps=nhelps, ntouchscreen=ntouch, result=result,
+                      game_id=game_id, hand_id=hand_id, session_id=session_id)
+        try:
+            self.session.add(round)
+            self.session.commit()
+            return True, round
+        except:
+             return False, Round()
 

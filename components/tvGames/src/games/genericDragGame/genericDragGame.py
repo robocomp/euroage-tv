@@ -768,23 +768,53 @@ class TakeDragGame(QWidget):
 
 			new_xpos = nearest_dest.scenePos().x() - widths_diff
 			new_ypos = nearest_dest.scenePos().y() - heights_diff
-			if nearest_dest.empty() or nearest_dest.contained_piece == taken_widget:
-				taken_widget.current_destination = nearest_dest
+
+			piece_added = self.add_piece_to_destination(taken_widget, nearest_dest)
+			if piece_added or nearest_dest.contained_piece == taken_widget:
+				#If added set pos to center
 				taken_widget.setPos(new_xpos, new_ypos)
-				nearest_dest.contained_piece = taken_widget
 			else:
-				taken_widget.current_destination = None
+				#If already occupied, set to center but displaced
 				rand_x = randint(20,60)
 				rand_y = randint(-60, -20)
 				taken_widget.setPos(new_xpos+rand_x, new_ypos+rand_y)
 		else:
 			#If no near destination for this piece
 			# and If the dropped piece had a current (previous destination)
-			if taken_widget.current_destination is not None:
-				# remove the piece from the destination
-				taken_widget.current_destination.contained_piece = None
-				# remove destination from piece
-				taken_widget.current_destination = None
+			self.remove_piece_from_destination(taken_widget)
+
+
+	def add_piece_to_destination(self, piece, destination):
+		if destination.empty() or destination.contained_piece == piece:
+			#remove piece from it current destination if any
+			self.remove_piece_from_destination(piece)
+			#update piece and destination
+			piece.current_destination = destination
+			destination.contained_piece = piece
+			return True
+		else:
+			print("adding failed: ", piece.id, destination.index, destination.contained_piece.id)
+			piece.current_destination = None
+			return False
+
+	def remove_piece_from_destination(self, piece=None, destination=None):
+		if destination is None:
+			if piece.current_destination is not None:
+				destination = piece.current_destination
+			else:
+				print("Trying to remove piece from destination without destination")
+				return False
+		if piece is None:
+			if destination.contained_piece is not None:
+				piece = destination.contained_piece
+			else:
+				print("Trying to remove piece from destination without pieces")
+				return False
+		# remove the piece from the destination
+		destination.contained_piece = None
+		# remove destination from piece
+		piece.current_destination = None
+		return True
 
 
 	def items_distance(self, item1, item2):

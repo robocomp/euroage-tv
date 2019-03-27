@@ -20,9 +20,14 @@ from PySide2.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QWidget, QHBo
 from numpy.random.mtrand import randint
 
 # Create a class for our main window
-from games.genericDragGame.CoolButton import CoolButton
-from games.genericDragGame.GameWidgets import GameTopBarWidget
-from games.genericDragGame.QGraphicsVideoListItem import ActionsVideoPlayer
+try:
+	from games.genericDragGame.CoolButton import CoolButton
+	from games.genericDragGame.GameWidgets import GameTopBarWidget
+	from games.genericDragGame.QGraphicsVideoListItem import ActionsVideoPlayer
+except:
+	from CoolButton import CoolButton
+	from GameWidgets import GameTopBarWidget
+	from QGraphicsVideoListItem import ActionsVideoPlayer
 
 try:
 	from subprocess import DEVNULL  # py3k
@@ -62,9 +67,9 @@ class GameScreen(QWidget):
 		self._game_layout.addWidget(self._top_bar, 0, 0, 1, 20)
 		self._game_frame = TakeDragGame(width, height)
 		self._game_layout.addWidget(self._game_frame, 1, 1, 1, 18)
-		self._help_button = CoolButton(text="AYUDA", size=150)
+		self._help_button = CoolButton(text="AYUDA", size=150, image_path="/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/button/justQuestion.png")
 		self._help_button.set_color(QColor("Green"))
-		self._check_button = CoolButton(text="TERMINAR", size=150)
+		self._check_button = CoolButton(text="TERMINAR", size=150,  image_path="/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/button/checked.png")
 		self._help_button.set_color(QColor("Orange"))
 		self._game_layout.addWidget(self._help_button, 2, 1, 1, 2, Qt.AlignRight)
 		self._game_layout.addWidget(self._check_button, 2, 3, 1, 2)
@@ -258,7 +263,7 @@ class DraggableItem(QGraphicsPixmapItem):
 
 
 class PlayableItem(DraggableItem):
-	def __init__(self, id, image_path, clip_path, width, height, draggable=False, parent=None):
+	def __init__(self, id, image_path, clip_path, width, height, title, draggable=False, parent=None):
 		super(PlayableItem, self).__init__(id, image_path, width, height, draggable, parent)
 		self._media_player = QMediaPlayer()
 		self._media_player.setMuted(True)
@@ -271,6 +276,13 @@ class PlayableItem(DraggableItem):
 		self._media_player.mediaStatusChanged.connect(self._update_media_status)
 		self._media_player.stateChanged.connect(self._update_state)
 		self._hide_video()
+
+		self._label = QGraphicsTextItem(self) # Label
+		self._set_label(title.upper(), "margin:10px; font-weight: bold; font-size: " +str(self.width()/18)+"pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;") # Nombre
+		self._label.setY(self.height()-10) # Posicionar abajo
+		# self._label.setY(-20) # Posicionar arriba
+		self._label.setTextWidth(self.width())
+
 		# self._video_widget.setSize(QSize(0, 0))
 		# self.setOpacity(0.9)
 
@@ -291,6 +303,9 @@ class PlayableItem(DraggableItem):
 		self._video_background.setBrush(QBrush())
 		self._video_background.update()
 		self._video_widget.setSize(QSize(10, 10))
+
+	def _set_label(self, text, style):
+		self._label.setHtml("<div style='"+style+"'><center><p>"+text+"</p></center>")
 
 	def is_playing(self):
 		return self._media_player.state() == QMediaPlayer.PlayingState
@@ -703,7 +718,7 @@ class TakeDragGame(QWidget):
 
 				if "video_path" in item:
 					clip_path = os.path.join(CURRENT_PATH, item["video_path"])
-					new_image = PlayableItem(image_id, image_path, clip_path, item["size"][0], item["size"][1],
+					new_image = PlayableItem(image_id, image_path, clip_path, item["size"][0], item["size"][1], item["title"],
 											 item["category"] == "piece")
 				else:
 					new_image = DraggableItem(image_id, image_path, item["size"][0], item["size"][1],
@@ -800,7 +815,7 @@ def main():
 	# almost every app you write
 	app = QApplication(sys.argv)
 	game = GameScreen(1920, 1080)
-	game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/final_game1.json")
+	game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/final_game1.json")
 	game.show()
 
 	# main_widget = GameWidget()

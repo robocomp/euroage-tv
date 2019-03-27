@@ -1,31 +1,54 @@
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from bbdd import *
+from datetime import datetime
 
-from model import *
+if __name__ == '__main__':
+    bbdd = BBDD()
 
-
-engine = create_engine('sqlite:///database.db', echo=True)
-Session = sessionmaker(bind=engine)
-session = Session()
-
-#create database
-Base.metadata.create_all(engine)
+    # create database
+    bbdd.create_database("prueba.db")
+    #or open an existing one
+#    bbdd.open_database("prueba.db")
 
 
-ed_pat = Patient(name='Andres', surname='Lopez Lopez')
-print ed_pat
+    #write
+    result, patient = bbdd.new_patient('Andres', 'Lopez Lopez', 12)
+    print patient
+    result, patient2 = bbdd.new_patient('Elena', 'Martinez', 22)
+    print patient2
+
+    #read
+    result, out_pat = bbdd.get_patient_by_name('Andres')
+    print result, out_pat
+
+    #delete
+    result = bbdd.remove_patient("Andres")
+    print "Delete Andres", result
+
+    #read all
+    pat_list = bbdd.get_all_patients()
+    print "All patients"
+    for pat in pat_list:
+        print pat
+
+    #therapist
+    result, therapist = bbdd.new_therapist("Luis", "Perez")
+
+    #game
+    game = bbdd.new_game("Ordenar tortilla", 5)
+
+    #session
+    time = datetime.now()
+    result, session = bbdd.new_session(time, time, patient, therapist)
+    print session
+
+    time = datetime.now()
+    result, session = bbdd.new_session(time, time, patient2, therapist)
 
 
-#add
-session.add(ed_pat)
+    #get all session from therapist
+    session_list = bbdd.get_all_session_by_therapist_name("Luis")
+    print "All session from Luis"
+    for s in session_list:
+        print s
 
-session.commit()
-
-#read
-our_user = session.query(Patient).filter_by(name='Andres').first()
-print our_user
-
-
-# session.rollback()
-# session.delete(jack)

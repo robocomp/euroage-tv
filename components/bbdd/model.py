@@ -39,7 +39,7 @@ class Game(Base):
     rounds = relationship("Round", back_populates="game", cascade="all, delete")
 
     def __repr__(self):
-        return "<Game(name='%s: %i')>" % (self.name, self.ntiles)
+        return "<Game(name='%s: %d')>" % (self.name, self.ntiles)
 
 
 class Round(Base):
@@ -74,7 +74,7 @@ class Hand(Base):
     rounds = relationship("Round", back_populates="hand", cascade="all, delete")
 
     def __repr__(self):
-        return "<Hand(id='%i')>" % self.id
+        return "<Hand(id='%d')>" % self.id
 
 
 class Game_State(Base):
@@ -87,7 +87,7 @@ class Game_State(Base):
     stop = relationship("Stop", back_populates="game_state", cascade="all, delete")
 
     def __repr__(self):
-        return "<Game_state(id='%i')>" % self.id
+        return "<Game_state(id='%d')>" % self.id
 
 
 class Stop(Base):
@@ -104,7 +104,7 @@ class Stop(Base):
     rounds = relationship("Round", back_populates="stop", cascade="all, delete")
 
     def __repr__(self):
-        return "<Stop(id='%i')>" % self.id
+        return "<Stop(id='%d')>" % self.id
 
 
 class Session(Base):
@@ -119,4 +119,4 @@ class Session(Base):
     therapist = relationship("Therapist", back_populates="session", cascade="all, delete")
 
     def __repr__(self):
-        return "<Session(id='%i')>" % self.id
+        return "<Session(id='%d')>" % self.id

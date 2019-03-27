@@ -35,7 +35,7 @@ from PySide2.QtCore import QObject, Signal, QFile
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QMessageBox, QCompleter, QMainWindow, QAction, qApp
 
-from admin_widgets import LoginWindow, RegisterWindow, UsersWindow,PlayersWindow
+from admin_widgets import *
 from metrics import *
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
@@ -146,7 +146,6 @@ class SpecificWorker(GenericWorker):
         self.timer.timeout.connect(self.compute)
         self.Period = 2000
 
-
         self.user_ddbb_connector = QUserManager()
         self.user_ddbb_connector.status_changed.connect(self.ddbb_status_changed)
         self.user_ddbb_connector.load_users()
@@ -159,6 +158,7 @@ class SpecificWorker(GenericWorker):
         loader.registerCustomWidget(RegisterWindow)
         loader.registerCustomWidget(UsersWindow)
         loader.registerCustomWidget(PlayersWindow)
+        loader.registerCustomWidget(GameWindow)
         file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/adminGame/src/stackedUI.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
@@ -167,7 +167,7 @@ class SpecificWorker(GenericWorker):
         # self.mylayout.setContentsMargins(0, 0, 0, 0)
 
         self.setCentralWidget(self.ui)
-        self.ui.stackedWidget.setCurrentIndex(0)  # Poner a 0
+        self.ui.stackedWidget.setCurrentIndex(3)  # Poner a 0
         #
         # ##Menu
         self.mainMenu = self.menuBar()
@@ -226,6 +226,18 @@ class SpecificWorker(GenericWorker):
         self.ui.create_player_button.clicked.connect(self.create_player)
 
         self.timer.start(self.Period)
+
+        #Game window
+
+
+
+    def setParams(self, params):
+        #try:
+        #	self.innermodel = InnerModel(params["InnerModelPath"])
+        #except:
+        #	traceback.print_exc()
+        #	print "Error reading config params"
+        return True
 
 
     def ddbb_status_changed(self, string):
@@ -330,7 +342,7 @@ class SpecificWorker(GenericWorker):
 
     def selectedplayer_changed(self):
         self.selected_player_incombo = self.ui.selplayer_combobox.currentText()
-        if (self.ui.selplayer_combobox.currentIndex() == 1): #Nuevo jugador
+        if (self.ui.selplayer_combobox.currentIndex() == 1): #New player selected
             reply = QMessageBox.question(self.focusWidget(), '',
                                          ' Quiere añadir a un nuevo jugador?', QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.No:
@@ -359,11 +371,13 @@ class SpecificWorker(GenericWorker):
         for index in xrange(self.ui.listplayer_list.count()):
             items.append(self.ui.listplayer_list.item(index).text())
 
+
         if(self.ui.selgame_combobox.currentText() ==""):
             print("No se ha seleccionado ningún juego")
         else:
             print("Jugadores : ", items, "jugaran a: ", self.ui.selgame_combobox.currentText())
-
+            self.ui.info_game_label.setText(self.ui.selgame_combobox.currentText())
+            self.ui.stackedWidget.setCurrentIndex(4)
 
     def see_userdata(self): ##get the id of the user to get the metrics
         if (self.selected_player_inlist != ""):
@@ -401,17 +415,9 @@ class SpecificWorker(GenericWorker):
         self.ui.age_player_lineedit.clear()
 
 
-    def setParams(self, params):
-        #try:
-        #	self.innermodel = InnerModel(params["InnerModelPath"])
-        #except:
-        #	traceback.print_exc()
-        #	print "Error reading config params"
-        return True
 
     @QtCore.Slot()
     def compute(self):
-        print 'SpecificWorker.compute...'
 
         return True
 

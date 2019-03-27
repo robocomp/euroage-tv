@@ -42,8 +42,21 @@ except:
 	print 'SLICE_PATH environment variable was not exported. Using only the default paths'
 	pass
 
+ice_AdminGameInterface = False
+for p in icePaths:
+	if os.path.isfile(p+'/AdminGameInterface.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"AdminGameInterface.ice"
+		Ice.loadSlice(wholeStr)
+		ice_AdminGameInterface = True
+		break
+if not ice_AdminGameInterface:
+	print 'Couln\'t load AdminGameInterface'
+	sys.exit(-1)
+from EuroAgeGames import *
 
 
+from gamemetricsI import *
 
 try:
 	from ui_mainUI import *
@@ -60,6 +73,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 		super(GenericWorker, self).__init__()
 
 
+		self.admingame_proxy = mprx["AdminGameProxy"]
 		self.ui = Ui_guiDlg()
 		self.ui.setupUi(self)
 		self.show()

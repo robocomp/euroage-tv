@@ -106,9 +106,53 @@ if __name__ == '__main__':
     parameters = {}
     for i in ic.getProperties():
         parameters[str(i)] = str(ic.getProperties().getProperty(i))
+
+    # Topic Manager
+    proxy = ic.getProperties().getProperty("TopicManager.Proxy")
+    obj = ic.stringToProxy(proxy)
+    try:
+        topicManager = IceStorm.TopicManagerPrx.checkedCast(obj)
+    except Ice.ConnectionRefusedException, e:
+        print 'Cannot connect to IceStorm! ('+proxy+')'
+        sys.exit(-1)
+
+    # Remote object connection for AdminGame
+    try:
+        proxyString = ic.getProperties().getProperty('AdminGameProxy')
+        try:
+            basePrx = ic.stringToProxy(proxyString)
+            admingame_proxy = AdminGamePrx.checkedCast(basePrx)
+            mprx["AdminGameProxy"] = admingame_proxy
+        except Ice.Exception:
+            print 'Cannot connect to the remote object (AdminGame)', proxyString
+            #traceback.print_exc()
+            status = 1
+    except Ice.Exception, e:
+        print e
+        print 'Cannot get AdminGameProxy property.'
+        status = 1
+
     if status == 0:
         worker = SpecificWorker(mprx)
         worker.setParams(parameters)
+
+    GameMetrics_adapter = ic.createObjectAdapter("GameMetricsTopic")
+    gamemetricsI_ = GameMetricsI(worker)
+    gamemetrics_proxy = GameMetrics_adapter.addWithUUID(gamemetricsI_).ice_oneway()
+
+    subscribeDone = False
+    while not subscribeDone:
+        try:
+            gamemetrics_topic = topicManager.retrieve("GameMetrics")
+            subscribeDone = True
+        except Ice.Exception, e:
+            print "Error. Topic does not exist (yet)"
+            status = 0
+            time.sleep(1)
+    qos = {}
+    gamemetrics_topic.subscribeAndGetPublisher(qos, gamemetrics_proxy)
+    GameMetrics_adapter.activate()
+
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app.exec_()

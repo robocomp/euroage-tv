@@ -14,7 +14,7 @@ class LoginWindow(QWidget): # crea widget vacio
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(LoginWindow)
-        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/modules/login.ui")
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/adminGame/src/login.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -30,7 +30,7 @@ class RegisterWindow(QWidget): # crea widget vacio
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(RegisterWindow)
-        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/modules/register.ui")
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/adminGame/src/register.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -44,7 +44,7 @@ class UsersWindow(QWidget): # crea widget vacio
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(UsersWindow)
-        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/modules/users.ui")
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/adminGame/src/users.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -58,7 +58,21 @@ class PlayersWindow(QWidget): # crea widget vacio
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(PlayersWindow)
-        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/modules/player.ui")
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/adminGame/src/player.ui")
+        file.open(QFile.ReadOnly)
+        self.ui = loader.load(file, self.parent())
+        self.mylayout.addWidget(self.ui)
+        self.mylayout.setContentsMargins(0,0,0,0)
+        file.close()
+
+class GameWindow(QWidget): # crea widget vacio
+    def __init__(self,parent = None):
+        super(GameWindow, self).__init__(parent)
+        self.mylayout = QVBoxLayout()
+        self.setLayout(self.mylayout)
+        loader = QUiLoader()
+        loader.registerCustomWidget(GameWindow)
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/adminGame/src/AdminInterface.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -84,5 +98,8 @@ if __name__ == '__main__':
 
     player = PlayersWindow()
     player.show()
+
+    game = GameWindow()
+    game.show()
 
     app.exec_()

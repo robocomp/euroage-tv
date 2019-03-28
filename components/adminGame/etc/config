@@ -1,6 +1,14 @@
+# Endpoints for subscriptions
+GameMetricsTopic.Endpoints=tcp -p 10198
+
+
+# Proxies for required interfaces
+AdminGameProxy = admingame:tcp -h robolab-server.local -p 18888
+
+
 
 # This property is used by the clients to connect to IceStorm.
-TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
+TopicManager.Proxy=IceStorm/TopicManager: tcp -h robolab-server.local -p 9999
 
 
 Ice.Warn.Connections=0

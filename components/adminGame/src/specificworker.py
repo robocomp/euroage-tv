@@ -21,7 +21,6 @@
 #
 
 
-
 from genericworker import *
 import json
 import os
@@ -50,10 +49,10 @@ print(FILE_PATH)
 USERS_FILE_PATH = "src/passwords.json"
 SHADOWS_FILE_PATH = "src/shadows.json"
 # print FILE_PATH
-#print os.getcwd()
+# print os.getcwd()
 
-list_of_users =  []
-list_of_games = ["Juego 1","Juego 2","Juego 3","Juego 4"]
+list_of_users = []
+list_of_games = ["Juego 1", "Juego 2", "Juego 3", "Juego 4"]
 
 
 class DDBBStatus:
@@ -88,7 +87,7 @@ class QUserManager(QObject):
         with open(USERS_FILE_PATH) as f:
             print ("[INFO] Loading users ...")
             self.users_data = json.load(f)
-            for user,algo in self.users_data.items():
+            for user, algo in self.users_data.items():
                 list_of_users.append(user)
         pprint(self.users_data)
 
@@ -127,7 +126,7 @@ class QUserManager(QObject):
         with open(USERS_FILE_PATH, "w") as f:
             json.dump(self.users_data, f)
 
-    def check_user(self,username): #Return true when the user is found
+    def check_user(self, username):  # Return true when the user is found
         if len(self.users_data) > 0:
             if username in self.users_data:
                 return True
@@ -227,23 +226,20 @@ class SpecificWorker(GenericWorker):
 
         self.timer.start(self.Period)
 
-        #Game window
-
-
+        # Game window
 
     def setParams(self, params):
-        #try:
+        # try:
         #	self.innermodel = InnerModel(params["InnerModelPath"])
-        #except:
+        # except:
         #	traceback.print_exc()
         #	print "Error reading config params"
         return True
 
-
     def ddbb_status_changed(self, string):
         self.ui.login_status.setText(string)
 
-    #Login window functions
+    # Login window functions
     def check_login(self):
         print ("[INFO] Checking login ...")
 
@@ -272,8 +268,7 @@ class SpecificWorker(GenericWorker):
         index = self.ui.stackedWidget.indexOf(self.ui.register_page)
         self.ui.stackedWidget.setCurrentIndex(index)
 
-
-    #Register window functions
+    # Register window functions
     def password_strength_check(self):
         password = unicode(self.ui.password_lineedit_reg.text())
         repeated_password = unicode(self.ui.password_2_lineedit_reg.text())
@@ -293,7 +288,6 @@ class SpecificWorker(GenericWorker):
         self.ui.password_status_reg.setText(u"")
         return True
 
-
     def create_new_user(self):
         print ("[INFO] Trying to create new user ...")
 
@@ -302,7 +296,7 @@ class SpecificWorker(GenericWorker):
             # username = username.strip().lower()
             password = unicode(self.ui.password_lineedit_reg.text())
 
-            if (self.user_ddbb_connector.check_user(username) == True): #The user already exist
+            if (self.user_ddbb_connector.check_user(username) == True):  # The user already exist
                 QMessageBox().information(self.focusWidget(), 'Error',
                                           'El nombre de usuario ya existe',
                                           QMessageBox.Ok)
@@ -313,7 +307,7 @@ class SpecificWorker(GenericWorker):
                                           'Usuario creado correctamente',
                                           QMessageBox.Ok)
 
-                self.user_ddbb_connector.load_users() ##Reload the users
+                self.user_ddbb_connector.load_users()  ##Reload the users
                 completer = QCompleter(list_of_users)
                 self.ui.username_lineedit.setCompleter(completer)
                 self.ui.stackedWidget.setCurrentIndex(0)
@@ -335,14 +329,14 @@ class SpecificWorker(GenericWorker):
                 self.mainMenu.setEnabled(False)
             self.ui.stackedWidget.setCurrentIndex(index)
 
-    #Users window functions
+    # Users window functions
     def deleteuserfromlist(self):
         item_to_delete = self.ui.listplayer_list.currentRow()
         self.ui.listplayer_list.takeItem(item_to_delete)
 
     def selectedplayer_changed(self):
         self.selected_player_incombo = self.ui.selplayer_combobox.currentText()
-        if (self.ui.selplayer_combobox.currentIndex() == 1): #New player selected
+        if (self.ui.selplayer_combobox.currentIndex() == 1):  # New player selected
             reply = QMessageBox.question(self.focusWidget(), '',
                                          ' Quiere añadir a un nuevo jugador?', QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.No:
@@ -354,10 +348,10 @@ class SpecificWorker(GenericWorker):
                 return True
 
     def selectediteminlist_changed(self):
-        self.selected_player_inlist =  self.ui.listplayer_list.currentItem().text()
+        self.selected_player_inlist = self.ui.listplayer_list.currentItem().text()
 
     def addusertolist(self):
-        if (self.selected_player_incombo != "" ):
+        if (self.selected_player_incombo != ""):
             self.ui.listplayer_list.addItem(self.selected_player_incombo)
             return True
         else:
@@ -371,17 +365,16 @@ class SpecificWorker(GenericWorker):
         for index in xrange(self.ui.listplayer_list.count()):
             items.append(self.ui.listplayer_list.item(index).text())
 
-
-        if(self.ui.selgame_combobox.currentText() ==""):
+        if (self.ui.selgame_combobox.currentText() == ""):
             print("No se ha seleccionado ningún juego")
         else:
             print("Jugadores : ", items, "jugaran a: ", self.ui.selgame_combobox.currentText())
             self.ui.info_game_label.setText(self.ui.selgame_combobox.currentText())
             self.ui.stackedWidget.setCurrentIndex(4)
 
-    def see_userdata(self): ##get the id of the user to get the metrics
+    def see_userdata(self):  ##get the id of the user to get the metrics
         if (self.selected_player_inlist != ""):
-            print ("Ver datos del usuario ",self.selected_player_inlist)
+            print ("Ver datos del usuario ", self.selected_player_inlist)
         else:
             print("No item selected")
 
@@ -395,15 +388,13 @@ class SpecificWorker(GenericWorker):
         s2 = unicode(self.ui.surname2_player_lineedit.text())
         age = float(self.ui.age_player_lineedit.text())
 
-        id = self.admin.add_elderly(name,s1,s2,age)
+        id = self.admin.add_elderly(name, s1, s2, age)
 
         new_list = self.admin.get_list_elderly()
         completer = QCompleter(new_list)
 
-
-        last_element =new_list[-1]
+        last_element = new_list[-1]
         self.ui.selplayer_combobox.addItem(last_element)
-
 
         self.ui.selplayer_combobox.setCompleter(completer)
         self.ui.selplayer_combobox.setCurrentIndex(0)
@@ -414,10 +405,22 @@ class SpecificWorker(GenericWorker):
         self.ui.surname2_player_lineedit.clear()
         self.ui.age_player_lineedit.clear()
 
-
-
     @QtCore.Slot()
     def compute(self):
 
         return True
 
+        #
+        # metricsObtained
+        #
+    def metricsObtained(self, m):
+        #
+        # subscribesToCODE
+        #
+        pass
+
+    #
+    # statusChanged
+    #
+    def statusChanged(self, s):
+       print s

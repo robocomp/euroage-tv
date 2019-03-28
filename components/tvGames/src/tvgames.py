@@ -55,10 +55,13 @@
 #
 #
 
-import IceStorm
-import copy
+import sys, traceback, IceStorm, subprocess, threading, time, Queue, os, copy
+
 # Ctrl+c handling
 import signal
+
+from PySide2 import QtCore
+from PySide2 import QtWidgets
 
 from specificworker import *
 
@@ -66,7 +69,7 @@ from specificworker import *
 class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 	def __init__(self, _handler):
 		self.handler = _handler
-
+		# self.communicator = _communicator
 	def getFreq(self, current = None):
 		self.handler.getFreq()
 	def setFreq(self, freq, current = None):
@@ -75,14 +78,14 @@ class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 		try:
 			return self.handler.timeAwake()
 		except:
-			print('Problem getting timeAwake')
+			print 'Problem getting timeAwake'
 	def killYourSelf(self, current = None):
 		self.handler.killYourSelf()
 	def getAttrList(self, current = None):
 		try:
 			return self.handler.getAttrList()
 		except:
-			print('Problem getting getAttrList')
+			print 'Problem getting getAttrList'
 			traceback.print_exc()
 			status = 1
 			return
@@ -90,7 +93,7 @@ class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 
 
 if __name__ == '__main__':
-	app = QApplication(sys.argv)
+	app = QtWidgets.QApplication(sys.argv)
 	params = copy.deepcopy(sys.argv)
 	if len(params) > 1:
 		if not params[1].startswith('--Ice.Config='):
@@ -109,9 +112,9 @@ if __name__ == '__main__':
 	obj = ic.stringToProxy(proxy)
 	try:
 		topicManager = IceStorm.TopicManagerPrx.checkedCast(obj)
-	except Ice.ConnectionRefusedException as e:
-		print('Cannot connect to IceStorm! ('+proxy+')')
-		sys.exit(-1)
+	except Ice.ConnectionRefusedException, e:
+		print 'Cannot connect to IceStorm! ('+proxy+')'
+		status = 1
 
 	# Remote object connection for CameraSimple
 	try:
@@ -121,29 +124,12 @@ if __name__ == '__main__':
 			camerasimple_proxy = CameraSimplePrx.checkedCast(basePrx)
 			mprx["CameraSimpleProxy"] = camerasimple_proxy
 		except Ice.Exception:
-			print('Cannot connect to the remote object (CameraSimple)', proxyString)
+			print 'Cannot connect to the remote object (CameraSimple)', proxyString
 			#traceback.print_exc()
 			status = 1
-	except Ice.Exception as e:
-		print(e)
-		print('Cannot get CameraSimpleProxy property.')
-		status = 1
-
-
-	# Remote object connection for HandDetection
-	try:
-		proxyString = ic.getProperties().getProperty('HandDetectionProxy')
-		try:
-			basePrx = ic.stringToProxy(proxyString)
-			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
-			mprx["HandDetectionProxy"] = handdetection_proxy
-		except Ice.Exception:
-			print('Cannot connect to the remote object (HandDetection)', proxyString)
-			#traceback.print_exc()
-			status = 1
-	except Ice.Exception as e:
-		print(e)
-		print('Cannot get HandDetectionProxy property.')
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get CameraSimpleProxy property.'
 		status = 1
 
 
@@ -155,12 +141,29 @@ if __name__ == '__main__':
 			getapriltags_proxy = GetAprilTagsPrx.checkedCast(basePrx)
 			mprx["GetAprilTagsProxy"] = getapriltags_proxy
 		except Ice.Exception:
-			print('Cannot connect to the remote object (GetAprilTags)', proxyString)
+			print 'Cannot connect to the remote object (GetAprilTags)', proxyString
 			#traceback.print_exc()
 			status = 1
-	except Ice.Exception as e:
-		print(e)
-		print('Cannot get GetAprilTagsProxy property.')
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get GetAprilTagsProxy property.'
+		status = 1
+
+
+	# Remote object connection for HandDetection
+	try:
+		proxyString = ic.getProperties().getProperty('HandDetectionProxy')
+		try:
+			basePrx = ic.stringToProxy(proxyString)
+			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
+			mprx["HandDetectionProxy"] = handdetection_proxy
+		except Ice.Exception:
+			print 'Cannot connect to the remote object (HandDetection)', proxyString
+			#traceback.print_exc()
+			status = 1
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get HandDetectionProxy property.'
 		status = 1
 
 
@@ -172,12 +175,12 @@ if __name__ == '__main__':
 			rgbd_proxy = RGBDPrx.checkedCast(basePrx)
 			mprx["RGBDProxy"] = rgbd_proxy
 		except Ice.Exception:
-			print('Cannot connect to the remote object (RGBD)', proxyString)
+			print 'Cannot connect to the remote object (RGBD)', proxyString
 			#traceback.print_exc()
 			status = 1
-	except Ice.Exception as e:
-		print(e)
-		print('Cannot get RGBDProxy property.')
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get RGBDProxy property.'
 		status = 1
 
 
@@ -194,7 +197,7 @@ if __name__ == '__main__':
 			try:
 				topic = topicManager.create("TouchPoints")
 			except:
-				print('Another client created the TouchPoints topic? ...')
+				print 'Another client created the TouchPoints topic? ...'
 	pub = topic.getPublisher().ice_oneway()
 	touchpointsTopic = TouchPointsPrx.uncheckedCast(pub)
 	mprx["TouchPointsPub"] = touchpointsTopic
@@ -202,6 +205,14 @@ if __name__ == '__main__':
 	if status == 0:
 		worker = SpecificWorker(mprx)
 		worker.setParams(parameters)
+	else:
+		print "Error getting required connections, check config file"
+		sys.exit(-1)
+
+	adapter = ic.createObjectAdapter('AdminGame')
+	adapter.add(AdminGameI(worker), ic.stringToIdentity('admingame'))
+	adapter.activate()
+
 
 	adapter = ic.createObjectAdapter('CommonBehavior')
 	adapter.add(CommonBehaviorI(worker), ic.stringToIdentity('commonbehavior'))

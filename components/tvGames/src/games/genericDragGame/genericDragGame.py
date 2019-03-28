@@ -102,6 +102,9 @@ class GameScreen(QWidget):
 		self._check_button.clicked.connect(self._game_frame.check_scores)
 		self._help_button.clicked.connect(self.show_help)
 
+	@property
+	def game_frame(self):
+		return self._game_frame
 
 	def show_help(self):
 		pieces = self._game_frame.already_set_pieces()
@@ -114,11 +117,10 @@ class GameScreen(QWidget):
 
 
 	def game_timeout(self):
-		# TODO: CHECK WIN OR LOSE
-		self.end_game(False)
+		self.end_game()
 
-	def end_game(self, value):
-		if value:
+	def end_game(self):
+		if self._game_frame.check_win():
 			self.end_message.setText(u"<font color='green'>¡Has ganado!</font>")
 			index = randint(0, len(WINNING_SOUNDS))
 			file = WINNING_SOUNDS[index]

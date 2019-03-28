@@ -41,20 +41,20 @@ except:
 	print 'SLICE_PATH environment variable was not exported. Using only the default paths'
 	pass
 
-ice_HandDetection = False
+ice_AdminGameInterface = False
 for p in icePaths:
-	print 'Trying', p, 'to load HandDetection.ice'
-	if os.path.isfile(p+'/HandDetection.ice'):
-		print 'Using', p, 'to load HandDetection.ice'
+	print 'Trying', p, 'to load AdminGameInterface.ice'
+	if os.path.isfile(p+'/AdminGameInterface.ice'):
+		print 'Using', p, 'to load AdminGameInterface.ice'
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"HandDetection.ice"
+		wholeStr = preStr+"AdminGameInterface.ice"
 		Ice.loadSlice(wholeStr)
-		ice_HandDetection = True
+		ice_AdminGameInterface = True
 		break
-if not ice_HandDetection:
-	print 'Couldn\'t load HandDetection'
+if not ice_AdminGameInterface:
+	print 'Couldn\'t load AdminGameInterface'
 	sys.exit(-1)
-from RoboCompHandDetection import *
+from EuroAgeGames import *
 ice_CameraSimple = False
 for p in icePaths:
 	print 'Trying', p, 'to load CameraSimple.ice'
@@ -69,20 +69,6 @@ if not ice_CameraSimple:
 	print 'Couldn\'t load CameraSimple'
 	sys.exit(-1)
 from RoboCompCameraSimple import *
-ice_RGBD = False
-for p in icePaths:
-	print 'Trying', p, 'to load RGBD.ice'
-	if os.path.isfile(p+'/RGBD.ice'):
-		print 'Using', p, 'to load RGBD.ice'
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"RGBD.ice"
-		Ice.loadSlice(wholeStr)
-		ice_RGBD = True
-		break
-if not ice_RGBD:
-	print 'Couldn\'t load RGBD'
-	sys.exit(-1)
-from RoboCompRGBD import *
 ice_CommonBehavior = False
 for p in icePaths:
 	print 'Trying', p, 'to load CommonBehavior.ice'
@@ -97,20 +83,6 @@ if not ice_CommonBehavior:
 	print 'Couldn\'t load CommonBehavior'
 	sys.exit(-1)
 from RoboCompCommonBehavior import *
-ice_TvGames = False
-for p in icePaths:
-	print 'Trying', p, 'to load TvGames.ice'
-	if os.path.isfile(p+'/TvGames.ice'):
-		print 'Using', p, 'to load TvGames.ice'
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TvGames.ice"
-		Ice.loadSlice(wholeStr)
-		ice_TvGames = True
-		break
-if not ice_TvGames:
-	print 'Couldn\'t load TvGames'
-	sys.exit(-1)
-from RoboCompTvGames import *
 ice_GetAprilTags = False
 for p in icePaths:
 	print 'Trying', p, 'to load GetAprilTags.ice'
@@ -125,6 +97,34 @@ if not ice_GetAprilTags:
 	print 'Couldn\'t load GetAprilTags'
 	sys.exit(-1)
 from RoboCompGetAprilTags import *
+ice_HandDetection = False
+for p in icePaths:
+	print 'Trying', p, 'to load HandDetection.ice'
+	if os.path.isfile(p+'/HandDetection.ice'):
+		print 'Using', p, 'to load HandDetection.ice'
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"HandDetection.ice"
+		Ice.loadSlice(wholeStr)
+		ice_HandDetection = True
+		break
+if not ice_HandDetection:
+	print 'Couldn\'t load HandDetection'
+	sys.exit(-1)
+from RoboCompHandDetection import *
+ice_RGBD = False
+for p in icePaths:
+	print 'Trying', p, 'to load RGBD.ice'
+	if os.path.isfile(p+'/RGBD.ice'):
+		print 'Using', p, 'to load RGBD.ice'
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"RGBD.ice"
+		Ice.loadSlice(wholeStr)
+		ice_RGBD = True
+		break
+if not ice_RGBD:
+	print 'Couldn\'t load RGBD'
+	sys.exit(-1)
+from RoboCompRGBD import *
 ice_TouchPoints = False
 for p in icePaths:
 	print 'Trying', p, 'to load TouchPoints.ice'
@@ -139,6 +139,20 @@ if not ice_TouchPoints:
 	print 'Couldn\'t load TouchPoints'
 	sys.exit(-1)
 from RoboCompTouchPoints import *
+ice_TvGames = False
+for p in icePaths:
+	print 'Trying', p, 'to load TvGames.ice'
+	if os.path.isfile(p+'/TvGames.ice'):
+		print 'Using', p, 'to load TvGames.ice'
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"TvGames.ice"
+		Ice.loadSlice(wholeStr)
+		ice_TvGames = True
+		break
+if not ice_TvGames:
+	print 'Couldn\'t load TvGames'
+	sys.exit(-1)
+from RoboCompTvGames import *
 
 class TvGamesI(TvGames):
 	def __init__(self, worker):

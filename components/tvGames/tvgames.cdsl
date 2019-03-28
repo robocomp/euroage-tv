@@ -5,13 +5,14 @@ import "CommonBehavior.idsl";
 import "TvGames.idsl";
 import "GetAprilTags.idsl";
 import "TouchPoints.idsl";
+import "AdminGameInterface.idsl";
 
 Component tvgames
 {
 	Communications
 	{
 		requires HandDetection, CameraSimple, RGBD, GetAprilTags;
-        implements CommonBehavior, TvGames;
+        implements CommonBehavior, TvGames, AdminGame;
 		publishes TouchPoints;
 	};
 	language Python;

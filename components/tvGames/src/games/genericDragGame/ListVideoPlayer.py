@@ -202,13 +202,11 @@ class ActionsVideoPlayer(ListVideoPlayer):
     def show_on_second_screen(self):
         desktop_widget = QApplication.desktop()
         if desktop_widget.screenCount() > 1:
-            # TODO: set 1 to production
             second_screen_size = desktop_widget.screenGeometry(1)
             newx = second_screen_size.left() + (second_screen_size.width()-self.width())/2
             newy = second_screen_size.top() + (second_screen_size.height() - self.height()) / 2
             self.move(newx, newy)
-            # self.resize(second_screen_size.width(), second_screen_size.height())
-            self.showFullScreen()
+            self.show()
 
     def clear(self):
         self._actions_list = OrderedDict()

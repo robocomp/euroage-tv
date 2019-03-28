@@ -10,7 +10,7 @@
 #define EUROAGEGAMES_ICE
 module EuroAgeGames
 {
-	enum StatusType { waiting, playing, paused, continued, win, lose };
+	enum StatusType { waiting, initializing, playing, paused, continued, win, lose };
 	struct Status
 	{
 		 StatusType currentStatus;
@@ -43,8 +43,8 @@ module EuroAgeGames
 	};
 	interface GameMetrics
 	{
-		Metrics metricsObtained ();
-		Status statusChanged ();
+		void metricsObtained (Metrics m);
+		void statusChanged (Status s);
 	};
 };
 

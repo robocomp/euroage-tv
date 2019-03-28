@@ -1,7 +1,7 @@
 module EuroAgeGames
 {
 
-enum StatusType {waiting, playing, paused, continued, win, lose};
+enum StatusType {waiting, initializing, playing, paused, continued, win, lose};
 
     struct Status
    {
@@ -44,8 +44,8 @@ interface AdminGame
     interface GameMetrics
     {
     
-       	Metrics metricsObtained();
-    	Status statusChanged();
+       	void metricsObtained(Metrics m);
+    	void statusChanged(Status s);
     
     };
 };

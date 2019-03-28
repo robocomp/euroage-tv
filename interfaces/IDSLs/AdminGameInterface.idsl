@@ -1,7 +1,7 @@
 module EuroAgeGames
 {
 
-enum StatusType {waiting, playing, paused, continued, finished};
+enum StatusType {waiting, playing, paused, continued, win, lose};
 
     struct Status
    {
@@ -9,16 +9,23 @@ enum StatusType {waiting, playing, paused, continued, finished};
     	string		date;
    };
 
+     struct Position
+     {
+	float x;
+	float y;	
+     };
+
     struct Metrics
     {
-        float	distance;
-	int	num_hand_open;
-	int	num_hand_closed;
-	int	num_screen_touched;
+	string	current_date;
+	Postion pos;
+	bool	screen_touched;
+	bool	hand_closed;
 	int	num_helps;
+	int	num_checked;
 	int	num_hits;
 	int	num_fails;
-	float	idle_time;	       
+
     };
 
 	sequence<string> list_players;

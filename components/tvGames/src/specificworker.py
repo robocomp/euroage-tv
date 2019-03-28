@@ -24,6 +24,7 @@ import cv2
 import imutils
 import numpy as np
 from PySide2.QtCore import Slot, Qt
+from PySide2.QtWidgets import QApplication
 
 from games.genericDragGame.genericDragGame import GameScreen
 from games.PaintGame.PaintGame import PaintGame
@@ -90,7 +91,7 @@ class SpecificWorker(GenericWorker):
 		# self._game.show()
 		self._available_games = {
 			u"Lavar Ropa cerca":
-				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame_far.json"],
+				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/final_game1/final_game1.json"],
 			u"Lavar Ropa lejos":
 				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame_near.json"],
 			u"Painting":
@@ -124,7 +125,7 @@ class SpecificWorker(GenericWorker):
 	def update_game_selection(self, index=None):
 		self._current_game_name = unicode(self.admin_interface.games_combobox.currentText())
 		self._game = eval(unicode(self._available_games[unicode(self._current_game_name)][0]))
-		self._game.touch_signal.connect(self.detectedTouchPoints)
+		self._game.game_frame.touch_signal.connect(self.detectedTouchPoints)
 		self.current_state = "game_getting_player"
 		self.reset_game()
 
@@ -408,6 +409,43 @@ class SpecificWorker(GenericWorker):
 				p0 = self.hand_track[i - 1]
 				cv2.line(frame, tuple(p0), tuple(p1), (0, 0, 255), 3)
 		return frame
+
+
+	#
+	# adminReset
+	#
+	def adminReset(self):
+		print("adminReset")
+		pass
+
+
+	#
+	# adminContinue
+	#
+	def adminContinue(self):
+		print("adminContinue")
+		pass
+
+
+	#
+	# adminStop
+	#
+	def adminStop(self):
+		print("adminStop")
+
+
+	#
+	# adminStart
+	#
+	def adminStart(self, players, game):
+		print("adminStart")
+
+
+	#
+	# adminPause
+	#
+	def adminPause(self):
+		print("adminPause")
 
 	#
 	# reloadConfig

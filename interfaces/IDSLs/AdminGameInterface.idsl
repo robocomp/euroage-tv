@@ -1,7 +1,7 @@
 module EuroAgeGames
 {
 
-enum StatusType {waiting, playing, paused, continued, finished};
+enum StatusType {waiting, initializing, playing, paused, continued, win, lose};
 
     struct Status
    {
@@ -9,27 +9,34 @@ enum StatusType {waiting, playing, paused, continued, finished};
     	string		date;
    };
 
+     struct Position
+     {
+	float x;
+	float y;	
+     };
+
     struct Metrics
     {
-        float	distance;
-	int	num_hand_open;
-	int	num_hand_closed;
-	int	num_screen_touched;
-	int	num_helps;
-	int	num_hits;
-	int	num_fails;
-	float	idle_time;	       
+	string	currentDate;
+	Position pos;
+	bool	screenTouched;
+	bool	handClosed;
+	int	numHelps;
+	int	numChecked;
+	int	numHits;
+	int	numFails;
+
     };
 
-	sequence<string> list_players;
+	sequence<string> listPlayers;
     
 interface AdminGame
     {
-     	void admin_start(list_players players, string game);
-     	void admin_stop();
-     	void admin_pause();
-     	void admin_continue();
-     	void admin_reset();    
+     	void adminStart(listPlayers players, string game);
+     	void adminStop();
+     	void adminPause();
+     	void adminContinue();
+     	void adminReset();
     };
 
 
@@ -37,8 +44,8 @@ interface AdminGame
     interface GameMetrics
     {
     
-       	Metrics metrics_obtained();
-    	Status status_changed();
+       	void metricsObtained(Metrics m);
+    	void statusChanged(Status s);
     
     };
 };

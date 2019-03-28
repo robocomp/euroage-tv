@@ -102,6 +102,9 @@ class GameScreen(QWidget):
 		self._check_button.clicked.connect(self._game_frame.check_scores)
 		self._help_button.clicked.connect(self.show_help)
 
+	@property
+	def game_frame(self):
+		return self._game_frame
 
 	def show_help(self):
 		pieces = self._game_frame.already_set_pieces()
@@ -109,16 +112,15 @@ class GameScreen(QWidget):
 		for piece in pieces:
 			self._video_player.add_action(piece.id, piece.clip_path)
 		if len(pieces)>0:
-			self._video_player.show()
+			self._video_player.show_on_second_screen()
 			self._video_player.play_all_actions()
 
 
 	def game_timeout(self):
-		# TODO: CHECK WIN OR LOSE
-		self.end_game(False)
+		self.end_game()
 
-	def end_game(self, value):
-		if value:
+	def end_game(self):
+		if self._game_frame.check_win():
 			self.end_message.setText(u"<font color='green'>¡Has ganado!</font>")
 			index = randint(0, len(WINNING_SOUNDS))
 			file = WINNING_SOUNDS[index]
@@ -655,7 +657,12 @@ class TakeDragGame(QWidget):
 
 	def already_set_pieces(self):
 		self.right_wrong_pieces()
-		return self._already_set
+		set_pieces = []
+		#loop over sorted destinations
+		for index  in range(1, len(self._destinations)):
+			if self._destinations[index].contained_piece is not None:
+				set_pieces.append(self._destinations[index].contained_piece)
+		return set_pieces
 
 	def add_new_pointer(self, pointer_id, xpos, ypos, grab, visible=False):
 		print "TakeDragGame.add_new_pointer: ID=%d"%pointer_id
@@ -764,7 +771,7 @@ class TakeDragGame(QWidget):
 		if nearest_dest is not None and lowest_distance < int(self.game_config["difficult"]):
 			# Adjust the position of the taken object to the exact correct one
 			widths_diff = int((taken_widget.width() - dest.width())/2)
-			heights_diff = int((taken_widget.height()- dest.height()) / 2)
+			heights_diff = int((taken_widget.height() - dest.height()) / 2)
 
 			new_xpos = nearest_dest.scenePos().x() - widths_diff
 			new_ypos = nearest_dest.scenePos().y() - heights_diff
@@ -879,12 +886,12 @@ class TakeDragGame(QWidget):
 		right = 0
 		wrong = 0
 		self._already_set = []
-		for piece in self._pieces:
-			distance = self.items_distance(piece, piece.final_destination)
-			if distance <1:
-				right+=1
-			else:
-				wrong +=1
+		for destination in self._destinations.values():
+			if destination.contained_piece is not None:
+				if destination.contained_piece.final_destination == destination:
+					right+=1
+				else:
+					wrong+=1
 		return right, wrong
 
 	def resizeEvent(self, event):

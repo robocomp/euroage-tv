@@ -154,23 +154,17 @@ if not ice_TvGames:
 	sys.exit(-1)
 from RoboCompTvGames import *
 
-class CommonBehaviorI(CommonBehavior):
+class AdminGameI(AdminGame):
 	def __init__(self, worker):
 		self.worker = worker
 
-	def reloadConfig(self, c):
-		return self.worker.reloadConfig()
-	def setPeriod(self, period, c):
-		return self.worker.setPeriod(period)
-	def getState(self, c):
-		return self.worker.getState()
-	def setParameterList(self, l, c):
-		return self.worker.setParameterList(l)
-	def timeAwake(self, c):
-		return self.worker.timeAwake()
-	def getParameterList(self, c):
-		return self.worker.getParameterList()
-	def killYourSelf(self, c):
-		return self.worker.killYourSelf()
-	def getPeriod(self, c):
-		return self.worker.getPeriod()
+	def adminReset(self, c):
+		return self.worker.adminReset()
+	def adminContinue(self, c):
+		return self.worker.adminContinue()
+	def adminStop(self, c):
+		return self.worker.adminStop()
+	def adminStart(self, players, game, c):
+		return self.worker.adminStart(players, game)
+	def adminPause(self, c):
+		return self.worker.adminPause()

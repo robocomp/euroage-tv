@@ -17,10 +17,7 @@
 #    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, Ice, os
-
-from PySide2.QtCore import QMutex, QTimer, SIGNAL
-from PySide2.QtWidgets import QWidget
-from PySide2 import QtCore
+from PySide2 import QtWidgets, QtCore
 
 ROBOCOMP = ''
 try:
@@ -45,54 +42,6 @@ except:
 	print 'SLICE_PATH environment variable was not exported. Using only the default paths'
 	pass
 
-ice_HandDetection = False
-for p in icePaths:
-	if os.path.isfile(p+'/HandDetection.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"HandDetection.ice"
-		Ice.loadSlice(wholeStr)
-		ice_HandDetection = True
-		break
-if not ice_HandDetection:
-	print 'Couln\'t load HandDetection'
-	sys.exit(-1)
-from RoboCompHandDetection import *
-ice_CameraSimple = False
-for p in icePaths:
-	if os.path.isfile(p+'/CameraSimple.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"CameraSimple.ice"
-		Ice.loadSlice(wholeStr)
-		ice_CameraSimple = True
-		break
-if not ice_CameraSimple:
-	print 'Couln\'t load CameraSimple'
-	sys.exit(-1)
-from RoboCompCameraSimple import *
-ice_RGBD = False
-for p in icePaths:
-	if os.path.isfile(p+'/RGBD.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"RGBD.ice"
-		Ice.loadSlice(wholeStr)
-		ice_RGBD = True
-		break
-if not ice_RGBD:
-	print 'Couln\'t load RGBD'
-	sys.exit(-1)
-from RoboCompRGBD import *
-ice_JointMotor = False
-for p in icePaths:
-	if os.path.isfile(p+'/JointMotor.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"JointMotor.ice"
-		Ice.loadSlice(wholeStr)
-		ice_JointMotor = True
-		break
-if not ice_JointMotor:
-	print 'Couln\'t load JointMotor'
-	sys.exit(-1)
-from RoboCompJointMotor import *
 ice_GenericBase = False
 for p in icePaths:
 	if os.path.isfile(p+'/GenericBase.ice'):
@@ -105,30 +54,18 @@ if not ice_GenericBase:
 	print 'Couln\'t load GenericBase'
 	sys.exit(-1)
 from RoboCompGenericBase import *
-ice_CommonBehavior = False
+ice_HandDetection = False
 for p in icePaths:
-	if os.path.isfile(p+'/CommonBehavior.ice'):
+	if os.path.isfile(p+'/HandDetection.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"CommonBehavior.ice"
+		wholeStr = preStr+"HandDetection.ice"
 		Ice.loadSlice(wholeStr)
-		ice_CommonBehavior = True
+		ice_HandDetection = True
 		break
-if not ice_CommonBehavior:
-	print 'Couln\'t load CommonBehavior'
+if not ice_HandDetection:
+	print 'Couln\'t load HandDetection'
 	sys.exit(-1)
-from RoboCompCommonBehavior import *
-ice_TvGames = False
-for p in icePaths:
-	if os.path.isfile(p+'/TvGames.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TvGames.ice"
-		Ice.loadSlice(wholeStr)
-		ice_TvGames = True
-		break
-if not ice_TvGames:
-	print 'Couln\'t load TvGames'
-	sys.exit(-1)
-from RoboCompTvGames import *
+from RoboCompHandDetection import *
 ice_GetAprilTags = False
 for p in icePaths:
 	if os.path.isfile(p+'/GetAprilTags.ice'):
@@ -141,32 +78,56 @@ if not ice_GetAprilTags:
 	print 'Couln\'t load GetAprilTags'
 	sys.exit(-1)
 from RoboCompGetAprilTags import *
-ice_TouchPoints = False
+ice_JointMotor = False
 for p in icePaths:
-	if os.path.isfile(p+'/TouchPoints.ice'):
+	if os.path.isfile(p+'/JointMotor.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TouchPoints.ice"
+		wholeStr = preStr+"JointMotor.ice"
 		Ice.loadSlice(wholeStr)
-		ice_TouchPoints = True
+		ice_JointMotor = True
 		break
-if not ice_TouchPoints:
-	print 'Couln\'t load TouchPoints'
+if not ice_JointMotor:
+	print 'Couln\'t load JointMotor'
 	sys.exit(-1)
-from RoboCompTouchPoints import *
+from RoboCompJointMotor import *
+ice_RGBD = False
+for p in icePaths:
+	if os.path.isfile(p+'/RGBD.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"RGBD.ice"
+		Ice.loadSlice(wholeStr)
+		ice_RGBD = True
+		break
+if not ice_RGBD:
+	print 'Couln\'t load RGBD'
+	sys.exit(-1)
+from RoboCompRGBD import *
+ice_CameraSimple = False
+for p in icePaths:
+	if os.path.isfile(p+'/CameraSimple.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"CameraSimple.ice"
+		Ice.loadSlice(wholeStr)
+		ice_CameraSimple = True
+		break
+if not ice_CameraSimple:
+	print 'Couln\'t load CameraSimple'
+	sys.exit(-1)
+from RoboCompCameraSimple import *
 
 
+from admingameI import *
 from commonbehaviorI import *
 from tvgamesI import *
 
 try:
 	from ui_mainUI import *
-except Exception as e:
+except:
 	print "Can't import UI file. Did you run 'make'?"
-	print e
 	sys.exit(-1)
 
 
-class GenericWorker(QWidget):
+class GenericWorker(QtWidgets.QWidget):
 	kill = QtCore.Signal()
 
 
@@ -174,19 +135,19 @@ class GenericWorker(QWidget):
 		super(GenericWorker, self).__init__()
 
 
-		self.getapriltags_proxy = mprx["GetAprilTagsProxy"]
 		self.camerasimple_proxy = mprx["CameraSimpleProxy"]
-		self.rgbd_proxy = mprx["RGBDProxy"]
+		self.getapriltags_proxy = mprx["GetAprilTagsProxy"]
 		self.handdetection_proxy = mprx["HandDetectionProxy"]
+		self.rgbd_proxy = mprx["RGBDProxy"]
 		self.touchpoints_proxy = mprx["TouchPointsPub"]
 		self.ui = Ui_guiDlg()
 		self.ui.setupUi(self)
 		self.show()
 
 
-		self.mutex = QMutex(QMutex.Recursive)
+		self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
 		self.Period = 30
-		self.timer = QTimer(self)
+		self.timer = QtCore.QTimer(self)
 
 
 	@QtCore.Slot()

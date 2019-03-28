@@ -1,12 +1,12 @@
 import sys
 from bbdd import *
 from datetime import datetime
+import dateutil.relativedelta
 from fpdf import FPDF
 
-from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QApplication, QWidget, QLabel, QTableWidgetItem
-from PySide2.QtCore import QFile, QObject
-from PySide2 import QtCore
+
+from PySide2.QtWidgets import QApplication, QTableWidgetItem
+from PySide2.QtCore import QDate
 
 
 try:
@@ -29,9 +29,13 @@ class Report(QtWidgets.QWidget):
         self.show()
 
     def initialize(self):
+        self.ui.edate_de.setDate(datetime.today())
+        self.ui.sdate_de.setDate(datetime.today() - dateutil.relativedelta.relativedelta(months=1))
         self.ui.cancel_pb.clicked.connect(self.cancel_pb)
         self.ui.generate_pb.clicked.connect(self.generate_report)
-        self.ui.patient_cb.currentIndexChanged.connect(self.change_patient)
+        self.ui.patient_cb.currentIndexChanged.connect(self.reload_sessions)
+        self.ui.edate_de.dateChanged.connect(self.reload_sessions)
+        self.ui.sdate_de.dateChanged.connect(self.reload_sessions)
         self.ui.sessions_tw.setColumnCount(3)
         self.ui.sessions_tw.setHorizontalHeaderLabels(["Id", "Therapist", "Date"])
         header = self.ui.sessions_tw.horizontalHeader()
@@ -47,20 +51,18 @@ class Report(QtWidgets.QWidget):
         name_list.sort()
         self.ui.patient_cb.addItems(name_list)
 
-    def change_patient(self):
-        print "change patient"
+    def reload_sessions(self):
+        print "Reload sessions"
         patient_id = self.patients[self.ui.patient_cb.currentText()]
         session_list = self.bbdd.get_all_session_by_patient_id(patient_id)
+        self.ui.sessions_tw.setRowCount(0)
         for session in session_list:
-            self.ui.sessions_tw.insertRow(self.ui.sessions_tw.rowCount())
-            self.ui.sessions_tw.setItem(self.ui.sessions_tw.rowCount()-1, 0, QTableWidgetItem(str(session.id)))
-            therapist = session.therapist.name + " " + session.therapist.surname
-            self.ui.sessions_tw.setItem(self.ui.sessions_tw.rowCount()-1, 1, QTableWidgetItem(therapist))
-            self.ui.sessions_tw.setItem(self.ui.sessions_tw.rowCount()-1, 2, QTableWidgetItem(session.start_time.strftime("%d/%m/%Y, %H:%M:%S")))
-
-
-    def filter_patient_sessions(self):
-        print "change sessions"
+            if QDate(session.start_time) > self.ui.sdate_de.date() and QDate(session.start_time) < self.ui.edate_de.date():
+                self.ui.sessions_tw.insertRow(self.ui.sessions_tw.rowCount())
+                self.ui.sessions_tw.setItem(self.ui.sessions_tw.rowCount()-1, 0, QTableWidgetItem(str(session.id)))
+                therapist = session.therapist.name + " " + session.therapist.surname
+                self.ui.sessions_tw.setItem(self.ui.sessions_tw.rowCount()-1, 1, QTableWidgetItem(therapist))
+                self.ui.sessions_tw.setItem(self.ui.sessions_tw.rowCount()-1, 2, QTableWidgetItem(session.start_time.strftime("%d/%m/%Y, %H:%M:%S")))
 
     def cancel_pb(self, event):
         print "cancel button"
@@ -68,6 +70,7 @@ class Report(QtWidgets.QWidget):
 
     def generate_report(self):
         print "generate report"
+
 
 def add_image(image_path):
     pdf = FPDF()

@@ -197,7 +197,18 @@ class ActionsVideoPlayer(ListVideoPlayer):
         self._close()
 
     def _close(self):
-        sys.exit(app.exec_())
+        self.hide()
+
+    def show_on_second_screen(self):
+        desktop_widget = QApplication.desktop()
+        if desktop_widget.screenCount() > 1:
+            # TODO: set 1 to production
+            second_screen_size = desktop_widget.screenGeometry(1)
+            newx = second_screen_size.left() + (second_screen_size.width()-self.width())/2
+            newy = second_screen_size.top() + (second_screen_size.height() - self.height()) / 2
+            self.move(newx, newy)
+            # self.resize(second_screen_size.width(), second_screen_size.height())
+            self.showFullScreen()
 
     def clear(self):
         self._actions_list = OrderedDict()

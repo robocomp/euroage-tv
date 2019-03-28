@@ -2,7 +2,7 @@
 """The user interface for our app"""
 
 import sys
-from builtins import super, tuple
+# from builtins import super, tuple
 
 from PySide2.QtCore import QRect, Qt, QSize, QPoint
 from PySide2.QtGui import QRegion, QColor, QIcon, QPixmap, QPainter, QFont, QFontMetrics

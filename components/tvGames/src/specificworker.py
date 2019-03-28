@@ -19,6 +19,7 @@
 
 import time
 import traceback
+from datetime import datetime
 
 import cv2
 import imutils
@@ -29,7 +30,7 @@ from PySide2.QtWidgets import QApplication
 from games.genericDragGame.genericDragGame import GameScreen
 from games.PaintGame.PaintGame import PaintGame
 from genericworker import *
-from modules.AdminInterface import AdminInterface
+# from modules.AdminInterface import AdminInterface
 from modules.CalibrationStateMachine import ManualCalibrationStateMachine
 from modules.HandMouse import MultiHandMouses
 from modules.QImageWidget import QImageWidget
@@ -53,13 +54,13 @@ class SpecificWorker(GenericWorker):
 		self.current_state = "calibrating"
 		# self.login_widget = QLoginWidget()
 		# self.login_widget.login_executed.connect(self.login_executed)
-		self.admin_interface = AdminInterface()
-		self.admin_interface.add_player_button.clicked.connect(self.add_new_player)
-		self.admin_interface.remove_player_button.clicked.connect(self.remove_player)
-		self.admin_interface.reset_game_button.clicked.connect(self.reset_game)
-		self.admin_interface.close_main_window.connect(self.quit_app)
-		self.admin_interface.admin_image.set_max_width(640)
-		self.admin_interface.show()
+		# self.admin_interface = AdminInterface()
+		# self.admin_interface.add_player_button.clicked.connect(self.add_new_player)
+		# self.admin_interface.remove_player_button.clicked.connect(self.remove_player)
+		# self.admin_interface.reset_game_button.clicked.connect(self.reset_game)
+		# self.admin_interface.close_main_window.connect(self.quit_app)
+		# self.admin_interface.admin_image.set_max_width(640)
+		# self.admin_interface.show()
 		self.hide()
 		self.debug = True
 		self.tv_image = QImageWidget()
@@ -87,6 +88,7 @@ class SpecificWorker(GenericWorker):
 		self.timer.start(self.Period)
 		self.hand_track = []
 		self.hand_mouses = MultiHandMouses()
+		self._current_game_name = None
 		# self._game = TakeDragGame()
 		# self._game.show()
 		self._available_games = {
@@ -111,10 +113,10 @@ class SpecificWorker(GenericWorker):
 
 		}
 		self._game = None
-		self.admin_interface.games_combobox.currentIndexChanged.connect(self.update_game_selection)
-		self.update_game_selection()
+		# self.admin_interface.games_combobox.currentIndexChanged.connect(self.update_game_selection)
+		# self.update_game_selection()
 
-		self._admin_image = None
+		# self._admin_image = None
 		self._mouse_release_point = None
 		# TODO: Testing only. Remove
 		self.add_new_player()
@@ -123,11 +125,11 @@ class SpecificWorker(GenericWorker):
 		self.current_state = "quitting"
 
 	def update_game_selection(self, index=None):
-		self._current_game_name = unicode(self.admin_interface.games_combobox.currentText())
-		self._game = eval(unicode(self._available_games[unicode(self._current_game_name)][0]))
-		self._game.game_frame.touch_signal.connect(self.detectedTouchPoints)
-		self.current_state = "game_getting_player"
-		self.reset_game()
+		if self._current_game_name is not None:
+			self._game = eval(unicode(self._available_games[unicode(self._current_game_name)][0]))
+			self._game.game_frame.touch_signal.connect(self.detectedTouchPoints)
+			self.current_state = "game_getting_player"
+			self.reset_game()
 
 	def reset_game(self):
 		config_path = self._available_games[unicode(self.admin_interface.games_combobox.currentText())][1]
@@ -152,77 +154,86 @@ class SpecificWorker(GenericWorker):
 
 	@QtCore.Slot()
 	def compute(self):
+
+		# testing = Status()
+		# testing.currentStatus = StatusType.initializing
+		# testing.date = datetime.now().strftime("%c")
+		# self.gamemetrics_proxy.statusChanged(testing)
+
 		start = time.time()
 		if self.current_state == "starting":
 			self.current_state = "waiting_login"
-			self.login_widget.setWindowTitle("Ingrese usuario")
-			self.login_widget.show()
-		elif self.current_state == "waiting_login":
-			self.admin_interface.statusBar().showMessage("Waiting login")
-		elif self.current_state == "calibrating":
-			self.tv_image.show_on_second_screen()
-			# self.calibration_image = cv2.resize(self.calibration_image, None,
-			# 									fx=(self.calibration_image.shape[0] / self.tv_image.height()),
-			# 									fy=(self.calibration_image.shape[1] / self.tv_image.width()),
-			# 									interpolation=cv2.INTER_CUBIC)
-			self.admin_interface.statusBar().showMessage(
-				"State: Calibrating. Calibrating state %d" % self.calibrator.state)
-			# TODO: Not working very well on the new big screen
-			# tags = self.getapriltags_proxy.checkMarcas()
-			# calibration_ended = self.calibrator.update(tags)
-
-			####################### TO TEST
-			color, depth, points, _, _ = self.rgbd_proxy.getImage()
-			color, depth, _, _ = self.rgbd_proxy.getData()
-			frame = np.fromstring(color, dtype=np.uint8)
-			color_image = frame.reshape(480, 640, 3)
-			depth = np.ascontiguousarray(depth, dtype=np.uint8)
-			depth_gray_image = depth.reshape(480, 640)
-			color_image = cv2.flip(color_image, 0)
-			self._admin_image = color_image.copy()
-			self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
-			calibration_ended = self.calibrator.update()
-			self._mouse_release_point = None
-			###################
-			if calibration_ended:
-				self.current_state = "game_getting_player"
-			# self._game2.set_frame(self.calibrator._screen_points)
-			self.tv_image.set_opencv_image(self.calibrator.image, False)
-			# if self.debug:
-			# 	self._admin_image = self.calibration_image.copy()
-			# 	cv2.imshow("DEBUG: tvGame: camera view", self._admin_image)
-			self.admin_interface.update_admin_image(self._admin_image)
-			cv2.waitKey(1)
+		# 	self.login_widget.setWindowTitle("Ingrese usuario")
+		# 	self.login_widget.show()
+		# elif self.current_state == "waiting_login":
+		# 	self.admin_interface.statusBar().showMessage("Waiting login")
+		# elif self.current_state == "calibrating":
+		# 	self.tv_image.show_on_second_screen()
+		# 	# self.calibration_image = cv2.resize(self.calibration_image, None,
+		# 	# 									fx=(self.calibration_image.shape[0] / self.tv_image.height()),
+		# 	# 									fy=(self.calibration_image.shape[1] / self.tv_image.width()),
+		# 	# 									interpolation=cv2.INTER_CUBIC)
+		# 	self.admin_interface.statusBar().showMessage(
+		# 		"State: Calibrating. Calibrating state %d" % self.calibrator.state)
+		# 	# TODO: Not working very well on the new big screen
+		# 	# tags = self.getapriltags_proxy.checkMarcas()
+		# 	# calibration_ended = self.calibrator.update(tags)
+		#
+		# 	####################### TO TEST
+		# 	color, depth, points, _, _ = self.rgbd_proxy.getImage()
+		# 	color, depth, _, _ = self.rgbd_proxy.getData()
+		# 	frame = np.fromstring(color, dtype=np.uint8)
+		# 	color_image = frame.reshape(480, 640, 3)
+		# 	depth = np.ascontiguousarray(depth, dtype=np.uint8)
+		# 	depth_gray_image = depth.reshape(480, 640)
+		# 	color_image = cv2.flip(color_image, 0)
+		# 	self._admin_image = color_image.copy()
+		# 	self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
+		# 	calibration_ended = self.calibrator.update()
+		# 	self._mouse_release_point = None
+		# 	###################
+		# 	if calibration_ended:
+		# 		self.current_state = "game_getting_player"
+		# 	# self._game2.set_frame(self.calibrator._screen_points)
+		# 	self.tv_image.set_opencv_image(self.calibrator.image, False)
+		# 	# if self.debug:
+		# 	# 	self._admin_image = self.calibration_image.copy()
+		# 	# 	cv2.imshow("DEBUG: tvGame: camera view", self._admin_image)
+		# 	self.admin_interface.update_admin_image(self._admin_image)
+		# 	cv2.waitKey(1)
 		elif "game" in self.current_state:
-			try:
-				# image = self.camerasimple_proxy.getImage()
-				# frame = np.fromstring(image.image, dtype=np.uint8)
-				# frame = frame.reshape(image.width, image.height, image.depth)
-
-				color, depth, _, _ = self.rgbd_proxy.getData()
-				frame = np.fromstring(color, dtype=np.uint8)
-				color_image = frame.reshape(480, 640, 3)
-				depth = np.array(depth, dtype=np.uint8)
-				depth_gray_image = depth.reshape(480, 640)
-			except Ice.Exception, e:
-				traceback.print_exc()
-				print (e)
-				return False
-			depth_gray_image = cv2.flip(depth_gray_image, 0)
-			color_image = cv2.flip(color_image, 0)
-			self._admin_image = color_image.copy()
-			self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
-			# self._admin_image = imutils.resize(self._admin_image, width=640)
-			self.screen_1_factor = self.screen_1_height / float(color_image.shape[0])
-
-			# self.tv_canvas = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
-			# 						interpolation=cv2.INTER_CUBIC)
+			# try:
+			# 	# image = self.camerasimple_proxy.getImage()
+			# 	# frame = np.fromstring(image.image, dtype=np.uint8)
+			# 	# frame = frame.reshape(image.width, image.height, image.depth)
+			#
+			# 	color, depth, _, _ = self.rgbd_proxy.getData()
+			# 	frame = np.fromstring(color, dtype=np.uint8)
+			# 	color_image = frame.reshape(480, 640, 3)
+			# 	depth = np.array(depth, dtype=np.uint8)
+			# 	depth_gray_image = depth.reshape(480, 640)
+			# except Ice.Exception, e:
+			# 	traceback.print_exc()
+			# 	print (e)
+			# 	return False
+			# depth_gray_image = cv2.flip(depth_gray_image, 0)
+			# color_image = cv2.flip(color_image, 0)
+			# self._admin_image = color_image.copy()
+			# self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
+			# # self._admin_image = imutils.resize(self._admin_image, width=640)
+			# self.screen_1_factor = self.screen_1_height / float(color_image.shape[0])
+			#
+			# # self.tv_canvas = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
+			# # 						interpolation=cv2.INTER_CUBIC)
 			if self.current_state == "game_getting_player":
+				initialicing_status = Status()
+				initialicing_status.currentStatus = StatusType.initializing
+				initialicing_status.date = datetime.now().strftime("%c")
+				self.gamemetrics_proxy.statusChanged(initialicing_status)
 				self.tv_image.show_on_second_screen()
 				if self.expected_hands is not None:
 					if self.debug:
-						self.admin_interface.statusBar().showMessage(
-							"Waiting to get %s players" % (self.expected_hands))
+						print("Waiting to get %s players" % (self.expected_hands))
 					try:
 						current_hand_count = self.handdetection_proxy.getHandsCount()
 
@@ -286,7 +297,7 @@ class SpecificWorker(GenericWorker):
 			# if self.debug:
 			self._admin_image = cv2.warpPerspective(self._admin_image, self.calibrator.homography,
 													(self.screen_1_width, self.screen_1_height))
-			self.admin_interface.update_admin_image(self._admin_image)
+			# self.admin_interface.update_admin_image(self._admin_image)
 			cv2.waitKey(1)
 			# print "SpecificWorker.compute... in state %s with %d hands" % (self.current_state, len(self.hands))
 
@@ -321,13 +332,13 @@ class SpecificWorker(GenericWorker):
 			self.tv_image.show_on_second_screen()
 			self.login_widget.hide()
 
-	def add_new_player(self):
+	def add_new_player(self, name=""):
 		if self.expected_hands is None:
 			self.expected_hands = 1
 		else:
 			self.expected_hands += 1
-		self.admin_interface.players_lcd.display(self.expected_hands)
-		self.admin_interface.remove_player_button.setEnabled(True)
+		# self.admin_interface.players_lcd.display(self.expected_hands)
+		# self.admin_interface.remove_player_button.setEnabled(True)
 
 	def remove_player(self):
 		if self.expected_hands is not None:
@@ -335,8 +346,8 @@ class SpecificWorker(GenericWorker):
 				self.expected_hands -= 1
 			else:
 				self.expected_hands = 0
-				self.admin_interface.remove_player_button.setEnabled(False)
-		self.admin_interface.players_lcd.display(self.expected_hands)
+				# self.admin_interface.remove_player_button.setEnabled(False)
+		# self.admin_interface.players_lcd.display(self.expected_hands)
 
 	#### FOR TESTING PORPOSE ONLY
 
@@ -416,6 +427,8 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminReset(self):
 		print("adminReset")
+		# self.reset_game()
+
 		pass
 
 
@@ -438,7 +451,13 @@ class SpecificWorker(GenericWorker):
 	# adminStart
 	#
 	def adminStart(self, players, game):
-		print("adminStart")
+		print("adminStart", players, game)
+		for player in players:
+			self.add_new_player(player)
+		self._current_game_name = game
+		self.update_game_selection()
+
+
 
 
 	#
@@ -470,7 +489,7 @@ class SpecificWorker(GenericWorker):
 	#
 	def getState(self):
 		ret = State()
-		#
+		#self.touchpoints_proxy.detectedTouchPoints(touch_points)
 		# implementCODE
 		#
 		return ret

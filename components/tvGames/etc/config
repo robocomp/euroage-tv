@@ -13,7 +13,7 @@ RGBDProxy = rgbd:tcp -h localhost -p 10096
 
 
 # This property is used by the clients to connect to IceStorm.
-TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
+TopicManager.Proxy=IceStorm/TopicManager:default -h robolab-server -p 9999
 
 
 Ice.MessageSizeMax=2000480

@@ -13,7 +13,7 @@ Component tvgames
 	{
 		requires HandDetection, CameraSimple, RGBD, GetAprilTags;
         implements CommonBehavior, TvGames, AdminGame;
-		publishes TouchPoints;
+		publishes TouchPoints, GameMetrics;
 	};
 	language Python;
 	gui Qt(QWidget);

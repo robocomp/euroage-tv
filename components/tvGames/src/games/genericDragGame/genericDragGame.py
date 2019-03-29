@@ -50,6 +50,7 @@ GREEN_TITTLE_COLOR = "#91C69A"
 
 
 class GameScreen(QWidget):
+	game_win = Signal()
 	def __init__(self, width, height, parent = None):
 		super(GameScreen, self).__init__(parent)
 
@@ -99,8 +100,10 @@ class GameScreen(QWidget):
 		self._main_layout.setCurrentIndex(0)
 		self._top_bar.clock_timeout.connect(self.game_timeout)
 		self._game_frame.score_update.connect(self._top_bar.set_scores)
+		self._game_frame.game_win.connect(self.end_game)
 		self._check_button.clicked.connect(self._game_frame.check_scores)
 		self._help_button.clicked.connect(self.show_help)
+
 
 	@property
 	def game_frame(self):
@@ -600,12 +603,22 @@ class TakeDragGame(QWidget):
 		return super(TakeDragGame, self).event(event)
 
 	def clear_scene(self):
-		if self.game_config:
-			for key, item in self.game_config["images"].items():
-				self._scene.removeItem(item["widget"])
+		print("Removing %d destinies"%len(self._destinations))
+		for dest in self._destinations.values():
+			if dest in self._scene.items():
+				self._scene.removeItem(dest)
+		print("Removing %d pieces"%len(self._pieces))
+		for piece in self._pieces:
+			if piece in self._scene.items():
+				self._scene.removeItem(piece)
 		if self._pointers is not None and len(self._pointers) > 0:
 			for pointer in self._pointers.values():
-				self.remove_pointer(pointer)
+				if pointer in self._scene.items():
+					self.remove_pointer(pointer)
+		print("Items yet in scene: ", len(self._scene.items()))
+		for item in self._scene.items():
+			self._scene.removeItem(item)
+
 
 	def remove_pointer(self, pointer=None):
 		# check if pointer is the class or the id of one of the pointers
@@ -643,7 +656,7 @@ class TakeDragGame(QWidget):
 
 	def game_timeout(self):
 		result = self.check_win()
-		self.end_game(result)
+		self.end_game()
 
 	def check_scores(self):
 		self._update_scores()
@@ -780,11 +793,15 @@ class TakeDragGame(QWidget):
 			if piece_added or nearest_dest.contained_piece == taken_widget:
 				#If added set pos to center
 				taken_widget.setPos(new_xpos, new_ypos)
+				self._scene.update()
+				if self.check_win():
+					self.game_win.emit()
 			else:
 				#If already occupied, set to center but displaced
 				rand_x = randint(20,60)
 				rand_y = randint(-60, -20)
 				taken_widget.setPos(new_xpos+rand_x, new_ypos+rand_y)
+
 		else:
 			#If no near destination for this piece
 			# and If the dropped piece had a current (previous destination)
@@ -874,7 +891,6 @@ class TakeDragGame(QWidget):
 	def check_win(self):
 		right, wrong = self.right_wrong_pieces()
 		if right == len(self._pieces):
-			self.game_win.emit()
 			return True
 
 	def check_lose(self):

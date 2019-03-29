@@ -184,6 +184,25 @@ if __name__ == '__main__':
 		status = 1
 
 
+	# Create a proxy to publish a GameMetrics topic
+	topic = False
+	try:
+		topic = topicManager.retrieve("GameMetrics")
+	except:
+		pass
+	while not topic:
+		try:
+			topic = topicManager.retrieve("GameMetrics")
+		except IceStorm.NoSuchTopic:
+			try:
+				topic = topicManager.create("GameMetrics")
+			except:
+				print 'Another client created the GameMetrics topic? ...'
+	pub = topic.getPublisher().ice_oneway()
+	gamemetricsTopic = GameMetricsPrx.uncheckedCast(pub)
+	mprx["GameMetricsPub"] = gamemetricsTopic
+
+
 	# Create a proxy to publish a TouchPoints topic
 	topic = False
 	try:

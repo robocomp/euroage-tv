@@ -139,6 +139,7 @@ class GenericWorker(QtWidgets.QWidget):
 		self.getapriltags_proxy = mprx["GetAprilTagsProxy"]
 		self.handdetection_proxy = mprx["HandDetectionProxy"]
 		self.rgbd_proxy = mprx["RGBDProxy"]
+		self.gamemetrics_proxy = mprx["GameMetricsPub"]
 		self.touchpoints_proxy = mprx["TouchPointsPub"]
 		self.ui = Ui_guiDlg()
 		self.ui.setupUi(self)

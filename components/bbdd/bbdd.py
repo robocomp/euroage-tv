@@ -113,6 +113,11 @@ class BBDD():
     def get_all_session_by_therapist_name(self, name):
         return self.session.query(Session).join(Therapist).filter(Therapist.name == name).all()
 
+    def get_all_session_by_patient_id(self, id):
+        return self.session.query(Session).join(Patient).filter(Patient.id == id).all()
+
+    def get_session_by_id(self, id):
+        return self.session.query(Session).filter_by(id=id).first()
 
     #HAND
     def new_hand(self, poses, nopen, nclose):

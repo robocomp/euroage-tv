@@ -166,7 +166,7 @@ class SpecificWorker(GenericWorker):
         # self.mylayout.setContentsMargins(0, 0, 0, 0)
 
         self.setCentralWidget(self.ui)
-        self.ui.stackedWidget.setCurrentIndex(3)  # Poner a 0
+        self.ui.stackedWidget.setCurrentIndex(4)  # Poner a 0
         #
         # ##Menu
         self.mainMenu = self.menuBar()
@@ -423,4 +423,6 @@ class SpecificWorker(GenericWorker):
     # statusChanged
     #
     def statusChanged(self, s):
-       print s
+        self.ui.status_label.setText(s.currentStatus.name)
+        self.ui.date_label.setText(s.date)
+        print s

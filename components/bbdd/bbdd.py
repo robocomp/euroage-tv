@@ -25,8 +25,8 @@ class BBDD():
         self.session.close()
 
     #PATIENT
-    def new_patient(self, name, surname, april):
-        patient = Patient(name=name, surname=surname, id_april=april)
+    def new_patient(self, name, surname):
+        patient = Patient(name=name, surname=surname)
         try:
             self.session.add(patient)
             self.session.commit()

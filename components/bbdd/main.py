@@ -12,9 +12,9 @@ if __name__ == '__main__':
 
 
     #write
-    result, patient = bbdd.new_patient('Andres', 'Lopez Lopez', 12)
+    result, patient = bbdd.new_patient('Andres', 'Lopez Lopez')
     print patient
-    result, patient2 = bbdd.new_patient('Elena', 'Martinez', 22)
+    result, patient2 = bbdd.new_patient('Elena', 'Martinez')
     print patient2
 
     #read

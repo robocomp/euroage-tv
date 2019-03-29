@@ -10,7 +10,6 @@ class Patient(Base):
     id = Column(Integer, Sequence('patient_id_seq'), primary_key=True)
     name = Column(String(50))
     surname = Column(String(50))
-    id_april = Column(Integer)
 
     session = relationship("Session", back_populates="patient", cascade="all, delete")
 

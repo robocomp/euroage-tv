@@ -71,7 +71,7 @@ class Report(QtWidgets.QWidget):
     def generate_report(self):
         print "generate report",
         if self.ui.sessions_tw.currentRow() == -1:
-            QMessageBox.information(self, ' ', 'You must select any session to generate a report')
+            QMessageBox.information(self, ' ', 'Debe seleccionar una sesion para generar un informe')
             return
         filename = QFileDialog.getSaveFileName(self, 'Generate report', '', selectedFilter='*.pdf')[0]
         print filename
@@ -128,7 +128,7 @@ class Report(QtWidgets.QWidget):
         if '.pdf' not in filename:
             filename += '.pdf'
         pdf.output(filename)
-        QMessageBox.information(self, ' ', 'Report generated properly')
+        QMessageBox.information(self, ' ', 'Informe generado correctamente')
 
 
 def add_image(image_path):

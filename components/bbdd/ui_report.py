@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'report.ui',
 # licensing of 'report.ui' applies.
 #
-# Created: Thu Mar 28 18:26:44 2019
+# Created: Fri Mar 29 11:36:25 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -79,13 +79,13 @@ class Ui_Report(object):
         QtCore.QMetaObject.connectSlotsByName(Report)
 
     def retranslateUi(self, Report):
-        Report.setWindowTitle(QtWidgets.QApplication.translate("Report", "Generate report", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("Report", "Patient", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("Report", "Start Date", None, -1))
+        Report.setWindowTitle(QtWidgets.QApplication.translate("Report", "Generación de informes", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("Report", "Paciente", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("Report", "Fecha inicio", None, -1))
         self.sdate_de.setDisplayFormat(QtWidgets.QApplication.translate("Report", "dd/MM/yyyy", None, -1))
-        self.label_4.setText(QtWidgets.QApplication.translate("Report", "End Date", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("Report", "Fecha fin", None, -1))
         self.edate_de.setDisplayFormat(QtWidgets.QApplication.translate("Report", "dd/MM/yyyy", None, -1))
-        self.label_3.setText(QtWidgets.QApplication.translate("Report", "Sessions", None, -1))
-        self.cancel_pb.setText(QtWidgets.QApplication.translate("Report", "Cancel", None, -1))
-        self.generate_pb.setText(QtWidgets.QApplication.translate("Report", "Generate", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("Report", "Sesiones", None, -1))
+        self.cancel_pb.setText(QtWidgets.QApplication.translate("Report", "Cancelar", None, -1))
+        self.generate_pb.setText(QtWidgets.QApplication.translate("Report", "Generar informe", None, -1))
 

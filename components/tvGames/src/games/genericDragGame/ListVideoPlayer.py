@@ -5,16 +5,30 @@ from collections import OrderedDict
 from os import listdir
 from os.path import isfile, join
 
+import PySide2
 from PySide2.QtCore import QUrl, Qt, QSize
 from PySide2.QtGui import QColor
 from PySide2.QtMultimedia import QMediaPlayer, QMediaPlaylist, QMediaContent
 from PySide2.QtMultimediaWidgets import QVideoWidget
 from PySide2.QtWidgets import QVBoxLayout, QFrame, QWidget, QApplication, QPushButton, \
-    QGraphicsDropShadowEffect, QHBoxLayout
+    QGraphicsDropShadowEffect, QHBoxLayout, QLabel
 
 # Python 2 only
 if sys.version_info < (3, 0):
     from ptyprocess.ptyprocess import FileNotFoundError
+
+
+class VideoIndex(QLabel):
+    def __init__(self, number=0, text_size=60, h=100, w=150):
+        super(VideoIndex, self).__init__(str(number))
+        self.setAlignment(Qt.AlignCenter)
+        self.setStyleSheet(
+            "border-radius:15px; border:2px solid #000000; font-size:" + str(
+                text_size) + "px;")
+        self.setFixedSize(QSize(int(w), int(h)))
+
+    def set_number(self, number):
+        self.setText(str(number))
 
 
 class FrameButton(QPushButton):
@@ -73,6 +87,7 @@ class ListVideoPlayer(QWidget):
 
         self._video_widget = QVideoWidget(self._frame)
         self._current_play_list = QMediaPlaylist()
+        self._current_video_playing = ""
         self._media_player = QMediaPlayer(self)
         self._media_player.setMuted(True)
         self._media_player.setVideoOutput(self._video_widget)
@@ -91,8 +106,10 @@ class ListVideoPlayer(QWidget):
         self._main_layout.addWidget(self._frame, 1)
 
         self.play_button = FrameButton(text="PAUSAR", text_size=30, color="#3cc21b", parent=self)
+        self.video_index = VideoIndex()
         self.stop_button = FrameButton(text="CERRAR", text_size=30, color="#c21b1b", parent=self)
         self._button_layout.addWidget(self.play_button)
+        self._button_layout.addWidget(self.video_index)
         self._button_layout.addWidget(self.stop_button)
 
         self._main_layout.addLayout(self._button_layout)
@@ -112,7 +129,7 @@ class ListVideoPlayer(QWidget):
         # self._played_videos = 0
         # # self.audio.setVolume(50)
         self._media_player.stateChanged.connect(self.handle_state_changed)
-        # self._reproduce_multiple = False
+
 
     def handle_state_changed(self, newstate):
         print(newstate)
@@ -157,7 +174,22 @@ class ActionsVideoPlayer(ListVideoPlayer):
         self.play_button.clicked.connect(self._play_pause)
         self.stop_button.clicked.connect(self._stop)
 
-    def add_action(self, action_key, clip_path, action_index=None):
+        self._media_player.mediaStatusChanged.connect(self.change_video_index)
+
+
+    def change_video_index(self, status):
+        if PySide2.QtMultimedia.QMediaPlayer.MediaStatus.LoadingMedia == status:
+            self._current_video_playing = self._current_play_list.media(
+                self._current_play_list.currentIndex()).canonicalUrl().toString().encode("ascii")
+            for k,v in self._actions_list.items():
+                if v["clip_path"].lower() in self._current_video_playing.lower():
+                    self.video_index.set_number(int(v["index"][-1]))  #TODO: Hay que poner el index del juego
+                    print("New video: ", int(v["index"][-1]), v["clip_path"])
+                    break
+
+
+
+    def add_action(self, action_key, clip_path, action_index):
         if action_index is None:
             next_index = len(self._actions_list)
         else:
@@ -174,11 +206,9 @@ class ActionsVideoPlayer(ListVideoPlayer):
         files = {f[:-4]: f for f in listdir(path) if isfile(join(path, f)) and f.upper().endswith(format.upper())}
         try:
             for k in sorted(files):
-                self.add_action(k, path + files[k])
+                self.add_action(k, path + files[k], k)
         except Exception as e:
             print(str(e))
-
-
 
     def play_all_actions(self):
         self.play_indexes_list(self._index_to_playlist.values())
@@ -210,7 +240,7 @@ class ActionsVideoPlayer(ListVideoPlayer):
         desktop_widget = QApplication.desktop()
         if desktop_widget.screenCount() > 1:
             second_screen_size = desktop_widget.screenGeometry(1)
-            newx = second_screen_size.left() + (second_screen_size.width()-self.width())/2
+            newx = second_screen_size.left() + (second_screen_size.width() - self.width()) / 2
             newy = second_screen_size.top() + (second_screen_size.height() - self.height()) / 2
             self.move(newx, newy)
             self.show()

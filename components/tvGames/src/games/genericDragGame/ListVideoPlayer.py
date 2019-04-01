@@ -74,6 +74,7 @@ class ListVideoPlayer(QWidget):
         self._video_widget = QVideoWidget(self._frame)
         self._current_play_list = QMediaPlaylist()
         self._media_player = QMediaPlayer(self)
+        self._media_player.setMuted(True)
         self._media_player.setVideoOutput(self._video_widget)
         self._media_player.setPlaylist(self._current_play_list)
 
@@ -133,7 +134,10 @@ class ListVideoPlayer(QWidget):
         self._media_player.play()
 
     def reproduce_all(self):
-        self._current_play_list.addMedia(self._full_media_list)
+        self._current_play_list.clear()
+        for url in self._full_media_list:
+            self._current_play_list.addMedia(QMediaContent(QUrl.fromLocalFile(url)))
+        self._media_player.play()
 
     def clear(self):
         self._current_play_list.clear()
@@ -178,6 +182,9 @@ class ActionsVideoPlayer(ListVideoPlayer):
 
     def play_all_actions(self):
         self.play_indexes_list(self._index_to_playlist.values())
+
+    def play_all_actions_as_inserted(self):
+        self.reproduce_all()
 
     def play_one_action(self, action_key):
         play_list_index = self._index_to_playlist[action_key]

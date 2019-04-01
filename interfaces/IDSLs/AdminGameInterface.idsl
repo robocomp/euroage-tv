@@ -28,11 +28,11 @@ enum StatusType {waiting, initializing, playing, paused, continued, win, lose};
 
     };
 
-	sequence<string> listPlayers;
     
 interface AdminGame
     {
-     	void adminStart(listPlayers players, string game);
+     	void adminStartSession(string player);
+	void adminStartGame (string game);
      	void adminStop();
      	void adminPause();
      	void adminContinue();

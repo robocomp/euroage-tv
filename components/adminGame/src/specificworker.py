@@ -30,12 +30,12 @@ from passlib.hash import pbkdf2_sha256
 from pprint import pprint
 
 import passwordmeter
-from PySide2.QtCore import QObject, Signal, QFile
+from PySide2.QtCore import QObject, Signal, QFile, QModelIndex
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QMessageBox, QCompleter, QMainWindow, QAction, qApp
 
 from admin_widgets import *
-from metrics import *
+from bbdd import BBDD
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
 # sys.path.append('/opt/robocomp/lib')
@@ -166,12 +166,13 @@ class SpecificWorker(GenericWorker):
         # self.mylayout.setContentsMargins(0, 0, 0, 0)
 
         self.setCentralWidget(self.ui)
-        self.ui.stackedWidget.setCurrentIndex(4)  # Poner a 0
+        self.ui.stackedWidget.setCurrentIndex(2)  # Poner a 0
         #
         # ##Menu
         self.mainMenu = self.menuBar()
         fileMenu = self.mainMenu.addMenu('&Menú')
-        self.mainMenu.setEnabled(False)
+        if (self.ui.stackedWidget.currentIndex == 0 or self.ui.stackedWidget.currentIndex == 1  ):
+            self.mainMenu.setEnabled(False)
 
         exitAction = QAction('&Salir', self)
         exitAction.triggered.connect(qApp.quit)
@@ -196,9 +197,12 @@ class SpecificWorker(GenericWorker):
         self.ui.back_button_reg.clicked.connect(self.back_clicked)
 
         ##Users window
-
-        self.admin = Admin_Elderly()
-        list = self.admin.get_list_elderly()
+        self.bbdd = BBDD()
+        self.bbdd.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba.db")
+        patients = self.bbdd.get_all_patients()
+        list = []
+        for p in patients:
+            list.append(p.name + " " + p.surname)
 
         completer2 = QCompleter(list)
         self.ui.selplayer_combobox.addItems(list)
@@ -211,22 +215,33 @@ class SpecificWorker(GenericWorker):
         self.ui.selgame_combobox.addItems(list_of_games)
         self.ui.selgame_combobox.setCompleter(completer3)
 
-        self.selected_player_inlist = ""
-
-        self.ui.listplayer_list.currentItemChanged.connect(self.selectediteminlist_changed)
+        self.selected_game_inlist = ""
+        self.selected_game_incombo = ""
+        self.ui.games_list.currentItemChanged.connect(self.selectediteminlist_changed)
         self.ui.selplayer_combobox.currentIndexChanged.connect(self.selectedplayer_changed)
-        self.ui.addplayer_button.clicked.connect(self.addusertolist)
-        self.ui.deleteplayer_buttton.clicked.connect(self.deleteuserfromlist)
-        self.ui.startgame_button.clicked.connect(self.start_game)
-        self.ui.seedata_button.clicked.connect(self.see_userdata)
+        self.ui.addgame_button.clicked.connect(self.addgametolist)
+        self.ui.deletegame_button.clicked.connect(self.deletegamefromlist)
+        self.ui.startsession_button.clicked.connect(self.start_session)
+        # self.ui.seedata_button.clicked.connect(self.see_userdata)
+        self.ui.up_button.clicked.connect(self.movelist_up)
+        self.ui.down_button.clicked.connect(self.movelist_down)
 
-        ##Player window
+        ##new Player window
         self.ui.back_player_button.clicked.connect(self.back_clicked)
         self.ui.create_player_button.clicked.connect(self.create_player)
 
         self.timer.start(self.Period)
 
         # Game window
+        self.ui.start_game_button.clicked.connect(self.start_clicked)
+        self.ui.pause_game_button.clicked.connect(self.pause_clicked)
+        self.ui.continue_game_button.clicked.connect(self.continue_clicked)
+        self.ui.finish_game_button.clicked.connect(self.finish_clicked)
+        self.ui.reset_game_button.clicked.connect(self.reset_clicked)
+
+
+    def start_clicked(self):
+        self.admingame_proxy.adminStart()
 
     def setParams(self, params):
         # try:
@@ -235,6 +250,7 @@ class SpecificWorker(GenericWorker):
         #	traceback.print_exc()
         #	print "Error reading config params"
         return True
+
 
     def ddbb_status_changed(self, string):
         self.ui.login_status.setText(string)
@@ -328,11 +344,12 @@ class SpecificWorker(GenericWorker):
             if (index == 0):
                 self.mainMenu.setEnabled(False)
             self.ui.stackedWidget.setCurrentIndex(index)
+            self.ui.selplayer_combobox.setCurrentIndex(0)
 
     # Users window functions
-    def deleteuserfromlist(self):
-        item_to_delete = self.ui.listplayer_list.currentRow()
-        self.ui.listplayer_list.takeItem(item_to_delete)
+    def deletegamefromlist(self):
+        item_to_delete = self.ui.games_list.currentRow()
+        self.ui.games_list.takeItem(item_to_delete)
 
     def selectedplayer_changed(self):
         self.selected_player_incombo = self.ui.selplayer_combobox.currentText()
@@ -348,35 +365,65 @@ class SpecificWorker(GenericWorker):
                 return True
 
     def selectediteminlist_changed(self):
-        self.selected_player_inlist = self.ui.listplayer_list.currentItem().text()
+        self.selected_game_inlist = self.ui.games_list.currentItem().text()
+        print (self.ui.games_list.currentRow())
 
-    def addusertolist(self):
-        if (self.selected_player_incombo != ""):
-            self.ui.listplayer_list.addItem(self.selected_player_incombo)
+    def addgametolist(self):
+        self.selected_game_incombo = self.ui.selgame_combobox.currentText()
+        if (self.selected_game_incombo != ""):
+            self.ui.games_list.addItem(self.selected_game_incombo)
             return True
         else:
             QMessageBox().information(self.focusWidget(), 'Error',
-                                      'No se han seleccionado jugadores',
+                                      'No se han seleccionado ningún juego',
                                       QMessageBox.Ok)
             return False
 
-    def start_game(self):
+    def start_session(self):
         items = []
-        for index in xrange(self.ui.listplayer_list.count()):
-            items.append(self.ui.listplayer_list.item(index).text())
+        for index in xrange(self.ui.games_list.count()):
+            items.append(self.ui.games_list.item(index).text())
 
-        if (self.ui.selgame_combobox.currentText() == ""):
-            print("No se ha seleccionado ningún juego")
+        if (self.selected_player_incombo == ""):
+            print("No se ha seleccionado ningún jugador")
         else:
-            print("Jugadores : ", items, "jugaran a: ", self.ui.selgame_combobox.currentText())
-            self.ui.info_game_label.setText(self.ui.selgame_combobox.currentText())
+            self.ui.info_game_label.setText(items[0])
             self.ui.stackedWidget.setCurrentIndex(4)
 
-    def see_userdata(self):  ##get the id of the user to get the metrics
-        if (self.selected_player_inlist != ""):
-            print ("Ver datos del usuario ", self.selected_player_inlist)
-        else:
-            print("No item selected")
+            self.admingame_proxy.adminStartSession(self.selected_player_incombo)
+
+
+    def movelist_up(self):
+        print "subiendo ", self.selected_game_inlist
+        current_text = self.ui.games_list.currentItem().text()
+        current_index = self.ui.games_list.currentRow()
+
+        if current_index == 0: return
+        new_index = current_index -1
+        previous_text = self.ui.games_list.item(new_index).text()
+
+        print self.ui.games_list.item(new_index).text()
+
+        self.ui.games_list.item(current_index).setText(previous_text)
+        self.ui.games_list.item(new_index).setText(current_text)
+        self.ui.games_list.setCurrentRow(new_index)
+
+
+    def movelist_down(self):
+        print "subiendo ", self.selected_game_inlist
+        current_text = self.ui.games_list.currentItem().text()
+        current_index = self.ui.games_list.currentRow()
+
+        if current_index == self.ui.games_list.count()-1: return
+        new_index = current_index + 1
+        previous_text = self.ui.games_list.item(new_index).text()
+
+        print self.ui.games_list.item(new_index).text()
+
+        self.ui.games_list.item(current_index).setText(previous_text)
+        self.ui.games_list.item(new_index).setText(current_text)
+        self.ui.games_list.setCurrentRow(new_index)
+
 
     def new_player_window(self):
         self.ui.stackedWidget.setCurrentIndex(3)
@@ -388,9 +435,12 @@ class SpecificWorker(GenericWorker):
         s2 = unicode(self.ui.surname2_player_lineedit.text())
         age = float(self.ui.age_player_lineedit.text())
 
-        id = self.admin.add_elderly(name, s1, s2, age)
+        self.bbdd.new_patient(name, s1 + " " + s2)
+        patients = self.bbdd.get_all_patients()
+        new_list = []
+        for p in patients:
+            new_list.append(p.name + " " + p.surname)
 
-        new_list = self.admin.get_list_elderly()
         completer = QCompleter(new_list)
 
         last_element = new_list[-1]
@@ -425,4 +475,4 @@ class SpecificWorker(GenericWorker):
     def statusChanged(self, s):
         self.ui.status_label.setText(s.currentStatus.name)
         self.ui.date_label.setText(s.date)
-        print s
+        # print s

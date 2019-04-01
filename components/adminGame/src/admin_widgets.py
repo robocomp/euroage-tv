@@ -44,7 +44,7 @@ class UsersWindow(QWidget): # crea widget vacio
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(UsersWindow)
-        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/adminGame/src/users.ui")
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/adminGame/src/usersv2.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -87,19 +87,19 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    login = LoginWindow()
-    login.show()
-
-    register = RegisterWindow()
-    register.show()
-
-    users = UsersWindow()
-    users.show()
+    # login = LoginWindow()
+    # login.show()
+    #
+    # register = RegisterWindow()
+    # register.show()
+    #
+    # users = UsersWindow()
+    # users.show()
 
     player = PlayersWindow()
     player.show()
-
-    game = GameWindow()
-    game.show()
+    #
+    # game = GameWindow()
+    # game.show()
 
     app.exec_()

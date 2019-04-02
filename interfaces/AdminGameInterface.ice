@@ -10,7 +10,7 @@
 #define EUROAGEGAMES_ICE
 module EuroAgeGames
 {
-	enum StatusType { waiting, initializing, playing, paused, continued, win, lose };
+	enum StatusType { waiting, initializing, initialized, playing, paused, continued, win, lose };
 	struct Status
 	{
 		 StatusType currentStatus;

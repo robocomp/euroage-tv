@@ -166,7 +166,7 @@ class SpecificWorker(GenericWorker):
         # self.mylayout.setContentsMargins(0, 0, 0, 0)
 
         self.setCentralWidget(self.ui)
-        self.ui.stackedWidget.setCurrentIndex(2)  # Poner a 0
+        self.ui.stackedWidget.setCurrentIndex(4)  # Poner a 0
         #
         # ##Menu
         self.mainMenu = self.menuBar()
@@ -217,6 +217,7 @@ class SpecificWorker(GenericWorker):
 
         self.selected_game_inlist = ""
         self.selected_game_incombo = ""
+        self.list_of_games = []
         self.ui.games_list.currentItemChanged.connect(self.selectediteminlist_changed)
         self.ui.selplayer_combobox.currentIndexChanged.connect(self.selectedplayer_changed)
         self.ui.addgame_button.clicked.connect(self.addgametolist)
@@ -241,7 +242,21 @@ class SpecificWorker(GenericWorker):
 
 
     def start_clicked(self):
-        self.admingame_proxy.adminStart()
+        self.ui.info_game_label.setText(self.list_of_games[0])
+        self.admingame_proxy.adminStartGame(self.selected_player_incombo)
+
+    def pause_clicked(self):
+        self.admingame_proxy.adminPause()
+
+    def continue_clicked(self):
+        self.admingame_proxy.adminContinue()
+
+    def finish_clicked(self):
+        self.admingame_proxy.adminStop()
+
+    def reset_clicked(self):
+        self.admingame_proxy.adminReset()
+
 
     def setParams(self, params):
         # try:
@@ -380,21 +395,20 @@ class SpecificWorker(GenericWorker):
             return False
 
     def start_session(self):
-        items = []
+        self.list_of_games = []
         for index in xrange(self.ui.games_list.count()):
-            items.append(self.ui.games_list.item(index).text())
+            self.list_of_games.append(self.ui.games_list.item(index).text())
 
         if (self.selected_player_incombo == ""):
             print("No se ha seleccionado ningún jugador")
         else:
-            self.ui.info_game_label.setText(items[0])
+
             self.ui.stackedWidget.setCurrentIndex(4)
 
             self.admingame_proxy.adminStartSession(self.selected_player_incombo)
 
 
     def movelist_up(self):
-        print "subiendo ", self.selected_game_inlist
         current_text = self.ui.games_list.currentItem().text()
         current_index = self.ui.games_list.currentRow()
 
@@ -410,7 +424,6 @@ class SpecificWorker(GenericWorker):
 
 
     def movelist_down(self):
-        print "subiendo ", self.selected_game_inlist
         current_text = self.ui.games_list.currentItem().text()
         current_index = self.ui.games_list.currentRow()
 

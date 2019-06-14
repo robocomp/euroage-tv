@@ -30,7 +30,7 @@ class MultiHandMouses:
 class HandMouse:
 	def __init__(self, hand_id):
 		self._id = hand_id
-		self._buffer = collections.deque(maxlen=5)
+		self._buffer = collections.deque(maxlen=15)
 		self._valid = False
 		self._filter = MeanFilter()
 

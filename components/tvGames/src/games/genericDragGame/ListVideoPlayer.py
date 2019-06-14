@@ -183,8 +183,7 @@ class ActionsVideoPlayer(ListVideoPlayer):
                 self._current_play_list.currentIndex()).canonicalUrl().toString().encode("ascii")
             for k,v in self._actions_list.items():
                 if v["clip_path"].lower() in self._current_video_playing.lower():
-                    self.video_index.set_number(int(v["index"][-1]))  #TODO: Hay que poner el index del juego
-                    print("New video: ", int(v["index"][-1]), v["clip_path"])
+                    self.video_index.set_number(int(v["index"]))
                     break
 
 
@@ -201,6 +200,9 @@ class ActionsVideoPlayer(ListVideoPlayer):
         self._actions_list[action_key] = {"index": next_index, "clip_path": clip_path}  # save the action name by index
         self._index_to_key[next_index] = action_key  # save the index in the playlist
         self._index_to_playlist[action_key] = self.add_path_to_video_list(clip_path)
+
+    def current_status(self):
+        return self._media_player.state()
 
     def set_video_list(self, path, format=".mp4"):
         files = {f[:-4]: f for f in listdir(path) if isfile(join(path, f)) and f.upper().endswith(format.upper())}

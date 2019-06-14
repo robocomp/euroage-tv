@@ -135,17 +135,20 @@ class GameScreen(QWidget):
 		return self._game_frame
 
 	def show_help(self):
-		pieces = self._game_frame.already_set_pieces()
-		self._video_player.clear()
-		for piece in pieces:
-			self._video_player.add_action(piece.id, piece.clip_path)
-		if len(pieces)>0:
-			self._video_player.show_on_second_screen()
-			self._video_player.play_all_actions_as_inserted()
+		if self._video_player.current_status() != QMediaPlayer.State.PlayingState:
+			pieces = self._game_frame.already_set_pieces()
+			self._video_player.clear()
+			for piece in pieces:
+				self._video_player.add_action(piece.id, piece.clip_path, piece.current_destination.index)
+			if len(pieces)>0:
+				self._video_player.show_on_second_screen()
+				print(self._video_player.current_status())
+				self._video_player.play_all_actions_as_inserted()
 
 
 	def game_timeout(self):
-		self.end_game()
+		# self.end_game()
+		pass
 
 	def end_game(self):
 		if self._game_frame.check_win():
@@ -984,7 +987,7 @@ def main():
 	app = QApplication(sys.argv)
 	game = GameScreen(1920, 1080)
 	game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/final_game1.json")
-	game.show()
+	game.show_on_second_screen()
 
 	# main_widget = GameWidget()
 	# main_widget.show_on_second_screen()

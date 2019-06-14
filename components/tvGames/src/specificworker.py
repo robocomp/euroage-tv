@@ -16,7 +16,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
 #
-
+import json
 import time
 import traceback
 from datetime import datetime
@@ -43,15 +43,24 @@ from modules.QtLogin import QLoginWidget
 # import librobocomp_osgviewer
 # import librobocomp_innermodel
 
+FILE_PATH = os.path.dirname(__file__)
+
+
+class Player:
+	def __init__(self, id=-1, name=""):
+		self.id = id
+		self.name = name
+		self.tracked = False
+
 
 class SpecificWorker(GenericWorker):
 	def __init__(self, proxy_map):
 		super(SpecificWorker, self).__init__(proxy_map)
 		self.timer.timeout.connect(self.compute)
-		self.expected_hands = None
+		self._current_players = []
 		self.hands = []
 		self.font = cv2.FONT_HERSHEY_SIMPLEX
-		self.current_state = "calibrating"
+		self._current_state = "calibrating"
 		# self.login_widget = QLoginWidget()
 		# self.login_widget.login_executed.connect(self.login_executed)
 		# self.admin_interface = AdminInterface()
@@ -76,59 +85,44 @@ class SpecificWorker(GenericWorker):
 		rec = QApplication.desktop().screenGeometry(0)
 		self.screen_0_width = rec.width() - 20
 		self.screen_0_height = rec.height() - 20
-		self.calibrator = ManualCalibrationStateMachine(self.screen_1_width, self.screen_1_height)
+		if self.screen_1_width <0 or self.screen_1_height<0:
+			self.calibrator = ManualCalibrationStateMachine(self.screen_0_width, self.screen_0_height)
+		else:
+			self.calibrator = ManualCalibrationStateMachine(self.screen_1_width, self.screen_1_height)
 		# TODO: would be the size of the second screen
 		# self.screen_height = 740
 		# self.screen_width = 1360
-		self.screen_1_factor = 1
+		self.screen_1_factor = min([self.screen_1_width/640., self.screen_1_height/480.])
 		self.tv_canvas = []
 		if self.debug:
-			self.tv_image.show_on_second_screen()
+			# self.tv_image.show_on_second_screen()
+			pass
 		self.Period = 20
 		self.timer.start(self.Period)
+		self._player_to_hand_index = {}
 		self.hand_track = []
 		self.hand_mouses = MultiHandMouses()
 		self._current_game_name = None
-		# self._game = TakeDragGame()
-		# self._game.show()
-		self._available_games = {
-			u"Lavar Ropa cerca":
-				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/final_game1/final_game1.json"],
-			u"Lavar Ropa lejos":
-				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/clothclean/clothgame_near.json"],
-			u"Painting":
-				["PaintGame(self.screen_1_height, self.screen_1_width)", ""],
-			u"Puzzle1":
-				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game2.json"],
-			u"Puzzle2":
-				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game3.json"],
-			u"Clothes":
-				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game5.json"],
-			u"Sorting":
-				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game4.json"],
-			u"Testing2":
-				["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game4.json"]
-			# u"Looser":
-			# 	["GameScreen(self.screen_1_height, self.screen_1_width)", "resources/game6.json"]
 
-		}
+		# game name and path
+		self._available_games = {}
 		self._game = None
-		# self.admin_interface.games_combobox.currentIndexChanged.connect(self.update_game_selection)
-		# self.update_game_selection()
 
 		# self._admin_image = None
 		self._mouse_release_point = None
 		# TODO: Testing only. Remove
-		self.add_new_player()
+		self.adminStartSession("Juan Lopez")
+		self.tv_image.show_on_second_screen()
+
 
 	def quit_app(self):
-		self.current_state = "quitting"
+		self._current_state = "quitting"
 
 	def update_game_selection(self, index=None):
 		if self._current_game_name is not None:
 			self._game = eval(unicode(self._available_games[unicode(self._current_game_name)][0]))
 			self._game.game_frame.touch_signal.connect(self.detectedTouchPoints)
-			self.current_state = "game_getting_player"
+			self._current_state = "game_getting_player"
 			self.reset_game()
 
 	def reset_game(self):
@@ -145,6 +139,12 @@ class SpecificWorker(GenericWorker):
 		print("Mouse released")
 
 	def setParams(self, params):
+		if "games_path" in params:
+			self.load_available_games(params["games_path"])
+
+
+
+
 		# try:
 		#	self.innermodel = InnerModel(params["InnerModelPath"])
 		# except:
@@ -152,17 +152,31 @@ class SpecificWorker(GenericWorker):
 		#	self.admin_interface.statusBar().showMessage("Error reading config params")
 		return True
 
+	def load_available_games(self, path):
+		self._available_games = {}
+		full_path = os.path.join(FILE_PATH, path)
+		# r=root, d=directories, f = files
+		for root, dirs, files in os.walk(full_path):
+			for file in files:
+				if file.endswith(".json"):
+					full_file_path = os.path.join(full_path, file)
+					with open(full_file_path) as file_path:
+						game_config = json.load(file_path)
+						if "title" in game_config:
+							self._available_games[game_config["title"]] = full_file_path
+
 	@QtCore.Slot()
 	def compute(self):
 
-		# testing = Status()
-		# testing.currentStatus = StatusType.initializing
-		# testing.date = datetime.now().strftime("%c")
-		# self.gamemetrics_proxy.statusChanged(testing)
+		testing = Status()
+		testing.currentStatus = StatusType.initializing
+		testing.date = datetime.now().strftime("%c")
+		self.gamemetrics_proxy.statusChanged(testing)
+		print("Sending metrics")
 
 		start = time.time()
-		if self.current_state == "starting":
-			self.current_state = "waiting_login"
+		if self._current_state == "starting":
+			self._current_state = "waiting_login"
 		# 	self.login_widget.setWindowTitle("Ingrese usuario")
 		# 	self.login_widget.show()
 		# elif self.current_state == "waiting_login":
@@ -201,7 +215,11 @@ class SpecificWorker(GenericWorker):
 		# 	# 	cv2.imshow("DEBUG: tvGame: camera view", self._admin_image)
 		# 	self.admin_interface.update_admin_image(self._admin_image)
 		# 	cv2.waitKey(1)
-		elif "game" in self.current_state:
+		elif "init_session" in self._current_state:
+			for player in self._current_players:
+				if player.tracked is False:
+					self.obtain_player_id(player)
+		elif "game" in self._current_state:
 			# try:
 			# 	# image = self.camerasimple_proxy.getImage()
 			# 	# frame = np.fromstring(image.image, dtype=np.uint8)
@@ -225,19 +243,19 @@ class SpecificWorker(GenericWorker):
 			#
 			# # self.tv_canvas = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
 			# # 						interpolation=cv2.INTER_CUBIC)
-			if self.current_state == "game_getting_player":
+			if self._current_state == "game_getting_player":
 				initialicing_status = Status()
 				initialicing_status.currentStatus = StatusType.initializing
 				initialicing_status.date = datetime.now().strftime("%c")
 				self.gamemetrics_proxy.statusChanged(initialicing_status)
 				self.tv_image.show_on_second_screen()
-				if self.expected_hands is not None:
+				if len(self._current_players) >0:
 					if self.debug:
-						print("Waiting to get %s players" % (self.expected_hands))
+						print("Waiting to get %s players" % (len(self._current_players)))
 					try:
 						current_hand_count = self.handdetection_proxy.getHandsCount()
 
-						if current_hand_count < self.expected_hands:
+						if current_hand_count < len(self._current_players):
 							try:
 								search_roi_class = TRoi()
 								search_roi_class.y = 480 / 2 - 100
@@ -247,21 +265,22 @@ class SpecificWorker(GenericWorker):
 								search_roi = (
 									search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
 
-								depth_rgb_image = cv2.cvtColor(depth_gray_image, cv2.COLOR_GRAY2BGR)
+								blank_image = np.zeros((480,640,1), np.uint8)
 								# self._admin_image = self.draw_initial_masked_frame(color_image, search_roi)
-								game_image = self.draw_initial_masked_frame(depth_rgb_image, search_roi)
+								game_image = self.draw_initial_masked_frame(blank_image , search_roi, )
 								game_image = cv2.resize(game_image, None, fx=self.screen_1_factor,
 														fy=self.screen_1_factor,
 														interpolation=cv2.INTER_CUBIC)
 								self.tv_image.set_opencv_image(game_image, False)
-								self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands,
-																						  search_roi_class)
+								# self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands,
+								# 														  search_roi_class)
+								self.handdetection_proxy.addNewHand(self.expected_hands, search_roi_class)
 							except Ice.Exception, e:
 								traceback.print_exc()
 								print e
 
-						elif current_hand_count >= self.expected_hands and self.expected_hands > 0:
-							self.current_state = "game_tracking"
+						elif current_hand_count == self.expected_hands and self.expected_hands > 0:
+							self._current_state = "game_tracking"
 							self.reset_game()
 							self._game.show()
 							self.tv_image.hide()
@@ -269,20 +288,18 @@ class SpecificWorker(GenericWorker):
 						traceback.print_exc()
 						print e
 				else:
-					if self.debug:
-						self.admin_interface.statusBar().showMessage("No player expected")
 					image = self.tv_image.get_raw_image()
 					image[:] = (255, 255, 255)
 					# TODO: the size of the string would be substracted
 					image = cv2.putText(image, "ADD NEW PLAYERS", (self.screen_1_width / 2, self.screen_1_height / 2),
 										self.font, 1, [0, 0, 0], 2)
 					self.tv_image.set_opencv_image(image, False)
-			elif self.current_state == "game_tracking":
+			elif self._current_state == "game_tracking":
 				try:
 					self.hands = self.handdetection_proxy.getHands()
 					if len(self.hands) < self.expected_hands:
 						self.admin_interface.statusBar().showMessage("Hand Lost. recovering hand")
-						self.current_state = "game_getting_player"
+						self._current_state = "game_getting_player"
 						self.hand_track = []
 						self._game.hide()
 						self.tv_image.show()
@@ -302,8 +319,61 @@ class SpecificWorker(GenericWorker):
 			# print "SpecificWorker.compute... in state %s with %d hands" % (self.current_state, len(self.hands))
 
 			return True
-		elif self.current_state == "quitting":
+		elif self._current_state == "quitting":
 			exit(0)
+
+	def obtain_player_id(self, player):
+		initialicing_status = Status()
+		initialicing_status.currentStatus = StatusType.initializing
+		initialicing_status.date = datetime.now().strftime("%c")
+		self.gamemetrics_proxy.statusChanged(initialicing_status)
+		if len(self._current_players) > 0:
+			if self.debug:
+				print("Waiting to get %s players" % (len(self._current_players)))
+			try:
+				current_hand_count = self.handdetection_proxy.getHandsCount()
+
+				if current_hand_count < len(self._current_players):
+					try:
+						# Define ROI to obtain hand of player
+						search_roi_class = TRoi()
+						search_roi_class.y = 480 / 2 - 100
+						search_roi_class.x = 640 / 2 - 100
+						search_roi_class.w = 200
+						search_roi_class.h = 200
+						search_roi = (
+							search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
+
+						blank_image = np.zeros((480, 640, 3), np.uint8)
+
+						# self._admin_image = self.draw_initial_masked_frame(color_image, search_roi)
+						game_image = self.draw_initial_masked_frame(blank_image, search_roi, player_name=player.name)
+						game_image = cv2.resize(game_image, None, fx=self.screen_1_factor,
+												fy=self.screen_1_factor,
+												interpolation=cv2.INTER_CUBIC)
+						self.tv_image.set_opencv_image(game_image, False)
+						# self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands,
+						# 														  search_roi_class)
+						# self.handdetection_proxy.addNewHand(self.expected_hands, search_roi_class)
+					except Ice.Exception, e:
+						traceback.print_exc()
+						print e
+
+				elif current_hand_count == self.expected_hands and self.expected_hands > 0:
+					self.current_state = "game_tracking"
+					self.reset_game()
+					self._game.show()
+					self.tv_image.hide()
+			except Ice.Exception, e:
+				traceback.print_exc()
+				print e
+		else:
+			image = self.tv_image.get_raw_image()
+			image[:] = (255, 255, 255)
+			# TODO: the size of the string would be substracted
+			image = cv2.putText(image, "ADD NEW PLAYERS", (self.screen_1_width / 2, self.screen_1_height / 2),
+								self.font, 1, [0, 0, 0], 2)
+			self.tv_image.set_opencv_image(image, False)
 
 	def paint_game(self):
 		for hand in self.hands:
@@ -332,20 +402,14 @@ class SpecificWorker(GenericWorker):
 			self.tv_image.show_on_second_screen()
 			self.login_widget.hide()
 
-	def add_new_player(self, name=""):
-		if self.expected_hands is None:
-			self.expected_hands = 1
-		else:
-			self.expected_hands += 1
+	def add_new_player(self, name):
+		self._current_players.append(name)
 		# self.admin_interface.players_lcd.display(self.expected_hands)
 		# self.admin_interface.remove_player_button.setEnabled(True)
 
-	def remove_player(self):
-		if self.expected_hands is not None:
-			if self.expected_hands > 0:
-				self.expected_hands -= 1
-			else:
-				self.expected_hands = 0
+	def remove_player(self, name):
+		if name in self._current_players:
+			del self._current_players[name]
 				# self.admin_interface.remove_player_button.setEnabled(False)
 		# self.admin_interface.players_lcd.display(self.expected_hands)
 
@@ -353,18 +417,28 @@ class SpecificWorker(GenericWorker):
 
 	#### FOR TESTING PORPOSE ONLY
 
-	def draw_initial_masked_frame(self, frame, search_roi):
+	def draw_initial_masked_frame(self, frame, search_roi, player_name):
 		masked_frame = np.zeros(frame.shape, dtype="uint8")
-		masked_frame[::] = 255
-		template_x, template_y, template_w, template_h = search_roi
-		cv2.putText(masked_frame, "PLEASE PUT YOUR HAND HERE", (template_x - 100, template_y + template_h + 10),
-					self.font, 1, [0, 0, 0], 2)
 
+		# masked_frame[::] = 0
+		#TODO: Center Text
+		template_x, template_y, template_w, template_h = search_roi
+		cv2.putText(masked_frame, "PON TU MANO AQUI", (template_x - 100, template_y + template_h + 30),
+					self.font, 1, [255,100, 255], 1)
+		cv2.putText(masked_frame, "%s" % player_name, (template_x - 100, template_y + template_h + 60),
+					self.font, 1, [255, 100, 255], 1)
+
+
+		# Filled Rectangle
 		masked_frame = cv2.rectangle(masked_frame, (template_x, template_y),
-									 (template_x + template_w, template_y + template_h), [0, 0, 0])
-		alpha = 0.7
-		beta = (1.0 - alpha)
-		masked_frame = cv2.addWeighted(frame, alpha, masked_frame, beta, 0.0)
+									 (template_x + template_w, template_y + template_h), [255, 100, 255],-1)
+		# Lined rectangle
+		# masked_frame = cv2.rectangle(masked_frame, (template_x, template_y),
+		# 							 (template_x + template_w, template_y + template_h), [255, 255, 255])
+
+		# alpha = 0.7
+		# beta = (1.0 - alpha)
+		# masked_frame = cv2.addWeighted(frame, alpha, masked_frame, beta, 0.0)
 		return masked_frame
 
 	def draw_hand_full_overlay(self, frame, hand):
@@ -448,16 +522,25 @@ class SpecificWorker(GenericWorker):
 
 
 	#
-	# adminStart
+	# adminStartGame
 	#
-	def adminStart(self, players, game):
-		print("adminStart", players, game)
-		for player in players:
-			self.add_new_player(player)
-		self._current_game_name = game
-		self.update_game_selection()
+	def adminStartGame(self, game):
+		#
+		#implementCODE
+		#
+		pass
 
 
+	#
+	# adminStartSession
+	#
+	def adminStartSession(self, player_name):
+		new_player = Player()
+		new_player.id = -1
+		new_player.name = player_name
+		new_player.tracked = False
+		self._current_players.append(new_player)
+		self._current_state = "init_session"
 
 
 	#

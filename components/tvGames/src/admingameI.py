@@ -158,13 +158,15 @@ class AdminGameI(AdminGame):
 	def __init__(self, worker):
 		self.worker = worker
 
-	def adminReset(self, c):
-		return self.worker.adminReset()
 	def adminContinue(self, c):
 		return self.worker.adminContinue()
-	def adminStop(self, c):
-		return self.worker.adminStop()
-	def adminStart(self, players, game, c):
-		return self.worker.adminStart(players, game)
+	def adminReset(self, c):
+		return self.worker.adminReset()
+	def adminStartGame(self, game, c):
+		return self.worker.adminStartGame(game)
 	def adminPause(self, c):
 		return self.worker.adminPause()
+	def adminStartSession(self, player, c):
+		return self.worker.adminStartSession(player)
+	def adminStop(self, c):
+		return self.worker.adminStop()

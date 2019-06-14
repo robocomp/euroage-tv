@@ -1,0 +1,14 @@
+module EuroAgeGamesAdmin
+{
+  
+interface AdminGame
+    {
+     	void adminStartSession(string player);
+	void adminStartGame (string game);
+     	void adminStop();
+     	void adminPause();
+     	void adminContinue();
+     	void adminReset();
+    };
+};
+

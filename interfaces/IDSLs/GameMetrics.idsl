@@ -1,0 +1,39 @@
+module EuroAgeGamesMetrics
+{
+
+enum StatusType {waiting, initializing, initialized, playing, paused, continued, win, lose};
+
+    struct Status
+   {
+    	StatusType	currentStatus;
+    	string		date;
+   };
+
+     struct Position
+     {
+        float x;
+        float y;
+     };
+
+    struct Metrics
+    {
+        string	currentDate;
+        Position pos;
+        bool	screenTouched;
+        bool	handClosed;
+        int	numHelps;
+        int	numChecked;
+        int	numHits;
+        int	numFails;
+
+    };
+
+
+ interface GameMetrics
+    {
+       	void metricsObtained(Metrics m);
+    	void statusChanged(Status s);
+
+    };
+};
+

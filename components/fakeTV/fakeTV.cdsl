@@ -1,0 +1,14 @@
+import "GameMetrics.idsl";
+import "AdminGame.idsl";
+
+Component fakeTV
+{
+    Communications
+    {
+        implements AdminGame;
+        publishes GameMetrics;
+    };
+	language python;
+	
+};
+

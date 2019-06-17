@@ -16,14 +16,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
 #
+from datetime import datetime
 
 from genericworker import *
-
-# If RoboComp was compiled with Python bindings you can use InnerModel in Python
-# sys.path.append('/opt/robocomp/lib')
-# import librobocomp_qmat
-# import librobocomp_osgviewer
-# import librobocomp_innermodel
 
 class SpecificWorker(GenericWorker):
 	def __init__(self, proxy_map):
@@ -36,89 +31,82 @@ class SpecificWorker(GenericWorker):
 		print 'SpecificWorker destructor'
 
 	def setParams(self, params):
-		#try:
-		#	self.innermodel = InnerModel(params["InnerModelPath"])
-		#except:
-		#	traceback.print_exc()
-		#	print "Error reading config params"
+		testing = Status()
+		testing.currentStatus = StatusType.initialized
+		testing.date = datetime.now().strftime("%c")
+		self.gamemetrics_proxy.statusChanged(testing)
 		return True
 
 	@QtCore.Slot()
 	def compute(self):
 		print 'SpecificWorker.compute...'
-		#computeCODE
-		#try:
-		#	self.differentialrobot_proxy.setSpeedBase(100, 0)
-		#except Ice.Exception, e:
-		#	traceback.print_exc()
-		#	print e
 
-		# The API of python-innermodel is not exactly the same as the C++ version
-		# self.innermodel.updateTransformValues("head_rot_tilt_pose", 0, 0, 0, 1.3, 0, 0)
-		# z = librobocomp_qmat.QVec(3,0)
-		# r = self.innermodel.transform("rgbd", z, "laser")
-		# r.printvector("d")
-		# print r[0], r[1], r[2]
+		# testing = Status()
+		# testing.currentStatus = StatusType.initialized
+		# testing.date = datetime.now().strftime("%c")
+		# self.gamemetrics_proxy.statusChanged(testing)
+		# print("Sending metrics")
+
 
 		return True
-
 
 	#
 	# adminContinue
 	#
 	def adminContinue(self):
-		#
-		#implementCODE
-		#
-		pass
-
+		testing = Status()
+		testing.currentStatus = StatusType.continued
+		testing.date = datetime.now().isoformat()
+		self.gamemetrics_proxy.statusChanged(testing)
+		print "Continue game"
 
 	#
 	# adminReset
 	#
 	def adminReset(self):
-		#
-		#implementCODE
-		#
-		pass
-
+		testing = Status()
+		testing.currentStatus = StatusType.reset
+		testing.date = datetime.now().isoformat()
+		self.gamemetrics_proxy.statusChanged(testing)
+		print "Reset game"
 
 	#
 	# adminStartGame
 	#
 	def adminStartGame(self, game):
-		#
-		#implementCODE
-		#
-		pass
-
+		testing = Status()
+		testing.currentStatus = StatusType.playing
+		testing.date = datetime.now().isoformat()
+		self.gamemetrics_proxy.statusChanged(testing)
+		print "Start game ", game
 
 	#
 	# adminPause
 	#
 	def adminPause(self):
-		#
-		#implementCODE
-		#
-		pass
-
+		testing = Status()
+		testing.currentStatus = StatusType.paused
+		testing.date = datetime.now().isoformat()
+		self.gamemetrics_proxy.statusChanged(testing)
+		print "Pause game"
 
 	#
 	# adminStartSession
 	#
 	def adminStartSession(self, player):
-		#
-		#implementCODE
-		#
-		pass
-
+		testing = Status()
+		testing.currentStatus = StatusType.initializing
+		testing.date = datetime.now().isoformat()
+		self.gamemetrics_proxy.statusChanged(testing)
+		print "Start session with ", player
 
 	#
 	# adminStop
 	#
 	def adminStop(self):
-		#
-		#implementCODE
-		#
-		pass
+		testing = Status()
+		testing.currentStatus = StatusType.lose
+		testing.date = datetime.now().isoformat()
+		self.gamemetrics_proxy.statusChanged(testing)
+		print "Stop game"
 

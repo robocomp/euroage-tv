@@ -19,7 +19,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
 #
-
+from datetime import datetime
 
 from genericworker import *
 import json
@@ -86,8 +86,10 @@ class Session():
         self.wonGames = 0
         self.lostGames = 0
 
-    def start(self,date):
-        self.date = date
+    def start_session(self, player):
+        self.date = datetime.now()
+        self.patient = player
+
 
 class Game():
     def __init__(self):
@@ -95,13 +97,13 @@ class Game():
         self.date = None
         self.timePlayed = 0
         self.timePaused = 0
+        self.distance = 0
         self.touched = 0
         self.helps = 0
         self.checks = 0
         self.hits = 0
         self.fails = 0
-        self.win = False
-
+        self.gameWon = False
 
 
 class QUserManager(QObject):
@@ -171,6 +173,10 @@ class QUserManager(QObject):
 
 class SpecificWorker(GenericWorker):
     login_executed = Signal(bool)
+    endGameSig = Signal(bool, str)
+    resetGameSig = Signal()
+    playGameSig = Signal(str)
+    initGameSig = Signal()
 
     def __init__(self, proxy_map):
 
@@ -182,9 +188,23 @@ class SpecificWorker(GenericWorker):
         self.user_ddbb_connector.status_changed.connect(self.ddbb_status_changed)
         self.user_ddbb_connector.load_users()
 
-        # Load widget from ui
-        # self.mylayout = QVBoxLayout()
-        # self.setLayout(self.mylayout)
+        self.init_ui()
+        self.setCentralWidget(self.ui)
+
+        self.sessions = []
+        self.currentSession = Session()
+        self.currentGame = Game()
+
+        self.aux_datePaused = None
+
+        self.endGameSig.connect(self.admin_end_game)
+        self.playGameSig.connect(self.admin_playing)
+        self.resetGameSig.connect(self.admin_reset_game)
+        self.initGameSig.connect(self.admin_initialized)
+
+        self.timer.start(self.Period)
+
+    def init_ui(self):
         loader = QUiLoader()
         loader.registerCustomWidget(LoginWindow)
         loader.registerCustomWidget(RegisterWindow)
@@ -195,16 +215,13 @@ class SpecificWorker(GenericWorker):
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         file.close()
-        # self.mylayout.addWidget(self.ui)
-        # self.mylayout.setContentsMargins(0, 0, 0, 0)
 
-        self.setCentralWidget(self.ui)
         self.ui.stackedWidget.setCurrentIndex(2)  # Poner a 0
-        #
-        # ##Menu
+
+        ##Menu
         self.mainMenu = self.menuBar()
         fileMenu = self.mainMenu.addMenu('&Menú')
-        if (self.ui.stackedWidget.currentIndex == 0 or self.ui.stackedWidget.currentIndex == 1  ):
+        if (self.ui.stackedWidget.currentIndex == 0 or self.ui.stackedWidget.currentIndex == 1):
             self.mainMenu.setEnabled(False)
 
         exitAction = QAction('&Salir', self)
@@ -227,7 +244,7 @@ class SpecificWorker(GenericWorker):
         self.ui.password_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.password_2_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.createuser_button_reg.clicked.connect(self.create_new_user)
-        self.ui.back_button_reg.clicked.connect(self.back_clicked)
+        self.ui.back_button_reg.clicked.connect(self.goto_prevScreen)
 
         ##Users window
         self.bbdd = BBDD()
@@ -261,10 +278,8 @@ class SpecificWorker(GenericWorker):
         self.ui.down_button.clicked.connect(self.movelist_down)
 
         ##new Player window
-        self.ui.back_player_button.clicked.connect(self.back_clicked)
+        self.ui.back_player_button.clicked.connect(self.goto_prevScreen)
         self.ui.create_player_button.clicked.connect(self.create_player)
-
-        self.timer.start(self.Period)
 
         # Game window
         self.ui.start_game_button.clicked.connect(self.start_clicked)
@@ -280,21 +295,17 @@ class SpecificWorker(GenericWorker):
         self.ui.finish_game_button.setEnabled(False);
         self.ui.reset_game_button.setEnabled(False);
 
-    def start_clicked(self):
-        self.ui.info_game_label.setText(self.list_games_toplay[0])
-        self.admingame_proxy.adminStartGame(self.selected_player_incombo)
-
-        self.ui.start_game_button.setEnabled(False);
-        self.ui.pause_game_button.setEnabled(True);
-        self.ui.finish_game_button.setEnabled(True);
-        self.ui.reset_game_button.setEnabled(True);
+    def start_clicked(self):  # Ver como administrar la lista de juegos
+        game = self.list_games_toplay[0]
+        self.currentGame = Game()
+        self.currentGame.nameGame = game
+        self.admingame_proxy.adminStartGame(game)
 
     def pause_clicked(self):
         self.admingame_proxy.adminPause()
 
         self.ui.continue_game_button.setEnabled(True);
         self.ui.pause_game_button.setEnabled(False);
-
 
     def continue_clicked(self):
         self.admingame_proxy.adminContinue()
@@ -303,31 +314,50 @@ class SpecificWorker(GenericWorker):
         self.ui.pause_game_button.setEnabled(True);
 
     def finish_clicked(self):
-        self.admingame_proxy.adminStop()
-
-        self.ui.pause_game_button.setEnabled(False);
-        self.ui.continue_game_button.setEnabled(False);
-        self.ui.finish_game_button.setEnabled(False);
-        self.ui.reset_game_button.setEnabled(False);
-        self.ui.start_game_button.setEnabled(True);
-
+        reply = QMessageBox.question(self.focusWidget(), '',
+                                     ' Desea finalizar juego?', QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.admingame_proxy.adminStop()
 
     def reset_clicked(self):
-        self.admingame_proxy.adminReset()
+        reply = QMessageBox.question(self.focusWidget(), '',
+                                     ' Desea volver a empezar? Los datos del juego no se guardarán', QMessageBox.Yes,
+                                     QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.admingame_proxy.adminReset()
 
-        self.ui.pause_game_button.setEnabled(False);
-        self.ui.continue_game_button.setEnabled(False);
-        self.ui.finish_game_button.setEnabled(False);
-        self.ui.reset_game_button.setEnabled(False);
-        self.ui.start_game_button.setEnabled(True);
+    def start_session(self):
 
+        player = self.selected_player_incombo
+        self.list_games_toplay = []
+        for index in xrange(self.ui.games_list.count()):
+            self.list_games_toplay.append(self.ui.games_list.item(index).text())
+
+        if player == "":
+            QMessageBox().information(self.focusWidget(), 'Error',
+                                      'No se han seleccionado ningún jugador',
+                                      QMessageBox.Ok)
+        else:
+            self.ui.stackedWidget.setCurrentIndex(4)
+            self.currentSession.start_session(player)
+            self.admingame_proxy.adminStartSession(player)
+            QMessageBox().information(self.focusWidget(), 'Info',
+                                      'Coloque la mano del paciente sobre la mesa. Cuando se haya detectado correctamente podrá empezar el juego',
+                                      QMessageBox.Ok)
+
+            game = self.list_games_toplay[0]
+            self.ui.info_game_label.setText(game)
 
     def end_session_clicked(self):
-        pass
+
+        reply = QMessageBox.question(self.focusWidget(), '',
+                                     ' ¿Desea finalizar la sesión?', QMessageBox.Yes, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            self.admin_finish_session()
 
     def setParams(self, params):
         return True
-
 
     def ddbb_status_changed(self, string):
         self.ui.login_status.setText(string)
@@ -413,12 +443,11 @@ class SpecificWorker(GenericWorker):
         reply = QMessageBox.question(self.focusWidget(), '',
                                      ' Desea cerrar sesión?', QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.Yes:
-
             self.mainMenu.setEnabled(False)
             self.ui.stackedWidget.setCurrentIndex(0)
             self.ui.password_lineedit.clear()
 
-    def back_clicked(self):
+    def goto_prevScreen(self):
         index = self.ui.stackedWidget.currentIndex()
         if (index != 0):
             index = index - 1
@@ -460,31 +489,12 @@ class SpecificWorker(GenericWorker):
                                       QMessageBox.Ok)
             return False
 
-    def start_session(self):
-        self.list_games_toplay = []
-        for index in xrange(self.ui.games_list.count()):
-            self.list_games_toplay.append(self.ui.games_list.item(index).text())
-
-        if self.selected_player_incombo == "":
-            QMessageBox().information(self.focusWidget(), 'Error',
-                                      'No se han seleccionado ningún jugador',
-                                      QMessageBox.Ok)
-        else:
-            self.ui.stackedWidget.setCurrentIndex(4)
-            self.admingame_proxy.adminStartSession(self.selected_player_incombo)
-            QMessageBox().information(self.focusWidget(), 'Info',
-                                      'Coloque la mano del paciente sobre la mesa. Cuando se haya detectado correctamente podrá empezar el juego',
-                                      QMessageBox.Ok)
-
-
-
-
     def movelist_up(self):
         current_text = self.ui.games_list.currentItem().text()
         current_index = self.ui.games_list.currentRow()
 
         if current_index == 0: return
-        new_index = current_index -1
+        new_index = current_index - 1
         previous_text = self.ui.games_list.item(new_index).text()
 
         print self.ui.games_list.item(new_index).text()
@@ -493,12 +503,11 @@ class SpecificWorker(GenericWorker):
         self.ui.games_list.item(new_index).setText(current_text)
         self.ui.games_list.setCurrentRow(new_index)
 
-
     def movelist_down(self):
         current_text = self.ui.games_list.currentItem().text()
         current_index = self.ui.games_list.currentRow()
 
-        if current_index == self.ui.games_list.count()-1: return
+        if current_index == self.ui.games_list.count() - 1: return
         new_index = current_index + 1
         previous_text = self.ui.games_list.item(new_index).text()
 
@@ -507,7 +516,6 @@ class SpecificWorker(GenericWorker):
         self.ui.games_list.item(current_index).setText(previous_text)
         self.ui.games_list.item(new_index).setText(current_text)
         self.ui.games_list.setCurrentRow(new_index)
-
 
     def new_player_window(self):
         self.ui.stackedWidget.setCurrentIndex(3)
@@ -541,12 +549,12 @@ class SpecificWorker(GenericWorker):
 
     @QtCore.Slot()
     def compute(self):
-
         return True
 
         #
         # metricsObtained
         #
+
     def metricsObtained(self, m):
         #
         # subscribesToCODE
@@ -557,9 +565,90 @@ class SpecificWorker(GenericWorker):
     # statusChanged
     #
     def statusChanged(self, s):
+        state_name = s.currentStatus.name
         self.ui.status_label.setText(s.currentStatus.name)
         self.ui.date_label.setText(s.date)
 
-        if s.currentStatus.name == "initialized":
+        if state_name == "initialized":
+            self.initGameSig.emit()
+
+        if state_name == "paused":
+            self.aux_datePaused = s.date
+
+        if state_name == "continued":
+            time = s.date - self.datePaused
+            self.currentGame.timePaused = + time.microseconds / 1000
+            self.aux_datePaused = None
+
+        if state_name == "win":
+            self.endGameSig.emit(True, s.date)
+        if state_name == "lose":
+            self.endGameSig.emit(False, s.date)
+
+        if state_name == "reset":
+            self.resetGameSig.emit()
+
+        if state_name == "playing":
+            self.playGameSig.emit(s.date)
+
+    # Admin states
+    def admin_initialized(self):
+        self.ui.start_game_button.setEnabled(True);
+
+    def admin_playing(self, date):
+        self.currentGame.date = datetime.strptime(date,"%Y-%m-%dT%H:%M:%S.%f")
+        self.ui.start_game_button.setEnabled(False);
+        self.ui.pause_game_button.setEnabled(True);
+        self.ui.finish_game_button.setEnabled(True);
+        self.ui.reset_game_button.setEnabled(True);
+
+    def admin_end_game(self, won, date):
+        self.currentGame.gameWon = won
+        timeplayed = date - self.currentGame.date
+        self.currentGame.timePlayed = timeplayed.microsecond/1000
+        print self.currentGame.timePlayed
+        self.currentSession.games.append(self.currentGame)
+        self.currentGame = Game()
+
+        self.list_games_toplay.pop(0)
+
+        if len(self.list_games_toplay) == 0:
+            self.admin_finish_session()
+
+        else:
+            game = self.list_games_toplay[0]
+            self.ui.info_game_label.setText(game)
+
+            self.ui.pause_game_button.setEnabled(False);
+            self.ui.continue_game_button.setEnabled(False);
+            self.ui.finish_game_button.setEnabled(False);
+            self.ui.reset_game_button.setEnabled(False);
             self.ui.start_game_button.setEnabled(True);
 
+    def admin_reset_game(self):
+
+        self.ui.pause_game_button.setEnabled(False);
+        self.ui.continue_game_button.setEnabled(False);
+        self.ui.finish_game_button.setEnabled(False);
+        self.ui.reset_game_button.setEnabled(False);
+        self.ui.start_game_button.setEnabled(True);
+
+        self.currentGame = Game()
+
+    def admin_finish_session(self):
+
+        current_date = datetime.now()
+        time = self.currentSession.date - current_date
+        self.currentSession.totaltime = time.microseconds / 1000
+        print "Session time =  ", self.currentSession.totaltime, "milliseconds"
+
+        QMessageBox().information(self.focusWidget(), '',
+                                  'Se han completado todos los juegos. Se va a finalizar la sesion ',
+                                  QMessageBox.Ok)
+
+        # self.compute_session_metrics()
+        self.ui.stackedWidget.setCurrentIndex(2)
+
+    def compute_session_metrics(self):
+        # Recorrer todos los juegos y completar las metricas de la sesion
+        pass

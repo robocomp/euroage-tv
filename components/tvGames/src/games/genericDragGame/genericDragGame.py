@@ -19,7 +19,7 @@ from PySide2.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QWidget, QHBo
 	QGraphicsSimpleTextItem, QGraphicsItem, QStackedLayout, QFrame, QDialog, QVBoxLayout
 from numpy.random.mtrand import randint
 
-# Create a class for our main window
+
 try:
 	from games.genericDragGame.CoolButton import CoolButton
 	from games.genericDragGame.GameWidgets import GameTopBarWidget, GameScores
@@ -48,7 +48,7 @@ SPEECH_COMMAND = "gtts es "
 
 GREEN_TITTLE_COLOR = "#91C69A"
 
-
+# Create a class for our main window
 class GameScreen(QWidget):
 	game_win = Signal()
 	def __init__(self, width, height, parent = None):

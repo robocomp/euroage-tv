@@ -152,8 +152,26 @@ except:
 
 
 class GenericWorker(QtWidgets.QWidget):
-	kill = QtCore.Signal()
 
+	kill = QtCore.Signal()
+#Signals for State Machine
+	session_start_waittosession_init = QtCore.Signal()
+	session_inittogame_start_wait = QtCore.Signal()
+	game_start_waittogame_init = QtCore.Signal()
+	game_inittogame_loop = QtCore.Signal()
+	game_looptogame_pause = QtCore.Signal()
+	game_looptogame_won = QtCore.Signal()
+	game_looptogame_lost = QtCore.Signal()
+	game_wontogame_init = QtCore.Signal()
+	game_wontosession_end = QtCore.Signal()
+	game_losttosession_end = QtCore.Signal()
+	game_pausetosession_end = QtCore.Signal()
+	game_looptosession_end = QtCore.Signal()
+	player_acquisition_inittoplayer_acquisition_loop = QtCore.Signal()
+	player_acquisition_looptoplayer_acquisition_loop = QtCore.Signal()
+	player_acquisition_looptoplayer_acquisition_ended = QtCore.Signal()
+
+#-------------------------
 
 	def __init__(self, mprx):
 		super(GenericWorker, self).__init__()
@@ -169,12 +187,132 @@ class GenericWorker(QtWidgets.QWidget):
 		self.ui.setupUi(self)
 		self.show()
 
-
+		
 		self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
 		self.Period = 30
 		self.timer = QtCore.QTimer(self)
 
+#State Machine
+		self.game_machine= QtCore.QStateMachine()
+		self.session_init_state = QtCore.QState(self.game_machine)
+		self.game_start_wait_state = QtCore.QState(self.game_machine)
+		self.game_init_state = QtCore.QState(self.game_machine)
+		self.game_loop_state = QtCore.QState(self.game_machine)
+		self.game_pause_state = QtCore.QState(self.game_machine)
+		self.game_won_state = QtCore.QState(self.game_machine)
+		self.game_lost_state = QtCore.QState(self.game_machine)
+		self.session_start_wait_state = QtCore.QState(self.game_machine)
 
+		self.session_end_state = QtCore.QFinalState(self.game_machine)
+
+
+
+		self.player_acquisition_loop_state = QtCore.QState(self.session_init_state)
+		self.player_acquisition_init_state = QtCore.QState(self.session_init_state)
+
+		self.player_acquisition_ended_state = QtCore.QFinalState(self.session_init_state)
+
+
+#------------------
+#Initialization State machine
+		self.session_start_wait_state.addTransition(self.session_start_waittosession_init, self.session_init_state)
+		self.session_init_state.addTransition(self.session_inittogame_start_wait, self.game_start_wait_state)
+		self.game_start_wait_state.addTransition(self.game_start_waittogame_init, self.game_init_state)
+		self.game_init_state.addTransition(self.game_inittogame_loop, self.game_loop_state)
+		self.game_loop_state.addTransition(self.game_looptogame_pause, self.game_pause_state)
+		self.game_loop_state.addTransition(self.game_looptogame_won, self.game_won_state)
+		self.game_loop_state.addTransition(self.game_looptogame_lost, self.game_lost_state)
+		self.game_won_state.addTransition(self.game_wontogame_init, self.game_init_state)
+		self.game_won_state.addTransition(self.game_wontosession_end, self.session_end_state)
+		self.game_lost_state.addTransition(self.game_losttosession_end, self.session_end_state)
+		self.game_pause_state.addTransition(self.game_pausetosession_end, self.session_end_state)
+		self.game_loop_state.addTransition(self.game_looptosession_end, self.session_end_state)
+		self.player_acquisition_init_state.addTransition(self.player_acquisition_inittoplayer_acquisition_loop, self.player_acquisition_loop_state)
+		self.player_acquisition_loop_state.addTransition(self.player_acquisition_looptoplayer_acquisition_loop, self.player_acquisition_loop_state)
+		self.player_acquisition_loop_state.addTransition(self.player_acquisition_looptoplayer_acquisition_ended, self.player_acquisition_ended_state)
+
+
+		self.session_init_state.entered.connect(self.sm_session_init)
+		self.game_start_wait_state.entered.connect(self.sm_game_start_wait)
+		self.game_init_state.entered.connect(self.sm_game_init)
+		self.game_loop_state.entered.connect(self.sm_game_loop)
+		self.game_pause_state.entered.connect(self.sm_game_pause)
+		self.game_won_state.entered.connect(self.sm_game_won)
+		self.game_lost_state.entered.connect(self.sm_game_lost)
+		self.session_start_wait_state.entered.connect(self.sm_session_start_wait)
+		self.session_end_state.entered.connect(self.sm_session_end)
+		self.player_acquisition_init_state.entered.connect(self.sm_player_acquisition_init)
+		self.player_acquisition_ended_state.entered.connect(self.sm_player_acquisition_ended)
+		self.player_acquisition_loop_state.entered.connect(self.sm_player_acquisition_loop)
+
+		self.game_machine.setInitialState(self.session_start_wait_state)
+		self.session_init_state.setInitialState(self.player_acquisition_init_state)
+
+#------------------
+
+#Slots funtion State Machine
+	@QtCore.Slot()
+	def sm_session_init(self):
+		print "Error: lack sm_session_init in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_game_start_wait(self):
+		print "Error: lack sm_game_start_wait in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_game_init(self):
+		print "Error: lack sm_game_init in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_game_loop(self):
+		print "Error: lack sm_game_loop in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_game_pause(self):
+		print "Error: lack sm_game_pause in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_game_won(self):
+		print "Error: lack sm_game_won in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_game_lost(self):
+		print "Error: lack sm_game_lost in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_session_start_wait(self):
+		print "Error: lack sm_session_start_wait in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_session_end(self):
+		print "Error: lack sm_session_end in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_player_acquisition_loop(self):
+		print "Error: lack sm_player_acquisition_loop in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_player_acquisition_init(self):
+		print "Error: lack sm_player_acquisition_init in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_player_acquisition_ended(self):
+		print "Error: lack sm_player_acquisition_ended in Specificworker"
+		sys.exit(-1)
+
+
+#-------------------------
 	@QtCore.Slot()
 	def killYourSelf(self):
 		rDebug("Killing myself")

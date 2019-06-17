@@ -17,5 +17,6 @@ Component tvgames
 	};
 	language Python;
 	gui Qt(QWidget);
+	statemachine "gamestatemachine.smdsl";
 };
 

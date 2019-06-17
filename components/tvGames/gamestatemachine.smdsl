@@ -1,16 +1,33 @@
 game_machine{
-    states start_waiting, session_start, game_start, game_loop, game_stop;
-    initial_state start_waiting;
-    end_state game_stop;
-    transition{
-	test1 => test1, test2;
-	test2 => test3, test5, test6;
-	test3 => test3, test4;
-	test4 => test5;
-	test5 => test6;
+    states session_init, game_start_wait, game_init, game_loop, game_pause, game_won, game_lost;
+    initial_state session_start_wait;
+    end_state session_end;
+    transitions{
+    session_start_wait => session_init;
+    session_init => game_start_wait;
+    game_start_wait => game_init;
+    game_init => game_loop;
+    game_loop => game_pause, game_won, game_lost;
+    game_won => game_init;
+    game_won => session_end;
+    game_lost => session_end;
+    game_pause => session_end;
+    game_loop => session_end;
     };
 };
 
+:session_init {
+    initial_state player_acquisition_init;
+    states player_acquisition_loop;
+    end_state player_acquisition_ended;
+    transitions{
+	player_acquisition_init => player_acquisition_loop;
+	player_acquisition_loop => player_acquisition_loop;
+	player_acquisition_loop => player_acquisition_ended;
+    };
+};
+
+/*
 :test1 parallel{
     states test1sub1, test1sub2;
     transition{
@@ -43,3 +60,4 @@ game_machine{
 	test1sub2 => test5sub1;
     };
 };
+*/

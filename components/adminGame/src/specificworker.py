@@ -36,6 +36,7 @@ from PySide2.QtWidgets import QApplication, QMessageBox, QCompleter, QMainWindow
 
 from admin_widgets import *
 from bbdd import BBDD
+import Queue
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
 # sys.path.append('/opt/robocomp/lib')
@@ -69,6 +70,38 @@ class Singleton(type(QObject), type):
         if cls.instance is None:
             cls.instance = super(Singleton, cls).__call__(*args, **kw)
         return cls.instance
+
+
+class Session():
+    def __init__(self):
+        self.date = None
+        self.patient = None
+        self.totaltime = 0
+        self.games = []
+        self.totalTouched = 0
+        self.totalHelps = 0
+        self.totalChecks = 0
+        self.totalHits = 0
+        self.totalFails = 0
+        self.wonGames = 0
+        self.lostGames = 0
+
+    def start(self,date):
+        self.date = date
+
+class Game():
+    def __init__(self):
+        self.nameGame = None
+        self.date = None
+        self.timePlayed = 0
+        self.timePaused = 0
+        self.touched = 0
+        self.helps = 0
+        self.checks = 0
+        self.hits = 0
+        self.fails = 0
+        self.win = False
+
 
 
 class QUserManager(QObject):
@@ -166,7 +199,7 @@ class SpecificWorker(GenericWorker):
         # self.mylayout.setContentsMargins(0, 0, 0, 0)
 
         self.setCentralWidget(self.ui)
-        self.ui.stackedWidget.setCurrentIndex(4)  # Poner a 0
+        self.ui.stackedWidget.setCurrentIndex(2)  # Poner a 0
         #
         # ##Menu
         self.mainMenu = self.menuBar()
@@ -217,7 +250,7 @@ class SpecificWorker(GenericWorker):
 
         self.selected_game_inlist = ""
         self.selected_game_incombo = ""
-        self.list_of_games = []
+        self.list_games_toplay = []
         self.ui.games_list.currentItemChanged.connect(self.selectediteminlist_changed)
         self.ui.selplayer_combobox.currentIndexChanged.connect(self.selectedplayer_changed)
         self.ui.addgame_button.clicked.connect(self.addgametolist)
@@ -239,31 +272,60 @@ class SpecificWorker(GenericWorker):
         self.ui.continue_game_button.clicked.connect(self.continue_clicked)
         self.ui.finish_game_button.clicked.connect(self.finish_clicked)
         self.ui.reset_game_button.clicked.connect(self.reset_clicked)
+        self.ui.end_session_button.clicked.connect(self.end_session_clicked)
 
+        self.ui.start_game_button.setEnabled(False);
+        self.ui.pause_game_button.setEnabled(False);
+        self.ui.continue_game_button.setEnabled(False);
+        self.ui.finish_game_button.setEnabled(False);
+        self.ui.reset_game_button.setEnabled(False);
 
     def start_clicked(self):
-        self.ui.info_game_label.setText(self.list_of_games[0])
+        self.ui.info_game_label.setText(self.list_games_toplay[0])
         self.admingame_proxy.adminStartGame(self.selected_player_incombo)
+
+        self.ui.start_game_button.setEnabled(False);
+        self.ui.pause_game_button.setEnabled(True);
+        self.ui.finish_game_button.setEnabled(True);
+        self.ui.reset_game_button.setEnabled(True);
 
     def pause_clicked(self):
         self.admingame_proxy.adminPause()
 
+        self.ui.continue_game_button.setEnabled(True);
+        self.ui.pause_game_button.setEnabled(False);
+
+
     def continue_clicked(self):
         self.admingame_proxy.adminContinue()
+
+        self.ui.continue_game_button.setEnabled(False);
+        self.ui.pause_game_button.setEnabled(True);
 
     def finish_clicked(self):
         self.admingame_proxy.adminStop()
 
+        self.ui.pause_game_button.setEnabled(False);
+        self.ui.continue_game_button.setEnabled(False);
+        self.ui.finish_game_button.setEnabled(False);
+        self.ui.reset_game_button.setEnabled(False);
+        self.ui.start_game_button.setEnabled(True);
+
+
     def reset_clicked(self):
         self.admingame_proxy.adminReset()
 
+        self.ui.pause_game_button.setEnabled(False);
+        self.ui.continue_game_button.setEnabled(False);
+        self.ui.finish_game_button.setEnabled(False);
+        self.ui.reset_game_button.setEnabled(False);
+        self.ui.start_game_button.setEnabled(True);
+
+
+    def end_session_clicked(self):
+        pass
 
     def setParams(self, params):
-        # try:
-        #	self.innermodel = InnerModel(params["InnerModelPath"])
-        # except:
-        #	traceback.print_exc()
-        #	print "Error reading config params"
         return True
 
 
@@ -348,9 +410,13 @@ class SpecificWorker(GenericWorker):
             return False
 
     def close_session_clicked(self):
-        self.mainMenu.setEnabled(False)
-        self.ui.stackedWidget.setCurrentIndex(0)
-        self.ui.password_lineedit.clear()
+        reply = QMessageBox.question(self.focusWidget(), '',
+                                     ' Desea cerrar sesión?', QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+
+            self.mainMenu.setEnabled(False)
+            self.ui.stackedWidget.setCurrentIndex(0)
+            self.ui.password_lineedit.clear()
 
     def back_clicked(self):
         index = self.ui.stackedWidget.currentIndex()
@@ -385,7 +451,7 @@ class SpecificWorker(GenericWorker):
 
     def addgametolist(self):
         self.selected_game_incombo = self.ui.selgame_combobox.currentText()
-        if (self.selected_game_incombo != ""):
+        if self.selected_game_incombo != "":
             self.ui.games_list.addItem(self.selected_game_incombo)
             return True
         else:
@@ -395,17 +461,22 @@ class SpecificWorker(GenericWorker):
             return False
 
     def start_session(self):
-        self.list_of_games = []
+        self.list_games_toplay = []
         for index in xrange(self.ui.games_list.count()):
-            self.list_of_games.append(self.ui.games_list.item(index).text())
+            self.list_games_toplay.append(self.ui.games_list.item(index).text())
 
-        if (self.selected_player_incombo == ""):
-            print("No se ha seleccionado ningún jugador")
+        if self.selected_player_incombo == "":
+            QMessageBox().information(self.focusWidget(), 'Error',
+                                      'No se han seleccionado ningún jugador',
+                                      QMessageBox.Ok)
         else:
-
             self.ui.stackedWidget.setCurrentIndex(4)
-
             self.admingame_proxy.adminStartSession(self.selected_player_incombo)
+            QMessageBox().information(self.focusWidget(), 'Info',
+                                      'Coloque la mano del paciente sobre la mesa. Cuando se haya detectado correctamente podrá empezar el juego',
+                                      QMessageBox.Ok)
+
+
 
 
     def movelist_up(self):
@@ -488,4 +559,7 @@ class SpecificWorker(GenericWorker):
     def statusChanged(self, s):
         self.ui.status_label.setText(s.currentStatus.name)
         self.ui.date_label.setText(s.date)
-        # print s
+
+        if s.currentStatus.name == "initialized":
+            self.ui.start_game_button.setEnabled(True);
+

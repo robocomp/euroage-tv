@@ -69,7 +69,6 @@ from specificworker import *
 class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 	def __init__(self, _handler):
 		self.handler = _handler
-		self.communicator = _communicator
 	def getFreq(self, current = None):
 		self.handler.getFreq()
 	def setFreq(self, freq, current = None):
@@ -90,8 +89,10 @@ class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 			status = 1
 			return
 
-
-
+#SIGNALS handler
+def sigint_handler(*args):
+	QtCore.QCoreApplication.quit()
+    
 if __name__ == '__main__':
 	app = QtWidgets.QApplication(sys.argv)
 	params = copy.deepcopy(sys.argv)
@@ -114,7 +115,7 @@ if __name__ == '__main__':
 		topicManager = IceStorm.TopicManagerPrx.checkedCast(obj)
 	except Ice.ConnectionRefusedException, e:
 		print 'Cannot connect to IceStorm! ('+proxy+')'
-		sys.exit(-1)
+		status = 1
 
 	# Remote object connection for AdminGame
 	try:
@@ -135,6 +136,9 @@ if __name__ == '__main__':
 	if status == 0:
 		worker = SpecificWorker(mprx)
 		worker.setParams(parameters)
+	else:
+		print "Error getting required connections, check config file"
+		sys.exit(-1)
 
 	GameMetrics_adapter = ic.createObjectAdapter("GameMetricsTopic")
 	gamemetricsI_ = GameMetricsI(worker)
@@ -146,15 +150,20 @@ if __name__ == '__main__':
 			gamemetrics_topic = topicManager.retrieve("GameMetrics")
 			subscribeDone = True
 		except Ice.Exception, e:
-			print "Error. Topic does not exist (yet)"
-			status = 0
+			print "Error. Topic does not exist (creating)"
 			time.sleep(1)
+			try:
+				gamemetrics_topic = topicManager.create("GameMetrics")
+				subscribeDone = True
+			except:
+				print "Error. Topic could not be created. Exiting"
+				status = 0
 	qos = {}
 	gamemetrics_topic.subscribeAndGetPublisher(qos, gamemetrics_proxy)
 	GameMetrics_adapter.activate()
 
 
-	signal.signal(signal.SIGINT, signal.SIG_DFL)
+	signal.signal(signal.SIGINT, sigint_handler)
 	app.exec_()
 
 	if ic:

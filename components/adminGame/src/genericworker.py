@@ -42,18 +42,30 @@ except:
 	print 'SLICE_PATH environment variable was not exported. Using only the default paths'
 	pass
 
-ice_AdminGameInterface = False
+ice_GameMetrics = False
 for p in icePaths:
-	if os.path.isfile(p+'/AdminGameInterface.ice'):
+	if os.path.isfile(p+'/GameMetrics.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"AdminGameInterface.ice"
+		wholeStr = preStr+"GameMetrics.ice"
 		Ice.loadSlice(wholeStr)
-		ice_AdminGameInterface = True
+		ice_GameMetrics = True
 		break
-if not ice_AdminGameInterface:
-	print 'Couln\'t load AdminGameInterface'
+if not ice_GameMetrics:
+	print 'Couln\'t load GameMetrics'
 	sys.exit(-1)
-from EuroAgeGames import *
+from EuroAgeGamesMetrics import *
+ice_AdminGame = False
+for p in icePaths:
+	if os.path.isfile(p+'/AdminGame.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"AdminGame.ice"
+		Ice.loadSlice(wholeStr)
+		ice_AdminGame = True
+		break
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
+	sys.exit(-1)
+from EuroAgeGamesAdmin import *
 
 
 from gamemetricsI import *

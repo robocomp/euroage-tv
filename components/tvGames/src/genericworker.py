@@ -102,6 +102,18 @@ if not ice_RGBD:
 	print 'Couln\'t load RGBD'
 	sys.exit(-1)
 from RoboCompRGBD import *
+ice_TouchPoints = False
+for p in icePaths:
+	if os.path.isfile(p+'/TouchPoints.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"TouchPoints.ice"
+		Ice.loadSlice(wholeStr)
+		ice_TouchPoints = True
+		break
+if not ice_TouchPoints:
+	print 'Couln\'t load TouchPoints'
+	sys.exit(-1)
+from RoboCompTouchPoints import *
 ice_CameraSimple = False
 for p in icePaths:
 	if os.path.isfile(p+'/CameraSimple.ice'):
@@ -114,6 +126,18 @@ if not ice_CameraSimple:
 	print 'Couln\'t load CameraSimple'
 	sys.exit(-1)
 from RoboCompCameraSimple import *
+ice_GameMetrics = False
+for p in icePaths:
+	if os.path.isfile(p+'/GameMetrics.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"GameMetrics.ice"
+		Ice.loadSlice(wholeStr)
+		ice_GameMetrics = True
+		break
+if not ice_GameMetrics:
+	print 'Couln\'t load GameMetrics'
+	sys.exit(-1)
+from EuroAgeGamesMetrics import *
 
 
 from admingameI import *

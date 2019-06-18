@@ -55,25 +55,26 @@ class Player:
 		self.tracked = False
 
 #      struct Position
-		#      {
-		#         float x;
-		#         float y;
-		#      };
-		#
-		#     struct Metrics
-		#     {
-		#         string	currentDate;
-		#         Position pos;
-		#         bool	screenTouched;
-		#         bool	handClosed;
-		#         int	numHelps;
-		#         int	numChecked;
-		#         int	numHits;
-		#         int	numFails;
-		#
-		#     };
+#      {
+#         float x;
+#         float y;
+#      };
+#
+#     struct Metrics
+#     {
+#         string	currentDate;
+#         Position pos;
+#         bool	screenTouched;
+#         bool	handClosed;
+#         int	numHelps;
+#         int	numChecked;
+#         int	numHits;
+#         int	numFails;
+#
+#     };
 class GameMetrics(Metrics):
 	def __init__(self):
+		super(GameMetrics, self).__init__()
 		self.currentDate = datetime.now().isoformat()
 		self.numHelps = 0
 		self.numChecked = 0
@@ -81,6 +82,7 @@ class GameMetrics(Metrics):
 		self.numFails = 0
 		self.handClosed = False
 		self.screenTouched = False
+		self.pos = Position()
 
 	def increment_helps(self, quantity=1):
 		self.numHelps+=quantity
@@ -129,8 +131,7 @@ class SpecificWorker(GenericWorker):
 		self.hide()
 		self.debug = True
 		self.tv_image = QImageWidget()
-		self.tv_image.mouse_pressed.connect(self.mouse_pressed_on_tv)
-		self.tv_image.mouse_released.connect(self.mouse_released_on_tv)
+
 		self.mouse_grab = False
 		# Used to put the apriltag marks more and more inside the screen
 
@@ -148,6 +149,7 @@ class SpecificWorker(GenericWorker):
 			self._game_screen_width = screen_1_width
 			self._game_screen_height = screen_1_height
 		self.calibrator = ManualCalibrationStateMachine(self._game_screen_width, self._game_screen_height)
+
 
 
 
@@ -192,7 +194,28 @@ class SpecificWorker(GenericWorker):
 		if self._current_game_name is not None:
 			self._game = GameScreen(self._game_screen_width, self._game_screen_height)
 			self._game.game_frame.touch_signal.connect(self.detectedTouchPoints)
+			self._game.help_clicked.connect(self.game_help_clicked)
+			self._game.check_clicked.connect(self.game_check_clicked)
+			self._game.score_update.connect(self.game_score_update)
 			self.reset_game()
+
+
+	def game_help_clicked(self):
+		self._game_metrics.currentDate = datetime.now().isoformat()
+		self._game_metrics.numHelps += 1
+		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
+
+	def game_check_clicked(self):
+		self._game_metrics.currentDate = datetime.now().isoformat()
+		self._game_metrics.numChecked += 1
+		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
+
+	def game_score_update(self, win, fail):
+		self._game_metrics.currentDate = datetime.now().isoformat()
+		self._game_metrics.numFails = fail
+		self._game_metrics.numHits = win
+		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
+
 
 	def reset_game(self):
 		config_path = self._available_games[unicode(self._current_game_name)]
@@ -842,8 +865,7 @@ class SpecificWorker(GenericWorker):
 # =====================================================
 
 	def detectedTouchPoints(self, qt_touch_points):
-		# Send update of metrics throught gamemetrics component interface
-		# Send the touched position through touchpoints component interface
+
 		touch_points = []
 		state_mapping = {Qt.TouchPointPressed: StateEnum.TouchPointPressed,
 						 Qt.TouchPointMoved: StateEnum.TouchPointMoved,
@@ -860,8 +882,10 @@ class SpecificWorker(GenericWorker):
 											lastPos=[aux_point.x(), aux_point.y()])
 			touch_points.append(tp)
 
+		# Send update of metrics throught gamemetrics component interface
 		self._game_metrics.set_screen_touched(touched)
 		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 
+		# Send the touched position through touchpoints component interface
 		print "TouchPoint Detected:"+str(tp)
 		self.touchpoints_proxy.detectedTouchPoints(touch_points)

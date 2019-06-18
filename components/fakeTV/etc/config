@@ -1,5 +1,5 @@
 # Endpoints for implemented interfaces
-AdminGame.Endpoints=tcp -p 0
+AdminGame.Endpoints=tcp -p 18888
 
 
 

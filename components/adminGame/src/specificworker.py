@@ -35,7 +35,10 @@ from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QMessageBox, QCompleter, QMainWindow, QAction, qApp
 
 from admin_widgets import *
-from bbdd import BBDD
+try:
+    from bbdd import BBDD
+except:
+    print ("Database module not found")
 import Queue
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
@@ -86,8 +89,7 @@ class Session():
         self.wonGames = 0
         self.lostGames = 0
 
-    def start_session(self, player):
-        self.date = datetime.now()
+    def add_player(self, player):
         self.patient = player
 
 
@@ -99,6 +101,7 @@ class Game():
         self.timePaused = 0
         self.distance = 0
         self.touched = 0
+        self.handClosed = 0
         self.helps = 0
         self.checks = 0
         self.hits = 0
@@ -172,11 +175,16 @@ class QUserManager(QObject):
 
 
 class SpecificWorker(GenericWorker):
+
     login_executed = Signal(bool)
     endGameSig = Signal(bool, str)
     resetGameSig = Signal()
     playGameSig = Signal(str)
+    endSessionSig = Signal(str)
     initGameSig = Signal()
+    pausedGameSig = Signal(str)
+
+    updateUISig = Signal(bool)
 
     def __init__(self, proxy_map):
 
@@ -196,11 +204,19 @@ class SpecificWorker(GenericWorker):
         self.currentGame = Game()
 
         self.aux_datePaused = None
+        self.aux_currentDate = None
+        self.aux_currentStatus = None
 
-        self.endGameSig.connect(self.admin_end_game)
-        self.playGameSig.connect(self.admin_playing)
-        self.resetGameSig.connect(self.admin_reset_game)
-        self.initGameSig.connect(self.admin_initialized)
+        self.endGameSig.connect(self.state_end_game)
+        self.playGameSig.connect(self.state_playing)
+        self.resetGameSig.connect(self.state_reset_game)
+        self.endSessionSig.connect(self.state_finish_session)
+        self.initGameSig.connect(self.state_ready)
+        self.pausedGameSig.connect(self.state_paused)
+
+        self.updateUISig.connect(self.updateUI)
+
+
 
         self.timer.start(self.Period)
 
@@ -229,7 +245,7 @@ class SpecificWorker(GenericWorker):
         fileMenu.addAction(exitAction)
 
         closeAction = QAction('&Cerrar sesión', self)
-        closeAction.triggered.connect(self.close_session_clicked)
+        closeAction.triggered.connect(self.close_thsession_clicked)
         fileMenu.addAction(closeAction)
 
         ## Login window
@@ -304,14 +320,10 @@ class SpecificWorker(GenericWorker):
     def pause_clicked(self):
         self.admingame_proxy.adminPause()
 
-        self.ui.continue_game_button.setEnabled(True);
-        self.ui.pause_game_button.setEnabled(False);
 
     def continue_clicked(self):
         self.admingame_proxy.adminContinue()
 
-        self.ui.continue_game_button.setEnabled(False);
-        self.ui.pause_game_button.setEnabled(True);
 
     def finish_clicked(self):
         reply = QMessageBox.question(self.focusWidget(), '',
@@ -339,7 +351,8 @@ class SpecificWorker(GenericWorker):
                                       QMessageBox.Ok)
         else:
             self.ui.stackedWidget.setCurrentIndex(4)
-            self.currentSession.start_session(player)
+
+            self.currentSession.add_player(player)
             self.admingame_proxy.adminStartSession(player)
             QMessageBox().information(self.focusWidget(), 'Info',
                                       'Coloque la mano del paciente sobre la mesa. Cuando se haya detectado correctamente podrá empezar el juego',
@@ -354,7 +367,7 @@ class SpecificWorker(GenericWorker):
                                      ' ¿Desea finalizar la sesión?', QMessageBox.Yes, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
-            self.admin_finish_session()
+            self.admingame_proxy.adminEndSession()
 
     def setParams(self, params):
         return True
@@ -439,7 +452,7 @@ class SpecificWorker(GenericWorker):
             print ("[ERROR] The user couldn't be created ")
             return False
 
-    def close_session_clicked(self):
+    def close_thsession_clicked(self):
         reply = QMessageBox.question(self.focusWidget(), '',
                                      ' Desea cerrar sesión?', QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.Yes:
@@ -556,64 +569,112 @@ class SpecificWorker(GenericWorker):
         #
 
     def metricsObtained(self, m):
-        #
-        # subscribesToCODE
-        #
-        pass
+        if self.currentGame.date is not None:
+            self.aux_currentDate =datetime.strptime( m.currentDate, "%Y-%m-%dT%H:%M:%S.%f")
+            self.currentGame.timePlayed = (self.aux_currentDate - self.currentGame.date).total_seconds() * 1000
+            self.currentGame.touched = m.numScreenTouched
+            self.currentGame.distance = 666 #calcular mas adelante
+            self.currentGame.handClosed = m.numHandClosed
+            self.currentGame.helps = m.numHelps
+            self.currentGame.checks = m.numChecked
+            self.currentGame.hits = m.numHits
+            self.currentGame.fails = m.numFails
+
+            self.updateUISig.emit(False) #No ha habido cambio de estado
+        else:
+            print ("NO se ha iniciado el juego")
 
     #
     # statusChanged
     #
     def statusChanged(self, s):
         state_name = s.currentStatus.name
-        self.ui.status_label.setText(s.currentStatus.name)
-        self.ui.date_label.setText(s.date)
+        self.updateUISig.emit(True)
 
-        if state_name == "initialized":
+        self.aux_currentDate =  datetime.strptime(s.date, "%Y-%m-%dT%H:%M:%S.%f")
+        self.aux_currentStatus = s.currentStatus.name
+
+
+        if state_name == "initializing":
+            print "Initializing"
+            self.currentSession.date = self.aux_currentDate
+
+        if state_name == "ready":
             self.initGameSig.emit()
 
         if state_name == "paused":
-            self.aux_datePaused = s.date
+            self.pausedGameSig.emit(s.date)
 
-        if state_name == "continued":
-            time = s.date - self.datePaused
-            self.currentGame.timePaused = + time.microseconds / 1000
-            self.aux_datePaused = None
-
-        if state_name == "win":
+        if state_name == "wongame":
             self.endGameSig.emit(True, s.date)
-        if state_name == "lose":
+        if state_name == "lostgame":
             self.endGameSig.emit(False, s.date)
 
-        if state_name == "reset":
+        if state_name == "reseted":
             self.resetGameSig.emit()
 
         if state_name == "playing":
             self.playGameSig.emit(s.date)
 
+        if state_name == "endsession":
+            self.endSessionSig.emit(s.date)
+
     # Admin states
-    def admin_initialized(self):
+
+    def state_paused(self,date):
+        currenttime = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")
+        self.aux_datePaused = currenttime
+
+        self.ui.continue_game_button.setEnabled(True);
+        self.ui.pause_game_button.setEnabled(False);
+
+
+    def state_ready(self):
         self.ui.start_game_button.setEnabled(True);
 
-    def admin_playing(self, date):
-        self.currentGame.date = datetime.strptime(date,"%Y-%m-%dT%H:%M:%S.%f")
+
+    def state_playing(self, date):
+
+        currenttime = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")
+
         self.ui.start_game_button.setEnabled(False);
         self.ui.pause_game_button.setEnabled(True);
         self.ui.finish_game_button.setEnabled(True);
         self.ui.reset_game_button.setEnabled(True);
+        self.ui.end_session_button.setEnabled(False); #No se puede finalizar la sesion si hay un juego en marcha
 
-    def admin_end_game(self, won, date):
-        self.currentGame.gameWon = won
-        timeplayed = date - self.currentGame.date
-        self.currentGame.timePlayed = timeplayed.microsecond/1000
-        print self.currentGame.timePlayed
-        self.currentSession.games.append(self.currentGame)
+        if self.currentGame.date is None:
+            self.currentGame.date = currenttime
+
+        if self.aux_datePaused is not None:
+            self.ui.continue_game_button.setEnabled(False);
+            self.ui.pause_game_button.setEnabled(True);
+            time = currenttime - self.aux_datePaused
+            self.currentGame.timePaused += time.total_seconds() * 1000
+            self.aux_datePaused = None
+            print "Time paused =  ", self.currentGame.timePaused, "milliseconds"
+
+    def state_end_game(self, won, date):
+        reply = QMessageBox.question(self.focusWidget(), 'Juego terminado',
+                                     ' Desea guardar los datos del juego?', QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+
+            currenttime = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")
+
+            self.currentGame.gameWon = won
+            timeplayed = currenttime - self.currentGame.date
+            self.currentGame.timePlayed = timeplayed.total_seconds() * 1000
+            print "Time played =  ", self.currentGame.timePlayed, "milliseconds"
+            print self.currentGame.timePlayed
+
+            self.currentSession.games.append(self.currentGame)
+
         self.currentGame = Game()
 
         self.list_games_toplay.pop(0)
 
         if len(self.list_games_toplay) == 0:
-            self.admin_finish_session()
+            self.admingame_proxy.adminEndSession()
 
         else:
             game = self.list_games_toplay[0]
@@ -625,7 +686,29 @@ class SpecificWorker(GenericWorker):
             self.ui.reset_game_button.setEnabled(False);
             self.ui.start_game_button.setEnabled(True);
 
-    def admin_reset_game(self):
+            self.ui.end_session_button.setEnabled(True);
+
+            self.aux_datePaused = None
+
+
+    def state_finish_session(self, date):
+        reply = QMessageBox.question(self.focusWidget(), 'Juegos finalizados',
+                                     ' Desea guardar los datos de la sesion actual?', QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            currenttime = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")
+
+            time = currenttime - self.currentSession.date
+            self.currentSession.totaltime = time.total_seconds() * 1000
+            print "Session time =  ", self.currentSession.totaltime, "milliseconds"
+
+            self.compute_session_metrics()
+            self.sessions.append(self.currentSession)
+
+        self.currentSession = Session()
+        self.ui.stackedWidget.setCurrentIndex(2)
+
+
+    def state_reset_game(self):
 
         self.ui.pause_game_button.setEnabled(False);
         self.ui.continue_game_button.setEnabled(False);
@@ -633,22 +716,39 @@ class SpecificWorker(GenericWorker):
         self.ui.reset_game_button.setEnabled(False);
         self.ui.start_game_button.setEnabled(True);
 
+        self.ui.end_session_button.setEnabled(True);
+
+        self.aux_datePaused = None
+        self.ui.num_screentouched_label.setText(str(0))
+        self.ui.num_closedhand_label.setText(str(0))
+        self.ui.timeplayed_label.setText(str(0))
+        self.ui.num_helps_label.setText(str(0))
+        self.ui.num_checks_label.setText(str(0))
+        self.ui.distance_label.setText(str(0))
+        self.ui.num_hits_label.setText(str(0))
+        self.ui.num_fails_label.setText(str(0))
+
+
         self.currentGame = Game()
-
-    def admin_finish_session(self):
-
-        current_date = datetime.now()
-        time = self.currentSession.date - current_date
-        self.currentSession.totaltime = time.microseconds / 1000
-        print "Session time =  ", self.currentSession.totaltime, "milliseconds"
-
-        QMessageBox().information(self.focusWidget(), '',
-                                  'Se han completado todos los juegos. Se va a finalizar la sesion ',
-                                  QMessageBox.Ok)
-
-        # self.compute_session_metrics()
-        self.ui.stackedWidget.setCurrentIndex(2)
 
     def compute_session_metrics(self):
         # Recorrer todos los juegos y completar las metricas de la sesion
         pass
+
+    def updateUI(self,statusChange):
+        self.ui.date_label.setText(self.aux_currentDate.strftime("%c"))
+
+        if statusChange:
+            self.ui.status_label.setText(self.aux_currentStatus)
+        else:
+
+            self.ui.num_screentouched_label.setText(str(self.currentGame.touched))
+            self.ui.num_closedhand_label.setText(str(self.currentGame.handClosed))
+            self.ui.num_helps_label.setText(str(self.currentGame.helps))
+            self.ui.num_checks_label.setText(str(self.currentGame.checks))
+            self.ui.timeplayed_label.setText(str(self.currentGame.timePlayed))
+            self.ui.distance_label.setText( str(self.currentGame.distance))
+            self.ui.num_hits_label.setText( str(self.currentGame.hits))
+            self.ui.num_fails_label.setText(str(self.currentGame.fails))
+
+

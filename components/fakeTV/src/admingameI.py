@@ -80,6 +80,8 @@ class AdminGameI(AdminGame):
 		return self.worker.adminReset()
 	def adminStartGame(self, game, c):
 		return self.worker.adminStartGame(game)
+	def adminEndSession(self, c):
+		return self.worker.adminEndSession()
 	def adminPause(self, c):
 		return self.worker.adminPause()
 	def adminStartSession(self, player, c):

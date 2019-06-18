@@ -51,6 +51,9 @@ GREEN_TITTLE_COLOR = "#91C69A"
 # Create a class for our main window
 class GameScreen(QWidget):
 	game_win = Signal()
+	help_clicked = Signal()
+	check_clicked = Signal()
+	score_update = Signal(int, int)
 	def __init__(self, width, height, parent = None):
 		super(GameScreen, self).__init__(parent)
 
@@ -98,14 +101,20 @@ class GameScreen(QWidget):
 		self._game_config = {}
 		self._main_layout.addWidget(self.end_message)
 		self._main_layout.setCurrentIndex(0)
+		self._scores_close_timer = QTimer()
+		self._scores_dialog = QDialog()
+
+
 		self._top_bar.clock_timeout.connect(self.game_timeout)
 		self._game_frame.score_update.connect(self._top_bar.set_scores)
 		self._game_frame.score_update.connect(self.show_big_scores)
 		self._game_frame.game_win.connect(self.end_game)
 		self._check_button.clicked.connect(self._game_frame.check_scores)
+		self._check_button.clicked.connect(self.check_clicked)
 		self._help_button.clicked.connect(self.show_help)
-		self._scores_close_timer = QTimer()
-		self._scores_dialog = QDialog()
+		self._help_button.clicked.connect(self.help_clicked)
+		self._game_frame.score_update.connect(self.score_update)
+
 
 
 

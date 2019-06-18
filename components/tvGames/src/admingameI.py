@@ -41,20 +41,20 @@ except:
 	print 'SLICE_PATH environment variable was not exported. Using only the default paths'
 	pass
 
-ice_AdminGameInterface = False
+ice_AdminGame = False
 for p in icePaths:
-	print 'Trying', p, 'to load AdminGameInterface.ice'
-	if os.path.isfile(p+'/AdminGameInterface.ice'):
-		print 'Using', p, 'to load AdminGameInterface.ice'
+	print 'Trying', p, 'to load AdminGame.ice'
+	if os.path.isfile(p+'/AdminGame.ice'):
+		print 'Using', p, 'to load AdminGame.ice'
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"AdminGameInterface.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_AdminGameInterface = True
+		ice_AdminGame = True
 		break
-if not ice_AdminGameInterface:
-	print 'Couldn\'t load AdminGameInterface'
+if not ice_AdminGame:
+	print 'Couldn\'t load AdminGame'
 	sys.exit(-1)
-from EuroAgeGames import *
+from EuroAgeGamesAdmin import *
 ice_CameraSimple = False
 for p in icePaths:
 	print 'Trying', p, 'to load CameraSimple.ice'
@@ -83,6 +83,20 @@ if not ice_CommonBehavior:
 	print 'Couldn\'t load CommonBehavior'
 	sys.exit(-1)
 from RoboCompCommonBehavior import *
+ice_GameMetrics = False
+for p in icePaths:
+	print 'Trying', p, 'to load GameMetrics.ice'
+	if os.path.isfile(p+'/GameMetrics.ice'):
+		print 'Using', p, 'to load GameMetrics.ice'
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"GameMetrics.ice"
+		Ice.loadSlice(wholeStr)
+		ice_GameMetrics = True
+		break
+if not ice_GameMetrics:
+	print 'Couldn\'t load GameMetrics'
+	sys.exit(-1)
+from EuroAgeGamesMetrics import *
 ice_GetAprilTags = False
 for p in icePaths:
 	print 'Trying', p, 'to load GetAprilTags.ice'
@@ -164,6 +178,8 @@ class AdminGameI(AdminGame):
 		return self.worker.adminReset()
 	def adminStartGame(self, game, c):
 		return self.worker.adminStartGame(game)
+	def adminEndSession(self, c):
+		return self.worker.adminEndSession()
 	def adminPause(self, c):
 		return self.worker.adminPause()
 	def adminStartSession(self, player, c):

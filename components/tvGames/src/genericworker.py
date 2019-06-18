@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # Copyright (C) 2019 by YOUR NAME HERE
 #
@@ -42,102 +44,138 @@ except:
 	print 'SLICE_PATH environment variable was not exported. Using only the default paths'
 	pass
 
-ice_GenericBase = False
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/GenericBase.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GenericBase.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_GenericBase = True
+		ice_AdminGame = True
 		break
-if not ice_GenericBase:
-	print 'Couln\'t load GenericBase'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompGenericBase import *
-ice_HandDetection = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/HandDetection.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"HandDetection.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_HandDetection = True
+		ice_AdminGame = True
 		break
-if not ice_HandDetection:
-	print 'Couln\'t load HandDetection'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompHandDetection import *
-ice_GetAprilTags = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/GetAprilTags.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GetAprilTags.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_GetAprilTags = True
+		ice_AdminGame = True
 		break
-if not ice_GetAprilTags:
-	print 'Couln\'t load GetAprilTags'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompGetAprilTags import *
-ice_JointMotor = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/JointMotor.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"JointMotor.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_JointMotor = True
+		ice_AdminGame = True
 		break
-if not ice_JointMotor:
-	print 'Couln\'t load JointMotor'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompJointMotor import *
-ice_RGBD = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/RGBD.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"RGBD.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_RGBD = True
+		ice_AdminGame = True
 		break
-if not ice_RGBD:
-	print 'Couln\'t load RGBD'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompRGBD import *
-ice_TouchPoints = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/TouchPoints.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TouchPoints.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_TouchPoints = True
+		ice_AdminGame = True
 		break
-if not ice_TouchPoints:
-	print 'Couln\'t load TouchPoints'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompTouchPoints import *
-ice_CameraSimple = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/CameraSimple.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"CameraSimple.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_CameraSimple = True
+		ice_AdminGame = True
 		break
-if not ice_CameraSimple:
-	print 'Couln\'t load CameraSimple'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompCameraSimple import *
-ice_GameMetrics = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/GameMetrics.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GameMetrics.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_GameMetrics = True
+		ice_AdminGame = True
 		break
-if not ice_GameMetrics:
-	print 'Couln\'t load GameMetrics'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from EuroAgeGamesMetrics import *
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
+for p in icePaths:
+	if os.path.isfile(p+'/AdminGame.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"AdminGame.ice"
+		Ice.loadSlice(wholeStr)
+		ice_AdminGame = True
+		break
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
+	sys.exit(-1)
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
+for p in icePaths:
+	if os.path.isfile(p+'/AdminGame.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"AdminGame.ice"
+		Ice.loadSlice(wholeStr)
+		ice_AdminGame = True
+		break
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
+	sys.exit(-1)
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
+for p in icePaths:
+	if os.path.isfile(p+'/AdminGame.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"AdminGame.ice"
+		Ice.loadSlice(wholeStr)
+		ice_AdminGame = True
+		break
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
+	sys.exit(-1)
+from EuroAgeGamesAdmin import *
 
 
 from admingameI import *

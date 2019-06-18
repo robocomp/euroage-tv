@@ -5,7 +5,8 @@ import "CommonBehavior.idsl";
 import "TvGames.idsl";
 import "GetAprilTags.idsl";
 import "TouchPoints.idsl";
-import "AdminGameInterface.idsl";
+import "AdminGame.idsl";
+import "GameMetrics.idsl";
 
 Component tvgames
 {

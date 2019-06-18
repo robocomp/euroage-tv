@@ -18,6 +18,7 @@ module EuroAgeGamesAdmin
 		void adminPause ();
 		void adminContinue ();
 		void adminReset ();
+		void adminEndSession ();
 	};
 };
 

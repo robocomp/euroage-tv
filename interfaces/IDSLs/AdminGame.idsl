@@ -9,6 +9,7 @@ interface AdminGame
      	void adminPause();
      	void adminContinue();
      	void adminReset();
+	void adminEndSession();
     };
 };
 

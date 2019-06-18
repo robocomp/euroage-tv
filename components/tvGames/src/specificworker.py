@@ -267,6 +267,8 @@ class SpecificWorker(GenericWorker):
 
 		self.update_game_selection()
 		self._game.show()
+		print StatusType.waiting
+		self.send_status_change(StatusType.ready)
 		self.game_inittogame_loop.emit()
 
 	#
@@ -276,6 +278,7 @@ class SpecificWorker(GenericWorker):
 	def sm_game_loop(self):
 		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 		print("Entered state game_loop")
+		self.send_status_change(StatusType.playing)
 
 	#
 	# sm_game_lost
@@ -283,6 +286,7 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_game_lost(self):
 		print("Entered state game_lost")
+		self.send_status_change(StatusType.lostgame)
 		pass
 
 	#
@@ -291,6 +295,7 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_game_pause(self):
 		print("Entered state game_pause")
+		self.send_status_change(StatusType.paused)
 		pass
 
 	#
@@ -311,6 +316,7 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_game_won(self):
 		print("Entered state game_won")
+		self.send_status_change(StatusType.wongame)
 		pass
 
 	#
@@ -319,10 +325,8 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_session_init(self):
 		print("Entered state session_init")
-		initialicing_status = Status()
-		initialicing_status.currentStatus = StatusType.initializing
-		initialicing_status.date = datetime.now().strftime("%c")
-		self.gamemetrics_proxy.statusChanged(initialicing_status)
+		self.send_status_change(StatusType.initializing)
+
 
 	
 
@@ -332,7 +336,7 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_session_end(self):
 		print("Entered state session_end")
-		pass
+		self.send_status_change(StatusType.endsession)
 
 	#
 	# sm_player_acquisition_init
@@ -376,6 +380,7 @@ class SpecificWorker(GenericWorker):
 
 # =================================================================
 # =================================================================
+
 
 
 	def load_available_games(self, path):
@@ -719,8 +724,15 @@ class SpecificWorker(GenericWorker):
 				cv2.line(frame, tuple(p0), tuple(p1), (0, 0, 255), 3)
 		return frame
 
-# ========== Interfaces specific methods ==============
-# =====================================================
+# =============== Methods for Component Implements ==================
+# ===================================================================
+
+	#
+	# adminContinue
+	#
+	def adminContinue(self):
+		print("adminContinue")
+		pass
 
 	#
 	# adminReset
@@ -730,22 +742,6 @@ class SpecificWorker(GenericWorker):
 		# self.reset_game()
 
 		pass
-
-
-	#
-	# adminContinue
-	#
-	def adminContinue(self):
-		print("adminContinue")
-		pass
-
-
-	#
-	# adminStop
-	#
-	def adminStop(self):
-		print("adminStop")
-
 
 	#
 	# adminStartGame
@@ -759,15 +755,13 @@ class SpecificWorker(GenericWorker):
 
 
 	#
-	# adminStartSession
+	# adminEndSession
 	#
-	def adminStartSession(self, player_name):
-		new_player = Player()
-		new_player.id = -1
-		new_player.name = player_name
-		new_player.tracked = False
-		self._current_players.append(new_player)
-		self._current_state = "init_session"
+	def adminEndSession(self):
+		#
+		# implementCODE
+		#
+		pass
 
 
 	#
@@ -775,6 +769,27 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminPause(self):
 		print("adminPause")
+
+
+	#
+	# adminStartSession
+	#
+	def adminStartSession(self, player):
+		new_player = Player()
+		new_player.id = -1
+		new_player.name = player
+		new_player.tracked = False
+		self._current_players.append(new_player)
+		self._current_state = "init_session"
+
+	#
+	# adminStop
+	#
+	def adminStop(self):
+		print("adminStop")
+
+
+
 
 	#
 	# reloadConfig
@@ -785,6 +800,7 @@ class SpecificWorker(GenericWorker):
 		#
 		pass
 
+
 	#
 	# setPeriod
 	#
@@ -793,6 +809,7 @@ class SpecificWorker(GenericWorker):
 		# implementCODE
 		#
 		pass
+
 
 	#
 	# getState
@@ -804,6 +821,7 @@ class SpecificWorker(GenericWorker):
 		#
 		return ret
 
+
 	#
 	# setParameterList
 	#
@@ -812,6 +830,7 @@ class SpecificWorker(GenericWorker):
 		# implementCODE
 		#
 		pass
+
 
 	#
 	# timeAwake
@@ -823,6 +842,7 @@ class SpecificWorker(GenericWorker):
 		#
 		return ret
 
+
 	#
 	# getParameterList
 	#
@@ -833,6 +853,7 @@ class SpecificWorker(GenericWorker):
 		#
 		return ret
 
+
 	#
 	# killYourSelf
 	#
@@ -841,6 +862,7 @@ class SpecificWorker(GenericWorker):
 		# implementCODE
 		#
 		pass
+
 
 	#
 	# getPeriod
@@ -852,6 +874,7 @@ class SpecificWorker(GenericWorker):
 		#
 		return ret
 
+
 	#
 	# launchGame
 	#
@@ -861,8 +884,8 @@ class SpecificWorker(GenericWorker):
 		#
 		pass
 
-# =====================================================
-# =====================================================
+# ===================================================================
+# ===================================================================
 
 	def detectedTouchPoints(self, qt_touch_points):
 
@@ -889,3 +912,9 @@ class SpecificWorker(GenericWorker):
 		# Send the touched position through touchpoints component interface
 		print "TouchPoint Detected:"+str(tp)
 		self.touchpoints_proxy.detectedTouchPoints(touch_points)
+
+	def send_status_change(self, status_type):
+		initialicing_status = Status()
+		initialicing_status.currentStatus = status_type
+		initialicing_status.date = datetime.now().strftime("%c")
+		self.gamemetrics_proxy.statusChanged(initialicing_status)

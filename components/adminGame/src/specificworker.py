@@ -39,7 +39,6 @@ try:
     from bbdd import BBDD
 except:
     print ("Database module not found")
-import Queue
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
 # sys.path.append('/opt/robocomp/lib')
@@ -48,6 +47,8 @@ import Queue
 # import librobocomp_innermodel
 
 FILE_PATH = os.path.abspath(__file__)
+CURRENT_PATH = os.path.dirname(__file__)
+
 print(FILE_PATH)
 # DATABASE_PATH = "resources/users_db.sqlite"
 USERS_FILE_PATH = "src/passwords.json"
@@ -89,9 +90,8 @@ class Session():
         self.wonGames = 0
         self.lostGames = 0
 
-    def add_player(self, player):
-        self.patient = player
-
+    def save_session(self):
+        pass
 
 class Game():
     def __init__(self):
@@ -232,7 +232,7 @@ class SpecificWorker(GenericWorker):
         self.ui = loader.load(file, self.parent())
         file.close()
 
-        self.ui.stackedWidget.setCurrentIndex(2)  # Poner a 0
+        self.ui.stackedWidget.setCurrentIndex(0)  # Poner a 0
 
         ##Menu
         self.mainMenu = self.menuBar()
@@ -352,7 +352,7 @@ class SpecificWorker(GenericWorker):
         else:
             self.ui.stackedWidget.setCurrentIndex(4)
 
-            self.currentSession.add_player(player)
+            self.currentSession.patient = player
             self.admingame_proxy.adminStartSession(player)
             QMessageBox().information(self.focusWidget(), 'Info',
                                       'Coloque la mano del paciente sobre la mesa. Cuando se haya detectado correctamente podrá empezar el juego',
@@ -570,7 +570,7 @@ class SpecificWorker(GenericWorker):
 
     def metricsObtained(self, m):
         if self.currentGame.date is not None:
-            self.aux_currentDate =datetime.strptime( m.currentDate, "%Y-%m-%dT%H:%M:%S.%f")
+            self.aux_currentDate = datetime.strptime( m.currentDate, "%Y-%m-%dT%H:%M:%S.%f")
             self.currentGame.timePlayed = (self.aux_currentDate - self.currentGame.date).total_seconds() * 1000
             self.currentGame.touched = m.numScreenTouched
             self.currentGame.distance = 666 #calcular mas adelante
@@ -719,6 +719,7 @@ class SpecificWorker(GenericWorker):
         self.ui.end_session_button.setEnabled(True);
 
         self.aux_datePaused = None
+
         self.ui.num_screentouched_label.setText(str(0))
         self.ui.num_closedhand_label.setText(str(0))
         self.ui.timeplayed_label.setText(str(0))
@@ -727,7 +728,7 @@ class SpecificWorker(GenericWorker):
         self.ui.distance_label.setText(str(0))
         self.ui.num_hits_label.setText(str(0))
         self.ui.num_fails_label.setText(str(0))
-
+        self.ui.date_label.setText("-")
 
         self.currentGame = Game()
 
@@ -736,7 +737,7 @@ class SpecificWorker(GenericWorker):
         pass
 
     def updateUI(self,statusChange):
-        self.ui.date_label.setText(self.aux_currentDate.strftime("%c"))
+        self.ui.date_label.setText(self.currentGame.date.strftime("%c"))
 
         if statusChange:
             self.ui.status_label.setText(self.aux_currentStatus)
@@ -746,8 +747,8 @@ class SpecificWorker(GenericWorker):
             self.ui.num_closedhand_label.setText(str(self.currentGame.handClosed))
             self.ui.num_helps_label.setText(str(self.currentGame.helps))
             self.ui.num_checks_label.setText(str(self.currentGame.checks))
-            self.ui.timeplayed_label.setText(str(self.currentGame.timePlayed))
-            self.ui.distance_label.setText( str(self.currentGame.distance))
+            self.ui.timeplayed_label.setText(str("{:.2f}".format(self.currentGame.timePlayed/1000)) + " s")
+            self.ui.distance_label.setText( str(self.currentGame.distance) + " mm")
             self.ui.num_hits_label.setText( str(self.currentGame.hits))
             self.ui.num_fails_label.setText(str(self.currentGame.fails))
 

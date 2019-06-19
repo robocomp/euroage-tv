@@ -84,11 +84,9 @@ class Session():
         self.patient = None
         self.totaltime = 0
         self.games = []
-        self.totalTouched = 0
+        self.numGames = 0
         self.totalHelps = 0
         self.totalChecks = 0
-        self.totalHits = 0
-        self.totalFails = 0
         self.wonGames = 0
         self.lostGames = 0
 
@@ -111,6 +109,16 @@ class Session():
 
             for game in self.games:
                 game.save_game(date_dir)
+
+            rows = [['tiempo total',  'num juegos', 'num ayudas', 'num comprobaciones',  'juegos ganados', 'juegos perdidos'],
+                    [self.totaltime, len(self.games),  self.totalHelps, self.totalChecks, self.wonGames, self.lostGames ]]
+
+            filename = os.path.join(date_dir, "resumeSession"+ ".csv")
+
+            with open(filename, 'w') as csvFile:
+                writer = csv.writer(csvFile)
+                writer.writerows(rows)
+            csvFile.close()
 
 
 class Game():
@@ -622,7 +630,6 @@ class SpecificWorker(GenericWorker):
         state_name = str(s.currentStatus.name)
         self.aux_currentStatus = state_name
         self.aux_currentDate = datetime.strptime(s.date, "%Y-%m-%dT%H:%M:%S.%f")
-        print self.aux_currentStatus
 
         self.updateUISig.emit(True)
 
@@ -657,7 +664,9 @@ class SpecificWorker(GenericWorker):
         self.aux_datePaused = currenttime
 
         self.ui.continue_game_button.setEnabled(True);
+        self.ui.reset_game_button.setEnabled(True);
         self.ui.pause_game_button.setEnabled(False);
+
 
     def state_ready(self):
         self.ui.start_game_button.setEnabled(True);
@@ -681,7 +690,8 @@ class SpecificWorker(GenericWorker):
         self.ui.start_game_button.setEnabled(False);
         self.ui.pause_game_button.setEnabled(True);
         self.ui.finish_game_button.setEnabled(True);
-        self.ui.reset_game_button.setEnabled(True);
+        self.ui.reset_game_button.setEnabled(False);
+        self.ui.reset_game_button.setToolTip("Debe pausar el juego para poder reiniciarlo")
         self.ui.end_session_button.setEnabled(False);  # No se puede finalizar la sesion si hay un juego en marcha
 
         if self.currentGame.date is None:
@@ -761,11 +771,16 @@ class SpecificWorker(GenericWorker):
         self.currentGame = Game()
 
     def compute_session_metrics(self):
-        # Recorrer todos los juegos y completar las metricas de la sesion
-        pass
+        for game in self.currentSession.games:
+            self.currentSession.totalHelps += game.helps
+            self.currentSession.totalChecks += game.checks
+            if game.gameWon:
+                self.currentSession.wonGames += 1
+            else:
+                self.currentSession.lostGames += 1
+
 
     def updateUI(self, statusChange):
-        print "update ui", statusChange
         self.ui.date_label.setText(self.currentGame.date.strftime("%c"))
 
         self.ui.status_label.setText(self.aux_currentStatus)

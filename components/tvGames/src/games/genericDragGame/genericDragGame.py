@@ -160,7 +160,9 @@ class GameScreen(QWidget):
 		pass
 
 	def end_game(self):
+		result = False
 		if self._game_frame.check_win():
+			result = True
 			self.end_message.setText(u"<font color='green'>¡Has ganado!</font>")
 			index = randint(0, len(WINNING_SOUNDS))
 			file = WINNING_SOUNDS[index]
@@ -172,6 +174,7 @@ class GameScreen(QWidget):
 			subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
 		self._game_frame.end_game()
 		self._main_layout.setCurrentIndex(1)
+		return result
 
 
 	def init_game(self, path):

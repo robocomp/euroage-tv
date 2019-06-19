@@ -1,18 +1,21 @@
 game_machine{
-    states session_init, game_start_wait, game_init, game_loop, game_pause, game_won, game_lost;
+    states session_init, game_start_wait, game_init, game_loop, game_pause, game_reset, game_end, game_won, game_lost;
     initial_state session_start_wait;
     end_state session_end;
     transitions{
-    session_start_wait => session_init;
-    session_init => game_start_wait;
-    game_start_wait => game_init;
-    game_init => game_loop;
-    game_loop => game_pause, game_won, game_lost;
-    game_won => game_init;
-    game_won => session_end;
-    game_lost => session_end;
-    game_pause => session_end;
-    game_loop => session_end;
+        session_start_wait => session_init;
+        session_init => game_start_wait;
+        game_start_wait => game_init;
+        game_start_wait => session_end;
+        game_init => game_loop;
+        game_loop => game_pause, game_won, game_lost, game_end;
+        game_won => game_start_wait;
+        game_lost => game_start_wait;
+        game_pause => game_loop;
+        game_pause => game_reset;
+        game_end => game_lost;
+        game_end => game_won;
+        game_reset => game_start_wait;
     };
 };
 
@@ -21,9 +24,9 @@ game_machine{
     states player_acquisition_loop;
     end_state player_acquisition_ended;
     transitions{
-	player_acquisition_init => player_acquisition_loop;
-	player_acquisition_loop => player_acquisition_loop;
-	player_acquisition_loop => player_acquisition_ended;
+        player_acquisition_init => player_acquisition_loop;
+        player_acquisition_loop => player_acquisition_loop;
+        player_acquisition_loop => player_acquisition_ended;
     };
 };
 

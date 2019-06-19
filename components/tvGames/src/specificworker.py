@@ -178,7 +178,7 @@ class SpecificWorker(GenericWorker):
 		self._game_metrics = GameMetrics()
 
 		# TODO: Testing only. Remove
-		self.adminStartSession("Juan Lopez")
+		# self.adminStartSession("Juan Lopez")
 
 		self.tv_image.show_on_second_screen()
 
@@ -245,7 +245,7 @@ class SpecificWorker(GenericWorker):
 		return True
 
 
-# =============== Slots funtion State Machine =======================
+# =============== Slots methods for State Machine ===================
 # ===================================================================
 	#
 	# sm_session_start_wait
@@ -253,7 +253,22 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_session_start_wait(self):
 		print("Entered state session_start_wait")
-		self.session_start_waittosession_init.emit()
+
+		# TODO: Test only. Remove on production
+		# self.session_start_waittosession_init.emit()
+
+	#
+	# sm_game_end
+	#
+	@QtCore.Slot()
+	def sm_game_end(self):
+		print("Entered state game_end")
+		won = self._game.end_game()
+		if won:
+			self.game_endtogame_won.emit()
+		else:
+			self.game_endtogame_lost.emit()
+
 
 	#
 	# sm_game_init
@@ -265,9 +280,9 @@ class SpecificWorker(GenericWorker):
 		# TODO: Test only. Remove on production
 		self._current_game_name = "Prepara la tortilla"
 
+		self._game = None
 		self.update_game_selection()
 		self._game.show()
-		print StatusType.waiting
 		self.send_status_change(StatusType.ready)
 		self.game_inittogame_loop.emit()
 
@@ -299,6 +314,16 @@ class SpecificWorker(GenericWorker):
 		pass
 
 	#
+	# sm_game_reset
+	#
+	@QtCore.Slot()
+	def sm_game_reset(self):
+		print("Entered state game_reset")
+		self._game.hide()
+		self.game_resettogame_start_wait.emit()
+		pass
+
+	#
 	# sm_game_start_wait
 	#
 	@QtCore.Slot()
@@ -306,7 +331,9 @@ class SpecificWorker(GenericWorker):
 		print("Entered state game_start_wait")
 
 		# TODO: Test only. Remove on production
-		self.game_start_waittogame_init.emit()
+		# self.game_start_waittogame_init.emit()
+
+		self.send_status_change(StatusType.ready)
 
 
 
@@ -326,7 +353,7 @@ class SpecificWorker(GenericWorker):
 	def sm_session_init(self):
 		print("Entered state session_init")
 		self.send_status_change(StatusType.initializing)
-
+		self.session_inittogame_start_wait.emit()
 
 	
 
@@ -375,7 +402,7 @@ class SpecificWorker(GenericWorker):
 		self._player_adquisition_loop_timer.stop()
 		self._player_adquisition_loop_timer = None
 		# TODO: Testing only. remove on production
-		self.session_inittogame_start_wait.emit()
+		# self.session_inittogame_start_wait.emit()
 
 
 # =================================================================
@@ -398,162 +425,162 @@ class SpecificWorker(GenericWorker):
 
 
 	# TODO: DEPRECATED. Moved to state machine logic. Check and remove.
-	@QtCore.Slot()
-	def compute(self):
-
-		testing = Status()
-		testing.currentStatus = StatusType.initializing
-		testing.date = datetime.now().strftime("%c")
-		self.gamemetrics_proxy.statusChanged(testing)
-		print("Sending metrics")
-
-		start = time.time()
-		if self._current_state == "starting":
-			self._current_state = "waiting_login"
-		# 	self.login_widget.setWindowTitle("Ingrese usuario")
-		# 	self.login_widget.show()
-		# elif self.current_state == "waiting_login":
-		# 	self.admin_interface.statusBar().showMessage("Waiting login")
-		# elif self.current_state == "calibrating":
-		# 	self.tv_image.show_on_second_screen()
-		# 	# self.calibration_image = cv2.resize(self.calibration_image, None,
-		# 	# 									fx=(self.calibration_image.shape[0] / self.tv_image.height()),
-		# 	# 									fy=(self.calibration_image.shape[1] / self.tv_image.width()),
-		# 	# 									interpolation=cv2.INTER_CUBIC)
-		# 	self.admin_interface.statusBar().showMessage(
-		# 		"State: Calibrating. Calibrating state %d" % self.calibrator.state)
-		# 	# TODO: Not working very well on the new big screen
-		# 	# tags = self.getapriltags_proxy.checkMarcas()
-		# 	# calibration_ended = self.calibrator.update(tags)
-		#
-		# 	####################### TO TEST
-		# 	color, depth, points, _, _ = self.rgbd_proxy.getImage()
-		# 	color, depth, _, _ = self.rgbd_proxy.getData()
-		# 	frame = np.fromstring(color, dtype=np.uint8)
-		# 	color_image = frame.reshape(480, 640, 3)
-		# 	depth = np.ascontiguousarray(depth, dtype=np.uint8)
-		# 	depth_gray_image = depth.reshape(480, 640)
-		# 	color_image = cv2.flip(color_image, 0)
-		# 	self._admin_image = color_image.copy()
-		# 	self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
-		# 	calibration_ended = self.calibrator.update()
-		# 	self._mouse_release_point = None
-		# 	###################
-		# 	if calibration_ended:
-		# 		self.current_state = "game_getting_player"
-		# 	# self._game2.set_frame(self.calibrator._screen_points)
-		# 	self.tv_image.set_opencv_image(self.calibrator.image, False)
-		# 	# if self.debug:
-		# 	# 	self._admin_image = self.calibration_image.copy()
-		# 	# 	cv2.imshow("DEBUG: tvGame: camera view", self._admin_image)
-		# 	self.admin_interface.update_admin_image(self._admin_image)
-		# 	cv2.waitKey(1)
-		elif "init_session" in self._current_state:
-			for player in self._current_players:
-				if player.tracked is False:
-					self.obtain_player_id(player)
-		elif "game" in self._current_state:
-			# try:
-			# 	# image = self.camerasimple_proxy.getImage()
-			# 	# frame = np.fromstring(image.image, dtype=np.uint8)
-			# 	# frame = frame.reshape(image.width, image.height, image.depth)
-			#
-			# 	color, depth, _, _ = self.rgbd_proxy.getData()
-			# 	frame = np.fromstring(color, dtype=np.uint8)
-			# 	color_image = frame.reshape(480, 640, 3)
-			# 	depth = np.array(depth, dtype=np.uint8)
-			# 	depth_gray_image = depth.reshape(480, 640)
-			# except Ice.Exception, e:
-			# 	traceback.print_exc()
-			# 	print (e)
-			# 	return False
-			# depth_gray_image = cv2.flip(depth_gray_image, 0)
-			# color_image = cv2.flip(color_image, 0)
-			# self._admin_image = color_image.copy()
-			# self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
-			# # self._admin_image = imutils.resize(self._admin_image, width=640)
-			# self.screen_1_factor = self.screen_1_height / float(color_image.shape[0])
-			#
-			# # self.tv_canvas = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
-			# # 						interpolation=cv2.INTER_CUBIC)
-			if self._current_state == "game_getting_player":
-				initialicing_status = Status()
-				initialicing_status.currentStatus = StatusType.initializing
-				initialicing_status.date = datetime.now().strftime("%c")
-				self.gamemetrics_proxy.statusChanged(initialicing_status)
-				self.tv_image.show_on_second_screen()
-				if len(self._current_players) >0:
-					if self.debug:
-						print("Waiting to get %s players" % (len(self._current_players)))
-					try:
-						current_hand_count = self.handdetection_proxy.getHandsCount()
-
-						if current_hand_count < len(self._current_players):
-							try:
-								search_roi_class = TRoi()
-								search_roi_class.y = 480 / 2 - 100
-								search_roi_class.x = 640 / 2 - 100
-								search_roi_class.w = 200
-								search_roi_class.h = 200
-								search_roi = (
-									search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
-
-								blank_image = np.zeros((480,640,1), np.uint8)
-								# self._admin_image = self.draw_initial_masked_frame(color_image, search_roi)
-								game_image = self.draw_initial_masked_frame(blank_image , search_roi, )
-								game_image = cv2.resize(game_image, None, fx=self.screen_factor,
-														fy=self.screen_factor,
-														interpolation=cv2.INTER_CUBIC)
-								self.tv_image.set_opencv_image(game_image, False)
-								# self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands,
-								# 														  search_roi_class)
-								self.handdetection_proxy.addNewHand(self.expected_hands, search_roi_class)
-							except Ice.Exception, e:
-								traceback.print_exc()
-								print e
-
-						elif current_hand_count == self.expected_hands and self.expected_hands > 0:
-							self._current_state = "game_tracking"
-							self.reset_game()
-							self._game.show()
-							self.tv_image.hide()
-					except Ice.Exception, e:
-						traceback.print_exc()
-						print e
-				else:
-					image = self.tv_image.get_raw_image()
-					image[:] = (255, 255, 255)
-					# TODO: the size of the string would be substracted
-					image = cv2.putText(image, "ADD NEW PLAYERS", (self.screen_1_width / 2, self.screen_1_height / 2),
-										self.font, 1, [0, 0, 0], 2)
-					self.tv_image.set_opencv_image(image, False)
-			elif self._current_state == "game_tracking":
-				try:
-					self.hands = self.handdetection_proxy.getHands()
-					if len(self.hands) < self.expected_hands:
-						self.admin_interface.statusBar().showMessage("Hand Lost. recovering hand")
-						self._current_state = "game_getting_player"
-						self.hand_track = []
-						self._game.hide()
-						self.tv_image.show()
-						return
-					if self.debug:
-						self.admin_interface.statusBar().showMessage("Debug: Traking %d hands" % (len(self.hands)))
-					# TODO: It would be configurable from a file and dynamic
-					self.paint_game()
-				except Ice.Exception, e:
-					traceback.print_exc()
-					print e
-			# if self.debug:
-			self._admin_image = cv2.warpPerspective(self._admin_image, self.calibrator.homography,
-													(self.screen_1_width, self.screen_1_height))
-			# self.admin_interface.update_admin_image(self._admin_image)
-			cv2.waitKey(1)
-			# print "SpecificWorker.compute... in state %s with %d hands" % (self.current_state, len(self.hands))
-
-			return True
-		elif self._current_state == "quitting":
-			exit(0)
+	# @QtCore.Slot()
+	# def compute(self):
+	#
+	# 	testing = Status()
+	# 	testing.currentStatus = StatusType.initializing
+	# 	testing.date = datetime.now().strftime("%c")
+	# 	self.gamemetrics_proxy.statusChanged(testing)
+	# 	print("Sending metrics")
+	#
+	# 	start = time.time()
+	# 	if self._current_state == "starting":
+	# 		self._current_state = "waiting_login"
+	# 	# 	self.login_widget.setWindowTitle("Ingrese usuario")
+	# 	# 	self.login_widget.show()
+	# 	# elif self.current_state == "waiting_login":
+	# 	# 	self.admin_interface.statusBar().showMessage("Waiting login")
+	# 	# elif self.current_state == "calibrating":
+	# 	# 	self.tv_image.show_on_second_screen()
+	# 	# 	# self.calibration_image = cv2.resize(self.calibration_image, None,
+	# 	# 	# 									fx=(self.calibration_image.shape[0] / self.tv_image.height()),
+	# 	# 	# 									fy=(self.calibration_image.shape[1] / self.tv_image.width()),
+	# 	# 	# 									interpolation=cv2.INTER_CUBIC)
+	# 	# 	self.admin_interface.statusBar().showMessage(
+	# 	# 		"State: Calibrating. Calibrating state %d" % self.calibrator.state)
+	# 	# 	# TODO: Not working very well on the new big screen
+	# 	# 	# tags = self.getapriltags_proxy.checkMarcas()
+	# 	# 	# calibration_ended = self.calibrator.update(tags)
+	# 	#
+	# 	# 	####################### TO TEST
+	# 	# 	color, depth, points, _, _ = self.rgbd_proxy.getImage()
+	# 	# 	color, depth, _, _ = self.rgbd_proxy.getData()
+	# 	# 	frame = np.fromstring(color, dtype=np.uint8)
+	# 	# 	color_image = frame.reshape(480, 640, 3)
+	# 	# 	depth = np.ascontiguousarray(depth, dtype=np.uint8)
+	# 	# 	depth_gray_image = depth.reshape(480, 640)
+	# 	# 	color_image = cv2.flip(color_image, 0)
+	# 	# 	self._admin_image = color_image.copy()
+	# 	# 	self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
+	# 	# 	calibration_ended = self.calibrator.update()
+	# 	# 	self._mouse_release_point = None
+	# 	# 	###################
+	# 	# 	if calibration_ended:
+	# 	# 		self.current_state = "game_getting_player"
+	# 	# 	# self._game2.set_frame(self.calibrator._screen_points)
+	# 	# 	self.tv_image.set_opencv_image(self.calibrator.image, False)
+	# 	# 	# if self.debug:
+	# 	# 	# 	self._admin_image = self.calibration_image.copy()
+	# 	# 	# 	cv2.imshow("DEBUG: tvGame: camera view", self._admin_image)
+	# 	# 	self.admin_interface.update_admin_image(self._admin_image)
+	# 	# 	cv2.waitKey(1)
+	# 	elif "init_session" in self._current_state:
+	# 		for player in self._current_players:
+	# 			if player.tracked is False:
+	# 				self.obtain_player_id(player)
+	# 	elif "game" in self._current_state:
+	# 		# try:
+	# 		# 	# image = self.camerasimple_proxy.getImage()
+	# 		# 	# frame = np.fromstring(image.image, dtype=np.uint8)
+	# 		# 	# frame = frame.reshape(image.width, image.height, image.depth)
+	# 		#
+	# 		# 	color, depth, _, _ = self.rgbd_proxy.getData()
+	# 		# 	frame = np.fromstring(color, dtype=np.uint8)
+	# 		# 	color_image = frame.reshape(480, 640, 3)
+	# 		# 	depth = np.array(depth, dtype=np.uint8)
+	# 		# 	depth_gray_image = depth.reshape(480, 640)
+	# 		# except Ice.Exception, e:
+	# 		# 	traceback.print_exc()
+	# 		# 	print (e)
+	# 		# 	return False
+	# 		# depth_gray_image = cv2.flip(depth_gray_image, 0)
+	# 		# color_image = cv2.flip(color_image, 0)
+	# 		# self._admin_image = color_image.copy()
+	# 		# self._admin_image = cv2.cvtColor(self._admin_image, cv2.COLOR_BGR2RGB)
+	# 		# # self._admin_image = imutils.resize(self._admin_image, width=640)
+	# 		# self.screen_1_factor = self.screen_1_height / float(color_image.shape[0])
+	# 		#
+	# 		# # self.tv_canvas = cv2.resize(self.tv_canvas, None, fx=self.screen_factor, fy=self.screen_factor,
+	# 		# # 						interpolation=cv2.INTER_CUBIC)
+	# 		if self._current_state == "game_getting_player":
+	# 			initialicing_status = Status()
+	# 			initialicing_status.currentStatus = StatusType.initializing
+	# 			initialicing_status.date = datetime.now().strftime("%c")
+	# 			self.gamemetrics_proxy.statusChanged(initialicing_status)
+	# 			self.tv_image.show_on_second_screen()
+	# 			if len(self._current_players) >0:
+	# 				if self.debug:
+	# 					print("Waiting to get %s players" % (len(self._current_players)))
+	# 				try:
+	# 					current_hand_count = self.handdetection_proxy.getHandsCount()
+	#
+	# 					if current_hand_count < len(self._current_players):
+	# 						try:
+	# 							search_roi_class = TRoi()
+	# 							search_roi_class.y = 480 / 2 - 100
+	# 							search_roi_class.x = 640 / 2 - 100
+	# 							search_roi_class.w = 200
+	# 							search_roi_class.h = 200
+	# 							search_roi = (
+	# 								search_roi_class.x, search_roi_class.y, search_roi_class.h, search_roi_class.w)
+	#
+	# 							blank_image = np.zeros((480,640,1), np.uint8)
+	# 							# self._admin_image = self.draw_initial_masked_frame(color_image, search_roi)
+	# 							game_image = self.draw_initial_masked_frame(blank_image , search_roi, )
+	# 							game_image = cv2.resize(game_image, None, fx=self.screen_factor,
+	# 													fy=self.screen_factor,
+	# 													interpolation=cv2.INTER_CUBIC)
+	# 							self.tv_image.set_opencv_image(game_image, False)
+	# 							# self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands,
+	# 							# 														  search_roi_class)
+	# 							self.handdetection_proxy.addNewHand(self.expected_hands, search_roi_class)
+	# 						except Ice.Exception, e:
+	# 							traceback.print_exc()
+	# 							print e
+	#
+	# 					elif current_hand_count == self.expected_hands and self.expected_hands > 0:
+	# 						self._current_state = "game_tracking"
+	# 						self.reset_game()
+	# 						self._game.show()
+	# 						self.tv_image.hide()
+	# 				except Ice.Exception, e:
+	# 					traceback.print_exc()
+	# 					print e
+	# 			else:
+	# 				image = self.tv_image.get_raw_image()
+	# 				image[:] = (255, 255, 255)
+	# 				# TODO: the size of the string would be substracted
+	# 				image = cv2.putText(image, "ADD NEW PLAYERS", (self.screen_1_width / 2, self.screen_1_height / 2),
+	# 									self.font, 1, [0, 0, 0], 2)
+	# 				self.tv_image.set_opencv_image(image, False)
+	# 		elif self._current_state == "game_tracking":
+	# 			try:
+	# 				self.hands = self.handdetection_proxy.getHands()
+	# 				if len(self.hands) < self.expected_hands:
+	# 					self.admin_interface.statusBar().showMessage("Hand Lost. recovering hand")
+	# 					self._current_state = "game_getting_player"
+	# 					self.hand_track = []
+	# 					self._game.hide()
+	# 					self.tv_image.show()
+	# 					return
+	# 				if self.debug:
+	# 					self.admin_interface.statusBar().showMessage("Debug: Traking %d hands" % (len(self.hands)))
+	# 				# TODO: It would be configurable from a file and dynamic
+	# 				self.paint_game()
+	# 			except Ice.Exception, e:
+	# 				traceback.print_exc()
+	# 				print e
+	# 		# if self.debug:
+	# 		self._admin_image = cv2.warpPerspective(self._admin_image, self.calibrator.homography,
+	# 												(self.screen_1_width, self.screen_1_height))
+	# 		# self.admin_interface.update_admin_image(self._admin_image)
+	# 		cv2.waitKey(1)
+	# 		# print "SpecificWorker.compute... in state %s with %d hands" % (self.current_state, len(self.hands))
+	#
+	# 		return True
+	# 	elif self._current_state == "quitting":
+	# 		exit(0)
 
 	def obtain_player_id(self, player):
 		if len(self._current_players) > 0:
@@ -728,29 +755,37 @@ class SpecificWorker(GenericWorker):
 # ===================================================================
 
 	#
-	# adminContinue
+	# adminPauseGame
 	#
-	def adminContinue(self):
-		print("adminContinue")
-		pass
+	def adminPauseGame(self):
+		print("adminPauseGame")
+		self.game_looptogame_pause.emit()
+
 
 	#
-	# adminReset
+	# adminResetGame
 	#
-	def adminReset(self):
-		print("adminReset")
+	def adminResetGame(self):
+		print("adminResetGame")
 		# self.reset_game()
-
+		self.game_pausetogame_reset.emit()
 		pass
 
 	#
 	# adminStartGame
 	#
 	def adminStartGame(self, game):
-		#
-		#implementCODE
-		#
+		print("adminStartGame")
 		self.game_start_waittogame_init.emit()
+		pass
+
+
+	#
+	# adminContinueGame
+	#
+	def adminContinueGame(self):
+		print("adminContinueGame")
+		self.game_pausetogame_loop.emit()
 		pass
 
 
@@ -758,35 +793,31 @@ class SpecificWorker(GenericWorker):
 	# adminEndSession
 	#
 	def adminEndSession(self):
-		#
-		# implementCODE
-		#
+		print("adminEndSession")
+		self.game_start_waittosession_end.emit()
 		pass
-
-
-	#
-	# adminPause
-	#
-	def adminPause(self):
-		print("adminPause")
 
 
 	#
 	# adminStartSession
 	#
 	def adminStartSession(self, player):
+		print("Received adminStartSession")
 		new_player = Player()
 		new_player.id = -1
 		new_player.name = player
 		new_player.tracked = False
 		self._current_players.append(new_player)
 		self._current_state = "init_session"
+		self.session_start_waittosession_init.emit()
 
 	#
-	# adminStop
+	# adminStopGame
 	#
-	def adminStop(self):
-		print("adminStop")
+	def adminStopGame(self):
+		print("adminStopGame")
+		# TODO: transitio to check result state (need to be created)
+		self.game_looptogame_end.emit()
 
 
 
@@ -916,5 +947,5 @@ class SpecificWorker(GenericWorker):
 	def send_status_change(self, status_type):
 		initialicing_status = Status()
 		initialicing_status.currentStatus = status_type
-		initialicing_status.date = datetime.now().strftime("%c")
+		initialicing_status.date = datetime.now().isoformat()
 		self.gamemetrics_proxy.statusChanged(initialicing_status)

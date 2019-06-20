@@ -1,0 +1,20 @@
+admin_machine{
+    states create_user, session_init, create_player, wait_ready, admin_games, wait_play, playing, paused, game_end;
+    initial_state user_login;
+    end_state session_end;
+    transitions{
+        user_login => create_user,session_init;
+        create_user => user_login;
+        session_init => create_player, wait_ready;
+        create_player => sesion_init;
+        wait_ready => admin_games;
+        admin_games => wait_play, session_end;
+        wait_play => playing, session_end;
+        playing => paused, game_end;
+        paused => wait_play, playing, game_end;
+        game_end => admin_games;
+       
+    };
+};
+
+

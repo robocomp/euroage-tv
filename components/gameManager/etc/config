@@ -1,9 +1,9 @@
 # Endpoints for subscriptions
-GameMetricsTopic.Endpoints=tcp -p 0
+GameMetricsTopic.Endpoints=tcp -p 10198
 
 
 # Proxies for required interfaces
-AdminGameProxy = admingame:tcp -h localhost -p 0
+AdminGameProxy = admingame:tcp -h localhost -p 18888
 
 
 

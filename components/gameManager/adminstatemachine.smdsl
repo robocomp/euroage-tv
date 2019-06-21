@@ -6,12 +6,12 @@ admin_machine{
         user_login => create_user,session_init;
         create_user => user_login;
         session_init => create_player, wait_ready;
-        create_player => sesion_init;
+        create_player => session_init;
         wait_ready => admin_games;
         admin_games => wait_play, session_end;
         wait_play => playing, session_end;
         playing => paused, game_end;
-        paused => wait_play, playing, game_end;
+        paused => admin_games, playing, game_end;
         game_end => admin_games;
        
     };

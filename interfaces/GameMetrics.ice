@@ -10,7 +10,7 @@
 #define EUROAGEGAMESMETRICS_ICE
 module EuroAgeGamesMetrics
 {
-	enum StatusType { waiting, initializing, ready, playing, paused, reseted, wongame, lostgame, endsession  };
+	enum StatusType { waitingSession, initializingSession, readySession, waitingGame, playingGame, pausedGame, resetedGame, wonGame, lostGame, endSession  };
 	struct Status
 	{
 		 StatusType currentStatus;

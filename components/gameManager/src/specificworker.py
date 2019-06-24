@@ -21,6 +21,7 @@
 
 import csv
 import json
+import math
 import os
 from datetime import datetime
 from passlib.hash import pbkdf2_sha256
@@ -239,6 +240,8 @@ class SpecificWorker(GenericWorker):
         self.aux_wonGame = False
         self.aux_firtsGameInSession = True
         self.aux_reseted = False
+        self.aux_prevPos = Position()
+        self.aux_firstMetricReceived = True
 
         self.selected_player_incombo = ""
         self.selected_game_inlist = ""
@@ -307,11 +310,11 @@ class SpecificWorker(GenericWorker):
         self.ui.reset_game_button.clicked.connect(self.reset_clicked)
         self.ui.end_session_button.clicked.connect(self.end_session_clicked)
 
-
     def ddbb_status_changed(self, string):
         self.ui.login_status.setText(string)
 
         # Login window functions
+
     def check_login(self):
         print ("[INFO] Checking login ...")
 
@@ -452,7 +455,7 @@ class SpecificWorker(GenericWorker):
         self.ui.games_list.item(new_index).setText(current_text)
         self.ui.games_list.setCurrentRow(new_index)
 
-    #New player
+    # New player
     def create_player(self):
 
         name = unicode(self.ui.name_player_lineedit.text())
@@ -475,10 +478,9 @@ class SpecificWorker(GenericWorker):
         self.ui.selplayer_combobox.setCompleter(completer)
         self.ui.selplayer_combobox.setCurrentIndex(0)
 
-
         self.create_playertosession_init.emit()
 
-    #Game window functions
+    # Game window functions
     def start_clicked(self):
         self.admingame_proxy.adminStartGame(self.currentGame.nameGame)
 
@@ -524,6 +526,7 @@ class SpecificWorker(GenericWorker):
 
         if reply == QMessageBox.Yes:
             self.admingame_proxy.adminEndSession()
+
     def __del__(self):
         print 'SpecificWorker destructor'
 
@@ -595,8 +598,6 @@ class SpecificWorker(GenericWorker):
         self.ui.surname2_player_lineedit.clear()
         self.ui.age_player_lineedit.clear()
 
-
-
     #
     # sm_game_end
     #
@@ -616,6 +617,8 @@ class SpecificWorker(GenericWorker):
 
         self.aux_datePaused = None
         self.aux_wonGame = False
+        self.aux_prevPos = Position()
+        self.aux_firstMetricReceived = True
         self.currentGame = Game()
 
         self.game_endtoadmin_games.emit()
@@ -631,9 +634,6 @@ class SpecificWorker(GenericWorker):
         self.ui.pause_game_button.setEnabled(False);
 
         self.aux_datePaused = self.aux_currentDate
-
-
-
 
     #
     # sm_admin_games
@@ -671,8 +671,6 @@ class SpecificWorker(GenericWorker):
         self.ui.finish_game_button.setEnabled(False);
         self.ui.reset_game_button.setEnabled(False);
 
-
-
     #
     # sm_wait_play
     #
@@ -694,8 +692,6 @@ class SpecificWorker(GenericWorker):
         self.ui.num_fails_label.setText("-")
         self.ui.date_label.setText("-")
 
-
-
     #
     # sm_wait_ready
     #
@@ -711,7 +707,6 @@ class SpecificWorker(GenericWorker):
         self.ui.reset_game_button.setEnabled(False);
         self.ui.end_session_button.setEnabled(False);
 
-
         self.aux_firtsGameInSession = True
 
         QMessageBox().information(self.focusWidget(), 'Info',
@@ -723,6 +718,7 @@ class SpecificWorker(GenericWorker):
         #
         # sm_playing
         #
+
     @QtCore.Slot()
     def sm_playing(self):
         print("Entered state playing")
@@ -779,22 +775,28 @@ class SpecificWorker(GenericWorker):
         if self.currentGame.date is not None:
             self.currentGame.timePlayed = (self.aux_currentDate - self.currentGame.date).total_seconds() * 1000
             self.currentGame.touched = m.numScreenTouched
-            self.currentGame.distance = 666  # calcular mas adelante
             self.currentGame.handClosed = m.numHandClosed
             self.currentGame.helps = m.numHelps
             self.currentGame.checks = m.numChecked
             self.currentGame.hits = m.numHits
             self.currentGame.fails = m.numFails
 
-            self.updateUISig.emit()  # No ha habido cambio de estado
+            if self.aux_firstMetricReceived:
+                self.currentGame.distance = 0
+                self.aux_firstMetricReceived = False
+            else:
+                self.currentGame.distance += self.compute_distance_travelled(m.pos.x,m.pos.y)
+
+            self.aux_prevPos = m.pos
+
+            self.updateUISig.emit()
         else:
             print ("NO se ha iniciado el juego")
-
 
     #
     # statusChanged
     #
-    def statusChanged(self, s): ##Seguir desde aqui- 
+    def statusChanged(self, s):  ##Seguir desde aqui-
         state_name = str(s.currentStatus.name)
         self.aux_currentStatus = state_name
         self.aux_currentDate = datetime.strptime(s.date, "%Y-%m-%dT%H:%M:%S.%f")
@@ -835,6 +837,11 @@ class SpecificWorker(GenericWorker):
             self.admin_gamestosession_end.emit()
             self.wait_playtosession_end.emit()
 
+    def compute_distance_travelled(self, x, y):
+        prev_x = self.aux_prevPos.x
+        prev_y = self.aux_prevPos.y
+        return math.sqrt( ((x-prev_x)**2)+((y-prev_y)**2) )
+
     def compute_session_metrics(self):
         for game in self.currentSession.games:
             self.currentSession.totalHelps += game.helps
@@ -846,14 +853,12 @@ class SpecificWorker(GenericWorker):
 
     def updateUI(self):
         self.ui.date_label.setText(self.currentGame.date.strftime("%c"))
-
         self.ui.status_label.setText(self.aux_currentStatus)
-
         self.ui.num_screentouched_label.setText(str(self.currentGame.touched))
         self.ui.num_closedhand_label.setText(str(self.currentGame.handClosed))
         self.ui.num_helps_label.setText(str(self.currentGame.helps))
         self.ui.num_checks_label.setText(str(self.currentGame.checks))
-        self.ui.timeplayed_label.setText(str("{:.2f}".format(self.currentGame.timePlayed / 1000)) + " s")
-        self.ui.distance_label.setText(str(self.currentGame.distance) + " mm")
+        self.ui.timeplayed_label.setText(str("{:.3f}".format(self.currentGame.timePlayed / 1000)) + " s")
+        self.ui.distance_label.setText(str("{:.3f}".format(self.currentGame.distance)) + " mm")
         self.ui.num_hits_label.setText(str(self.currentGame.hits))
         self.ui.num_fails_label.setText(str(self.currentGame.fails))

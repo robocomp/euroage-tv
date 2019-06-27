@@ -1,5 +1,5 @@
 game_machine{
-    states session_init, game_start_wait, game_init, game_loop, game_pause, game_reset, game_end, game_won, game_lost;
+    states session_init, game_start_wait, game_init, game_loop, game_pause, game_resume, game_reset, game_end, game_won, game_lost;
     initial_state session_start_wait;
     end_state session_end;
     transitions{
@@ -13,6 +13,8 @@ game_machine{
         game_lost => game_start_wait;
         game_pause => game_loop;
         game_pause => game_reset;
+        game_pause => game_resume;
+        game_resume => game_loop;
         game_end => game_lost;
         game_end => game_won;
         game_reset => game_start_wait;

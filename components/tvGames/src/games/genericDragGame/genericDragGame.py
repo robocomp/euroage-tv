@@ -176,6 +176,12 @@ class GameScreen(QWidget):
 		self._main_layout.setCurrentIndex(1)
 		return result
 
+	def pause_game(self):
+		self._top_bar.pause_clock()
+
+	def resume_game(self):
+		self._top_bar.resume_clock()
+
 
 	def init_game(self, path):
 		with open(os.path.join(CURRENT_PATH, path)) as file_path:

@@ -64,6 +64,12 @@ class GameTopBarWidget(QWidget):
     def start_clock(self):
         self._clock.start()
 
+    def pause_clock(self):
+        self._clock.pause()
+
+    def resume_clock(self):
+        self._clock.resume()
+
 
 # def resizeEvent(self, event):
 # 	self._game_scores.setFixedHeight(event.size().height()-20)
@@ -124,6 +130,12 @@ class AnalogClock(QWidget):
     def setColor(self, q_color):
         self.color_clock = q_color
 
+    def pause(self):
+        self._timer.stop()
+
+    def resume(self):
+        self._timer.start(1000)
+
 
 class ClockLabelWidget(QLabel):
     """	Countdown clock shown in a QLabel
@@ -167,6 +179,12 @@ class ClockLabelWidget(QLabel):
     def start(self):
         self._timer.start(1000)
 
+    def pause(self):
+        self._timer.stop()
+
+    def resume(self):
+        self._timer.start(1000)
+
 
 
 class CountDownWidget(QFrame):
@@ -197,6 +215,14 @@ class CountDownWidget(QFrame):
 
     def start(self):
         self._clock_label.start()
+
+    def pause(self):
+        self._clock_label.pause()
+        self._analog_clock.pause()
+
+    def resume(self):
+        self._clock_label.resume()
+        self._analog_clock.resume()
 
 class BullseyeWidget(QWidget):
     """	Just a widget illustration for the bullseye icon

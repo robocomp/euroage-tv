@@ -310,7 +310,7 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_game_pause(self):
 		print("Entered state game_pause")
-		self.send_status_change(StatusType.paused)
+		self._game.pause_game()
 		pass
 
 	#
@@ -322,6 +322,15 @@ class SpecificWorker(GenericWorker):
 		self._game.hide()
 		self.game_resettogame_start_wait.emit()
 		pass
+
+	#
+	# sm_game_resume
+	#
+	@QtCore.Slot()
+	def sm_game_resume(self):
+		print("Entered state game_resume")
+		self._game.resume_game()
+		self.game_resumetogame_loop.emit()
 
 	#
 	# sm_game_start_wait
@@ -771,6 +780,7 @@ class SpecificWorker(GenericWorker):
 		self.game_pausetogame_reset.emit()
 		pass
 
+
 	#
 	# adminStartGame
 	#
@@ -785,8 +795,8 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminContinueGame(self):
 		print("adminContinueGame")
-		self.game_pausetogame_loop.emit()
-		pass
+		self.game_pausetogame_resume.emit()
+
 
 
 	#
@@ -816,8 +826,9 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminStopGame(self):
 		print("adminStopGame")
-		# TODO: transitio to check result state (need to be created)
+		# TODO: transition to check result state (need to be created)
 		self.game_looptogame_end.emit()
+		self.game_pausetogame_end.emit()
 
 
 
@@ -948,4 +959,5 @@ class SpecificWorker(GenericWorker):
 		initialicing_status = Status()
 		initialicing_status.currentStatus = status_type
 		initialicing_status.date = datetime.now().isoformat()
+		print("Sending %s"%str(status_type))
 		self.gamemetrics_proxy.statusChanged(initialicing_status)

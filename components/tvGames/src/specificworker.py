@@ -256,6 +256,8 @@ class SpecificWorker(GenericWorker):
 
 		# TODO: Test only. Remove on production
 		# self.session_start_waittosession_init.emit()
+		self.send_status_change(StatusType.waitingSession)
+
 
 	#
 	# sm_game_end
@@ -268,6 +270,7 @@ class SpecificWorker(GenericWorker):
 			self.game_endtogame_won.emit()
 		else:
 			self.game_endtogame_lost.emit()
+
 
 
 	#
@@ -283,7 +286,6 @@ class SpecificWorker(GenericWorker):
 		self._game = None
 		self.update_game_selection()
 		self._game.show()
-		self.send_status_change(StatusType.ready)
 		self.game_inittogame_loop.emit()
 
 	#
@@ -291,9 +293,11 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_loop(self):
+		self._game_metrics.currentDate = datetime.now().isoformat()
 		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 		print("Entered state game_loop")
-		self.send_status_change(StatusType.playing)
+		self.send_status_change(StatusType.playingGame)
+		QTimer.singleShot(200, self.game_looptogame_loop)
 
 	#
 	# sm_game_lost
@@ -301,8 +305,10 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_game_lost(self):
 		print("Entered state game_lost")
-		self.send_status_change(StatusType.lostgame)
-		pass
+		self.send_status_change(StatusType.lostGame)
+		QTimer.singleShot(3000, self.game_losttogame_start_wait)
+
+
 
 	#
 	# sm_game_pause
@@ -311,7 +317,8 @@ class SpecificWorker(GenericWorker):
 	def sm_game_pause(self):
 		print("Entered state game_pause")
 		self._game.pause_game()
-		pass
+		self.send_status_change(StatusType.pausedGame)
+
 
 	#
 	# sm_game_reset
@@ -341,8 +348,8 @@ class SpecificWorker(GenericWorker):
 
 		# TODO: Test only. Remove on production
 		# self.game_start_waittogame_init.emit()
-
-		self.send_status_change(StatusType.ready)
+		self.send_status_change(StatusType.waitingGame)
+		QTimer.singleShot(200, self.game_start_waittogame_start_wait)
 
 
 
@@ -352,8 +359,9 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_game_won(self):
 		print("Entered state game_won")
-		self.send_status_change(StatusType.wongame)
-		pass
+		self.send_status_change(StatusType.wonGame)
+		QTimer.singleShot(3000, self.game_losttogame_start_wait)
+
 
 	#
 	# sm_session_init
@@ -361,8 +369,7 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_session_init(self):
 		print("Entered state session_init")
-		self.send_status_change(StatusType.initializing)
-		self.session_inittogame_start_wait.emit()
+		self.send_status_change(StatusType.initializingSession)
 
 	
 
@@ -372,7 +379,10 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_session_end(self):
 		print("Entered state session_end")
-		self.send_status_change(StatusType.endsession)
+		self.send_status_change(StatusType.endSession)
+		self._game.pause_game()
+		self._game.hide()
+		self._game = None
 
 	#
 	# sm_player_acquisition_init
@@ -380,10 +390,8 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_player_acquisition_init(self):
 		print("Entered state player_acquisition_init")
-		self._player_adquisition_loop_timer = QTimer()
-		self._player_adquisition_loop_timer.timeout.connect(self.player_acquisition_looptoplayer_acquisition_loop)
 		self.player_acquisition_inittoplayer_acquisition_loop.emit()
-		self._player_adquisition_loop_timer.start(1000/33)
+		self.send_status_change(StatusType.initializingSession)
 
 	#
 	# sm_player_acquisition_loop
@@ -401,6 +409,8 @@ class SpecificWorker(GenericWorker):
 
 		if acquired:
 			self.player_acquisition_looptoplayer_acquisition_ended.emit()
+		else:
+			QTimer.singleShot(1000 / 33, self.player_acquisition_looptoplayer_acquisition_loop)
 
 	#
 	# sm_player_acquisition_ended
@@ -408,10 +418,10 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_player_acquisition_ended(self):
 		print("Entered state player_acquisition_ended")
-		self._player_adquisition_loop_timer.stop()
-		self._player_adquisition_loop_timer = None
+
+		self.send_status_change(StatusType.readySession)
 		# TODO: Testing only. remove on production
-		# self.session_inittogame_start_wait.emit()
+		self.session_inittogame_start_wait.emit()
 
 
 # =================================================================

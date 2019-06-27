@@ -44,126 +44,126 @@ except:
 	print 'SLICE_PATH environment variable was not exported. Using only the default paths'
 	pass
 
-ice_GenericBase = False
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/GenericBase.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GenericBase.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_GenericBase = True
+		ice_AdminGame = True
 		break
-if not ice_GenericBase:
-	print 'Couln\'t load GenericBase'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompGenericBase import *
-ice_TvGames = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/TvGames.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TvGames.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_TvGames = True
+		ice_AdminGame = True
 		break
-if not ice_TvGames:
-	print 'Couln\'t load TvGames'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompTvGames import *
-ice_CameraSimple = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/CameraSimple.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"CameraSimple.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_CameraSimple = True
+		ice_AdminGame = True
 		break
-if not ice_CameraSimple:
-	print 'Couln\'t load CameraSimple'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompCameraSimple import *
-ice_TouchPoints = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/TouchPoints.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TouchPoints.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_TouchPoints = True
+		ice_AdminGame = True
 		break
-if not ice_TouchPoints:
-	print 'Couln\'t load TouchPoints'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompTouchPoints import *
-ice_HandDetection = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/HandDetection.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"HandDetection.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_HandDetection = True
+		ice_AdminGame = True
 		break
-if not ice_HandDetection:
-	print 'Couln\'t load HandDetection'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompHandDetection import *
-ice_JointMotor = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/JointMotor.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"JointMotor.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_JointMotor = True
+		ice_AdminGame = True
 		break
-if not ice_JointMotor:
-	print 'Couln\'t load JointMotor'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompJointMotor import *
-ice_RGBD = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/RGBD.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"RGBD.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_RGBD = True
+		ice_AdminGame = True
 		break
-if not ice_RGBD:
-	print 'Couln\'t load RGBD'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompRGBD import *
-ice_CommonBehavior = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/CommonBehavior.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"CommonBehavior.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_CommonBehavior = True
+		ice_AdminGame = True
 		break
-if not ice_CommonBehavior:
-	print 'Couln\'t load CommonBehavior'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompCommonBehavior import *
-ice_GameMetrics = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/GameMetrics.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GameMetrics.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_GameMetrics = True
+		ice_AdminGame = True
 		break
-if not ice_GameMetrics:
-	print 'Couln\'t load GameMetrics'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from EuroAgeGamesMetrics import *
-ice_GetAprilTags = False
+from EuroAgeGamesAdmin import *
+ice_AdminGame = False
 for p in icePaths:
-	if os.path.isfile(p+'/GetAprilTags.ice'):
+	if os.path.isfile(p+'/AdminGame.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GetAprilTags.ice"
+		wholeStr = preStr+"AdminGame.ice"
 		Ice.loadSlice(wholeStr)
-		ice_GetAprilTags = True
+		ice_AdminGame = True
 		break
-if not ice_GetAprilTags:
-	print 'Couln\'t load GetAprilTags'
+if not ice_AdminGame:
+	print 'Couln\'t load AdminGame'
 	sys.exit(-1)
-from RoboCompGetAprilTags import *
+from EuroAgeGamesAdmin import *
 ice_AdminGame = False
 for p in icePaths:
 	if os.path.isfile(p+'/AdminGame.ice'):
@@ -195,9 +195,11 @@ class GenericWorker(QtWidgets.QWidget):
 #Signals for State Machine
 	session_start_waittosession_init = QtCore.Signal()
 	session_inittogame_start_wait = QtCore.Signal()
+	game_start_waittogame_start_wait = QtCore.Signal()
 	game_start_waittogame_init = QtCore.Signal()
 	game_start_waittosession_end = QtCore.Signal()
 	game_inittogame_loop = QtCore.Signal()
+	game_looptogame_loop = QtCore.Signal()
 	game_looptogame_pause = QtCore.Signal()
 	game_looptogame_won = QtCore.Signal()
 	game_looptogame_lost = QtCore.Signal()
@@ -206,8 +208,13 @@ class GenericWorker(QtWidgets.QWidget):
 	game_losttogame_start_wait = QtCore.Signal()
 	game_pausetogame_loop = QtCore.Signal()
 	game_pausetogame_reset = QtCore.Signal()
+	game_pausetogame_resume = QtCore.Signal()
+	game_pausetogame_end = QtCore.Signal()
+	game_resumetogame_loop = QtCore.Signal()
 	game_endtogame_lost = QtCore.Signal()
 	game_endtogame_won = QtCore.Signal()
+	game_losttogame_start_wait = QtCore.Signal()
+	game_wontogame_start_wait = QtCore.Signal()
 	game_resettogame_start_wait = QtCore.Signal()
 	player_acquisition_inittoplayer_acquisition_loop = QtCore.Signal()
 	player_acquisition_looptoplayer_acquisition_loop = QtCore.Signal()
@@ -241,6 +248,7 @@ class GenericWorker(QtWidgets.QWidget):
 		self.game_init_state = QtCore.QState(self.game_machine)
 		self.game_loop_state = QtCore.QState(self.game_machine)
 		self.game_pause_state = QtCore.QState(self.game_machine)
+		self.game_resume_state = QtCore.QState(self.game_machine)
 		self.game_reset_state = QtCore.QState(self.game_machine)
 		self.game_end_state = QtCore.QState(self.game_machine)
 		self.game_won_state = QtCore.QState(self.game_machine)
@@ -261,9 +269,11 @@ class GenericWorker(QtWidgets.QWidget):
 #Initialization State machine
 		self.session_start_wait_state.addTransition(self.session_start_waittosession_init, self.session_init_state)
 		self.session_init_state.addTransition(self.session_inittogame_start_wait, self.game_start_wait_state)
+		self.game_start_wait_state.addTransition(self.game_start_waittogame_start_wait, self.game_start_wait_state)
 		self.game_start_wait_state.addTransition(self.game_start_waittogame_init, self.game_init_state)
 		self.game_start_wait_state.addTransition(self.game_start_waittosession_end, self.session_end_state)
 		self.game_init_state.addTransition(self.game_inittogame_loop, self.game_loop_state)
+		self.game_loop_state.addTransition(self.game_looptogame_loop, self.game_loop_state)
 		self.game_loop_state.addTransition(self.game_looptogame_pause, self.game_pause_state)
 		self.game_loop_state.addTransition(self.game_looptogame_won, self.game_won_state)
 		self.game_loop_state.addTransition(self.game_looptogame_lost, self.game_lost_state)
@@ -272,8 +282,13 @@ class GenericWorker(QtWidgets.QWidget):
 		self.game_lost_state.addTransition(self.game_losttogame_start_wait, self.game_start_wait_state)
 		self.game_pause_state.addTransition(self.game_pausetogame_loop, self.game_loop_state)
 		self.game_pause_state.addTransition(self.game_pausetogame_reset, self.game_reset_state)
+		self.game_pause_state.addTransition(self.game_pausetogame_resume, self.game_resume_state)
+		self.game_pause_state.addTransition(self.game_pausetogame_end, self.game_end_state)
+		self.game_resume_state.addTransition(self.game_resumetogame_loop, self.game_loop_state)
 		self.game_end_state.addTransition(self.game_endtogame_lost, self.game_lost_state)
 		self.game_end_state.addTransition(self.game_endtogame_won, self.game_won_state)
+		self.game_lost_state.addTransition(self.game_losttogame_start_wait, self.game_start_wait_state)
+		self.game_won_state.addTransition(self.game_wontogame_start_wait, self.game_start_wait_state)
 		self.game_reset_state.addTransition(self.game_resettogame_start_wait, self.game_start_wait_state)
 		self.player_acquisition_init_state.addTransition(self.player_acquisition_inittoplayer_acquisition_loop, self.player_acquisition_loop_state)
 		self.player_acquisition_loop_state.addTransition(self.player_acquisition_looptoplayer_acquisition_loop, self.player_acquisition_loop_state)
@@ -285,6 +300,7 @@ class GenericWorker(QtWidgets.QWidget):
 		self.game_init_state.entered.connect(self.sm_game_init)
 		self.game_loop_state.entered.connect(self.sm_game_loop)
 		self.game_pause_state.entered.connect(self.sm_game_pause)
+		self.game_resume_state.entered.connect(self.sm_game_resume)
 		self.game_reset_state.entered.connect(self.sm_game_reset)
 		self.game_end_state.entered.connect(self.sm_game_end)
 		self.game_won_state.entered.connect(self.sm_game_won)
@@ -324,6 +340,11 @@ class GenericWorker(QtWidgets.QWidget):
 	@QtCore.Slot()
 	def sm_game_pause(self):
 		print "Error: lack sm_game_pause in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_game_resume(self):
+		print "Error: lack sm_game_resume in Specificworker"
 		sys.exit(-1)
 
 	@QtCore.Slot()

@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # Copyright (C) 2019 by YOUR NAME HERE
 #
@@ -78,8 +80,8 @@ except:
 
 
 class GenericWorker(QtWidgets.QMainWindow):
-	kill = QtCore.Signal()
 
+	kill = QtCore.Signal()
 
 	def __init__(self, mprx):
 		super(GenericWorker, self).__init__()
@@ -90,7 +92,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 		self.ui.setupUi(self)
 		self.show()
 
-
+		
 		self.mutex = QtCore.QMutex(QtCore.QMutex.Recursive)
 		self.Period = 30
 		self.timer = QtCore.QTimer(self)

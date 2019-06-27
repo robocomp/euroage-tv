@@ -182,7 +182,7 @@ class SpecificWorker(GenericWorker):
 
 		self.tv_image.show_on_second_screen()
 
-		self.game_machine.start()
+		self.application_machine.start()
 
 	def __del__(self):
 		print 'SpecificWorker destructor'
@@ -247,6 +247,23 @@ class SpecificWorker(GenericWorker):
 
 # =============== Slots methods for State Machine ===================
 # ===================================================================
+	#
+	# sm_game_machine
+	#
+	@QtCore.Slot()
+	def sm_game_machine(self):
+		print("Entered state game_machine")
+		pass
+
+	#
+	# sm_app_end
+	#
+	@QtCore.Slot()
+	def sm_app_end(self):
+		print("Entered state app_end")
+		QApplication.quit()
+		pass
+
 	#
 	# sm_session_start_wait
 	#
@@ -779,6 +796,13 @@ class SpecificWorker(GenericWorker):
 	def adminPauseGame(self):
 		print("adminPauseGame")
 		self.game_looptogame_pause.emit()
+
+	#
+	# adminStopApp
+	#
+	def adminStopApp(self):
+		print("adminStopApp")
+		self.game_machinetoapp_end.emit()
 
 
 	#

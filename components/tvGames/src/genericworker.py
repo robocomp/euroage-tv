@@ -193,6 +193,7 @@ class GenericWorker(QtWidgets.QWidget):
 
 	kill = QtCore.Signal()
 #Signals for State Machine
+	game_machinetoapp_end = QtCore.Signal()
 	session_start_waittosession_init = QtCore.Signal()
 	session_inittogame_start_wait = QtCore.Signal()
 	game_start_waittogame_start_wait = QtCore.Signal()
@@ -242,20 +243,26 @@ class GenericWorker(QtWidgets.QWidget):
 		self.timer = QtCore.QTimer(self)
 
 #State Machine
-		self.game_machine= QtCore.QStateMachine()
-		self.session_init_state = QtCore.QState(self.game_machine)
-		self.game_start_wait_state = QtCore.QState(self.game_machine)
-		self.game_init_state = QtCore.QState(self.game_machine)
-		self.game_loop_state = QtCore.QState(self.game_machine)
-		self.game_pause_state = QtCore.QState(self.game_machine)
-		self.game_resume_state = QtCore.QState(self.game_machine)
-		self.game_reset_state = QtCore.QState(self.game_machine)
-		self.game_end_state = QtCore.QState(self.game_machine)
-		self.game_won_state = QtCore.QState(self.game_machine)
-		self.game_lost_state = QtCore.QState(self.game_machine)
-		self.session_start_wait_state = QtCore.QState(self.game_machine)
+		self.application_machine= QtCore.QStateMachine()
+		self.game_machine_state = QtCore.QState(self.application_machine)
 
-		self.session_end_state = QtCore.QFinalState(self.game_machine)
+		self.app_end_state = QtCore.QFinalState(self.application_machine)
+
+
+
+		self.session_init_state = QtCore.QState(self.game_machine_state)
+		self.game_start_wait_state = QtCore.QState(self.game_machine_state)
+		self.game_init_state = QtCore.QState(self.game_machine_state)
+		self.game_loop_state = QtCore.QState(self.game_machine_state)
+		self.game_pause_state = QtCore.QState(self.game_machine_state)
+		self.game_resume_state = QtCore.QState(self.game_machine_state)
+		self.game_reset_state = QtCore.QState(self.game_machine_state)
+		self.game_end_state = QtCore.QState(self.game_machine_state)
+		self.game_won_state = QtCore.QState(self.game_machine_state)
+		self.game_lost_state = QtCore.QState(self.game_machine_state)
+		self.session_start_wait_state = QtCore.QState(self.game_machine_state)
+
+		self.session_end_state = QtCore.QFinalState(self.game_machine_state)
 
 
 
@@ -267,6 +274,7 @@ class GenericWorker(QtWidgets.QWidget):
 
 #------------------
 #Initialization State machine
+		self.game_machine_state.addTransition(self.game_machinetoapp_end, self.app_end_state)
 		self.session_start_wait_state.addTransition(self.session_start_waittosession_init, self.session_init_state)
 		self.session_init_state.addTransition(self.session_inittogame_start_wait, self.game_start_wait_state)
 		self.game_start_wait_state.addTransition(self.game_start_waittogame_start_wait, self.game_start_wait_state)
@@ -295,6 +303,10 @@ class GenericWorker(QtWidgets.QWidget):
 		self.player_acquisition_loop_state.addTransition(self.player_acquisition_looptoplayer_acquisition_ended, self.player_acquisition_ended_state)
 
 
+		self.game_machine_state.entered.connect(self.sm_game_machine)
+		self.app_end_state.entered.connect(self.sm_app_end)
+		self.session_start_wait_state.entered.connect(self.sm_session_start_wait)
+		self.session_end_state.entered.connect(self.sm_session_end)
 		self.session_init_state.entered.connect(self.sm_session_init)
 		self.game_start_wait_state.entered.connect(self.sm_game_start_wait)
 		self.game_init_state.entered.connect(self.sm_game_init)
@@ -305,18 +317,47 @@ class GenericWorker(QtWidgets.QWidget):
 		self.game_end_state.entered.connect(self.sm_game_end)
 		self.game_won_state.entered.connect(self.sm_game_won)
 		self.game_lost_state.entered.connect(self.sm_game_lost)
-		self.session_start_wait_state.entered.connect(self.sm_session_start_wait)
-		self.session_end_state.entered.connect(self.sm_session_end)
 		self.player_acquisition_init_state.entered.connect(self.sm_player_acquisition_init)
 		self.player_acquisition_ended_state.entered.connect(self.sm_player_acquisition_ended)
 		self.player_acquisition_loop_state.entered.connect(self.sm_player_acquisition_loop)
 
-		self.game_machine.setInitialState(self.session_start_wait_state)
+		self.application_machine.setInitialState(self.game_machine_state)
+		self.game_machine_state.setInitialState(self.session_start_wait_state)
 		self.session_init_state.setInitialState(self.player_acquisition_init_state)
 
 #------------------
 
 #Slots funtion State Machine
+	@QtCore.Slot()
+	def sm_n(self):
+		print "Error: lack sm_n in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_o(self):
+		print "Error: lack sm_o in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_n(self):
+		print "Error: lack sm_n in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_e(self):
+		print "Error: lack sm_e in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_game_machine(self):
+		print "Error: lack sm_game_machine in Specificworker"
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_app_end(self):
+		print "Error: lack sm_app_end in Specificworker"
+		sys.exit(-1)
+
 	@QtCore.Slot()
 	def sm_session_init(self):
 		print "Error: lack sm_session_init in Specificworker"

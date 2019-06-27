@@ -174,6 +174,8 @@ class AdminGameI(AdminGame):
 
 	def adminPauseGame(self, c):
 		return self.worker.adminPauseGame()
+	def adminStopApp(self, c):
+		return self.worker.adminStopApp()
 	def adminResetGame(self, c):
 		return self.worker.adminResetGame()
 	def adminStartGame(self, game, c):

@@ -3,6 +3,9 @@
 import json
 import math
 import numbers
+
+import cv2
+import numpy as np
 import os
 import random
 import subprocess
@@ -312,8 +315,8 @@ class DraggableItem(QGraphicsPixmapItem):
 				newPos.setY(min(rect.bottom(), max(newPos.y(), rect.top())))
 				return newPos
 		return super(DraggableItem, self).itemChange(change, value)
-			
-		
+
+
 	# def paint(self, painter, style, widget):
 	# 	r = self.boundingRect()
 	# 	p = painter.pen()
@@ -441,7 +444,109 @@ class PieceItem(DraggableItem):
 						  aux_image)
 		painter.end()
 
+# Replacement for the PieceItem (working implementation for video piece)
+class QOpencvGraphicsVideoItem(DraggableItem):
+	def __init__(self, id, image_path, video_path, width, height, title, parent=None):
+		super(QOpencvGraphicsVideoItem, self).__init__(id, image_path, width, height, parent)
+		self._video_source = None
+		self._video_path = video_path
+		self._video_frame = None
+		if video_path is not None:
+			self.set_video_path(video_path)
+		self._play_timer = QTimer()
+		self._play_timer.timeout.connect(self.show_next_frame)
+		self._old_image = None
+		self._label = QGraphicsTextItem(self)  # Label
+		self._set_label(title.upper(), "margin:10px; font-weight: bold; font-size: " + str(
+			self.width() / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")  # Nombre
+		self._label.setY(self.height() - 10)  # Posicionar abajo
+		# self._label.setY(-20) # Posicionar arriba
+		self._label.setTextWidth(self.width())
 
+		self._final_destination = None
+		self._current_destination = None
+
+
+
+	@property
+	def final_destination(self):
+		return self._final_destination
+
+	@final_destination.setter
+	def final_destination(self, dest):
+		self._final_destination = dest
+
+	@property
+	def current_destination(self):
+		return self._current_destination
+
+	@current_destination.setter
+	def current_destination(self, new_dest):
+		self._current_destination = new_dest
+
+	def is_set(self):
+		return (self._current_destination is not None)
+
+	@property
+	def clip_path(self):
+		return self._video_path
+
+	@clip_path.setter
+	def clip_path(self, path):
+		self._video_path = path
+
+
+	def set_video_path(self, path):
+		assert os.path.isfile(path), "No valid path provided"
+		self._video_source = cv2.VideoCapture(path)
+		self._video_path = path
+
+	def play(self):
+		self._old_image = self.image_path
+		self._play_timer.start(1000 / 30)
+
+	def show_next_frame(self):
+		if (self._video_source.isOpened() == False):
+			print("Error opening video stream or file")
+			return
+		ret, frame = self._video_source.read()
+		if ret == True:
+			frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+			rows, cols, channels = frame.shape
+			frame_ratio = frame.shape[1] / float(frame.shape[0])
+			image_ratio = self._width / float(self._height)
+			background_size = (int(frame.shape[1] / image_ratio), frame.shape[1], 3)
+			blank_image = np.zeros(background_size, np.uint8)
+			# blank_image[:] = (255, 255, 255)
+			height_offset = int((background_size[0] - frame.shape[0]) / 2)
+			blank_image[height_offset:height_offset + rows, 0:cols] = frame
+			self._video_frame = QImage(blank_image, blank_image.shape[1], blank_image.shape[0], blank_image.shape[1] * 3, QImage.Format_RGB888)
+			self._video_frame = self._video_frame.scaled(self._width, self._height, Qt.KeepAspectRatio)
+			self.image = self._video_frame
+
+		else:
+			self.stop()
+
+	def stop(self):
+		self._play_timer.stop()
+		self.image_path = self._old_image
+		# Re-set the video source for a new playing)
+		self.set_video_path(self._video_path)
+
+	def pause(self):
+		self._play_timer.stop()
+
+	def hide_video(self):
+		self.image_path = self._old_image
+
+	def show_video(self):
+		self.show_next_frame()
+
+	def is_playing(self):
+		return self._play_timer.isActive()
+
+	def _set_label(self, text, style):
+		self._label.setHtml("<div style='"+style+"'><center><p>"+text+"</p></center>")
 
 
 class DestinationItem(QGraphicsRectItem):
@@ -714,9 +819,9 @@ class TakeDragGame(QWidget):
 			print("Removing pointer id %d"%(the_pointer.id))
 			the_pointer.stop()
 			if the_pointer.open_widget.scene():
-			self._scene.removeItem(the_pointer.open_widget)
+				self._scene.removeItem(the_pointer.open_widget)
 			if the_pointer.closed_widget.scene():
-			self._scene.removeItem(the_pointer.closed_widget)
+				self._scene.removeItem(the_pointer.closed_widget)
 			del self._pointers[the_pointer.id]
 
 	def show(self):
@@ -783,16 +888,17 @@ class TakeDragGame(QWidget):
 			else:
 				# check if there is any items unde rthe new pointer position and if it's draggable
 				items = self._scene.items(QPointF(xpos, ypos))
-				if len(items) > 1:
+				print(xpos, ypos, items)
+				if len(items) > 0:
 					for item in items:
-						if isinstance(item, PieceItem):
+						if isinstance(item, QOpencvGraphicsVideoItem):
 							self._pointers[pointer_id].taken = item
 							# Set the Z position of the object take under the pointer Z value
 							self._pointers[pointer_id].taken.setZValue(int(self.game_config["depth"]["mouse"]) - 1)
 							if item.is_playing():
-								item.stop_item()
+								item.stop()
 							else:
-								item.play_item()
+								item.play()
 							break
 		# The pointer is open/ released
 		else:
@@ -935,7 +1041,7 @@ class TakeDragGame(QWidget):
 
 				if "video_path" in item:
 					clip_path = os.path.join(CURRENT_PATH, item["video_path"])
-					new_image = PieceItem(image_id, image_path, clip_path, item["size"][0], item["size"][1], item["title"])
+					new_image = QOpencvGraphicsVideoItem(image_id, image_path, clip_path, item["size"][0], item["size"][1], item["title"])
 				else:
 					new_image = DraggableItem(image_id, image_path, item["size"][0], item["size"][1])
 
@@ -1031,7 +1137,7 @@ def main():
 	app = QApplication(sys.argv)
 	game = GameScreen(1920, 1080)
 	game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/genericDragGame/resources/final_game1/final_game1.json")
-	game.show_on_second_screen()
+	game.showMaximized()
 
 	# main_widget = GameWidget()
 	# main_widget.show_on_second_screen()

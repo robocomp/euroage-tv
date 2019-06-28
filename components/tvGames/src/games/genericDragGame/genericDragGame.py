@@ -689,7 +689,9 @@ class TakeDragGame(QWidget):
 		if the_pointer.id in self._pointers:
 			print("Removing pointer id %d"%(the_pointer.id))
 			the_pointer.stop()
+			if the_pointer.open_widget.scene():
 			self._scene.removeItem(the_pointer.open_widget)
+			if the_pointer.closed_widget.scene():
 			self._scene.removeItem(the_pointer.closed_widget)
 			del self._pointers[the_pointer.id]
 

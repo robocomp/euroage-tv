@@ -242,11 +242,11 @@ class DraggableItem(QGraphicsPixmapItem):
 		self._id = id
 		self._width = width
 		self._height = height
-		self.image_path = image_path
+		self._image_path = None
+		self._image = None
 		self.correct_position = False
-		self.image = QImage(image_path).scaled(width, height, Qt.KeepAspectRatio)
-		self.setPixmap(QPixmap.fromImage(self.image))
 		self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+		self.image_path = image_path
 		# self.setAcceptTouchEvents(True)
 		# self.pixmap().setAttribute(Qt.WA_AcceptTouchEvents)
 
@@ -258,6 +258,28 @@ class DraggableItem(QGraphicsPixmapItem):
 	@id.setter
 	def id(self, id):
 		self._id = id
+
+	@property
+	def image_path(self):
+		return self._image_path
+
+	@image_path.setter
+	def image_path(self, image_path):
+		self._image = QImage(image_path).scaled(self._width, self._height, Qt.KeepAspectRatio)
+		self._width = self._image.width()
+		self._height = self._image.height()
+		self.setPixmap(QPixmap.fromImage(self._image))
+		self._image_path = image_path
+
+	@property
+	def image(self):
+		return self._image
+
+	@image.setter
+	def image(self, image):
+		if image is not None:
+			self._image = image
+			self.setPixmap(QPixmap.fromImage(self._image))
 
 
 	def set_overlay(self, value):
@@ -280,9 +302,11 @@ class DraggableItem(QGraphicsPixmapItem):
 			self.setPixmap(QPixmap.fromImage(self.image))
 
 	def itemChange(self, change, value ):
+		# Check that the piece is kept inside the scene rect
 		if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
 			newPos = value
 			rect = self.scene().sceneRect()
+			# If it doen't it position the piece on a valid position inside the scene rect
 			if not rect.contains(newPos):
 				newPos.setX(min(rect.right(), max(newPos.x(), rect.left())))
 				newPos.setY(min(rect.bottom(), max(newPos.y(), rect.top())))

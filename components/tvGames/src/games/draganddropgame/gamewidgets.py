@@ -1,11 +1,11 @@
 import os
 import sys
-from time import sleep
 
-from PySide2.QtCore import Signal, QTimer, QDateTime, QRectF, Qt, QSize, QPoint, QCoreApplication, QEventLoop
-from PySide2.QtGui import QFont, QColor, QPainter, QPen, QBrush, QPalette, QFontMetrics
-from PySide2.QtWidgets import QLabel, QApplication, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QPushButton, \
-    QStyleOption, QStyle, QSizePolicy, QFrame
+from PySide2.QtCore import QRect, Qt, QSize, QPoint, Signal, QTimer, QTime, QDateTime, QRectF
+from PySide2.QtGui import QBrush, QPen,QPalette, QRegion, QColor, QIcon, QPixmap, QPainter, QFont, QFontMetrics
+from PySide2.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QGraphicsDropShadowEffect, \
+    QHBoxLayout, QStyleOption, QStyle, QSizePolicy, QFrame
+
 
 CURRENT_PATH = os.path.dirname(__file__)
 
@@ -75,19 +75,10 @@ class GameTopBarWidget(QWidget):
 # 	self._game_scores.setFixedHeight(event.size().height()-20)
 
 
-import os
-import sys
-
-from PySide2.QtCore import Signal, QTimer, Qt, QPoint, QTime
-from PySide2.QtGui import QColor, QPainter, QBrush, QPen
-from PySide2.QtWidgets import QApplication, QWidget
-
-hourHand = [QPoint(7, 8),
-            QPoint(-7, 8),
-            QPoint(0, -40)]
-
-
 class AnalogClock(QWidget):
+    HOUR_HAND = [QPoint(7, 8),
+                QPoint(-7, 8),
+                QPoint(0, -40)]
     def __init__(self, parent=None):
         # QWidget.__init__(self, parent=parent)
         super(AnalogClock, self).__init__(parent)
@@ -116,7 +107,7 @@ class AnalogClock(QWidget):
 
         painter.save()
         painter.rotate(-30.0 * time.second())
-        painter.drawConvexPolygon(hourHand)
+        painter.drawConvexPolygon(self.HOUR_HAND)
         painter.restore()
 
         painter.setPen(self.color_clock)
@@ -575,6 +566,83 @@ class GameScoreCircleLabel(QLabel):
 # 		self.setFont(self._font)
 
 
+class CoolButton(QPushButton):
+    def __init__(self,image_path, text="", size=200, offset=20, color=QColor("green"), img=None, parent=None):
+        super(CoolButton, self).__init__(parent)
+        self._size = size
+        self._offset = offset
+        self.setFixedSize(QSize(size, size))
+        self.set_color(color)
+
+        pixmap = QPixmap(image_path).scaled(QSize(size, size))
+        painter = QPainter(pixmap)
+        f = QFont("Arial",size/12, QFont.Bold)
+        painter.setFont(f)
+        font_size = QFontMetrics(f).width(text.upper())
+        painter.drawText(QPoint((size-font_size)/2+2, size*0.8), text.upper())
+        painter.end()
+        icon = QIcon(pixmap)
+
+        self.setIcon(icon)
+        self.setIconSize(pixmap.rect().size())
+
+        # self.setMask(QRegion(QRect(OFFSET/4, OFFSET/4, self._size-OFFSET, self._size-OFFSET), QRegion.Ellipse))
+        self.setMask(
+            QRegion(
+                QRect((self._size - (self._size - self._offset)) / 2, (self._size - (self._size - self._offset)) / 2,
+                      self._size - self._offset, self._size - self._offset),
+                QRegion.Ellipse))
+
+        self.pressed.connect(self._button_pressed)
+        self.released.connect(self._button_released)
+
+        # Shadow
+        self._set_released_shadow()
+
+
+    def set_color(self, color):
+        if isinstance(color, QColor):
+            self.setStyleSheet(
+                "QPushButton:!hover { background-color:" + color.name() + ";  }")
+            self.update()
+        else:
+            raise Exception("color must be a QColor class")
+
+    def _set_pressed_shadow(self):
+        pressed_shadow = QGraphicsDropShadowEffect(self)
+        pressed_shadow.setBlurRadius(10)
+        pressed_shadow.setOffset(2)
+        self.setGraphicsEffect(pressed_shadow)
+        self.update()
+
+    def _set_released_shadow(self):
+        released_shadow = QGraphicsDropShadowEffect(self)
+        released_shadow.setBlurRadius(22)
+        released_shadow.setOffset(10)
+        self.setGraphicsEffect(released_shadow)
+        self.update()
+
+    def _button_pressed(self):
+        self.w, self.h = self.width() - self._offset, self.height() - self._offset
+        self.offset = self._offset / 2
+
+        self.setMask(QRegion(QRect(
+            (self._size - (self.w + self.offset)) / 2,
+            (self._size - (self.h + self.offset)) / 2,
+            self.w + self.offset,
+            self.h + self.offset), QRegion.Ellipse))
+
+        self._set_pressed_shadow()
+
+    def _button_released(self):
+        self.setMask(
+            QRegion(
+                QRect((self._size - (self._size - self._offset)) / 2, (self._size - (self._size - self._offset)) / 2,
+                      self._size - self._offset, self._size - self._offset),
+                QRegion.Ellipse))
+
+        self._set_released_shadow()
+
 class other(QWidget):
     def __init__(self, parent=None):
         super(other, self).__init__(parent)
@@ -589,8 +657,15 @@ class other(QWidget):
         QWidget.paintEvent(self, event)
 
 
+
+
+######################## TESTING FUNCTIONS ########################
+###################################################################
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
 
     # ## COLOR CHANGING PROBLEM
     # main_widget = QWidget()
@@ -615,48 +690,73 @@ if __name__ == '__main__':
     # main_layout.addWidget(other)
     #
     # main_widget.show()
-    # #####
     #
-    # bulleye = BullseyeWidget()
-    # bulleye.setFixedSize(100, 100)
-    # bulleye.setWindowTitle("BULLsEYE")
-    # bulleye.show()
-    # ####
+    ###### Game Name Widget
     #
-    # game_name_widget = GameNameWidget("The name you want")
-    # game_name_widget.show()
+    game_name_widget = GameNameWidget("The name you want")
+    game_name_widget.show()
     #
-    # ####
+    ###### bulleye
     #
-    top_bar = GameTopBarWidget()
-    top_bar.show()
+    bulleye = BullseyeWidget()
+    bulleye.setFixedSize(100, 100)
+    bulleye.setWindowTitle("BULLsEYE")
+    bulleye.show()
     #
-    # ###
+    ###### game scores circle
     #
-    # score_circle = GameScoreCircleLabel(200000)
-    # score_circle.set_colors(QColor("black"), QColor("White"), QColor("Red"))
-    # score_circle.set_border_width(5)
-    # score_circle.setWindowTitle("Score circle")
-    # score_circle.show()
+    score_circle = GameScoreCircleLabel(200000)
+    score_circle.set_colors(QColor("black"), QColor("White"), QColor("Red"))
+    score_circle.set_border_width(5)
+    score_circle.setWindowTitle("Score circle")
+    score_circle.show()
 
-    ######
+    ###### game scores
 
-    # scores = GameScores()
-    # scores.set_score(0, 40000)
-    # scores.set_score(1, 100000000)
-    # scores.show()
+    from PySide2.QtCore import QCoreApplication, QEventLoop
+    from time import sleep
 
-    # for points in range(0,100):
-    # 	if points % 3:
-    # 		scores.set_score(0,points)
-    # 	else:
-    # 		scores.set_score(1, points)
-    # 	QCoreApplication.processEvents(QEventLoop.AllEvents, 100)
-    # 	sleep(1)
+    scores = GameScores()
+    scores.set_score(0, 40000)
+    scores.set_score(1, 100000000)
+    scores.show()
 
-    ######
+    for points in range(0,100):
+        if points % 3:
+            scores.set_score(0,points)
+        else:
+            scores.set_score(1, points)
+        QCoreApplication.processEvents(QEventLoop.AllEvents, 100)
+        sleep(1)
 
+    ###### analog_clock
     analog_clock = AnalogClock()
     analog_clock.show()
+    #
+    #
+    ###### top_bar
+    top_bar = GameTopBarWidget()
+    top_bar.show()
+
+
+    ###### cool button
+    widget = QWidget()
+    text = QLabel()
+    text = QLabel("Hello World")
+    text.setAlignment(Qt.AlignCenter)
+    button = CoolButton(text="AYUDA",
+                        image_path="/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/draganddropgame/resources/button/justQuestion.png")
+    button.set_color(QColor("Orange"))
+    button2 = CoolButton(text="FINALIZAR",
+                         image_path="/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/draganddropgame/resources/button/checked.png")
+    layout_h = QHBoxLayout()
+    layout_h.addWidget(button)
+    layout_h.addWidget(button2)
+
+    layout_v = QVBoxLayout()
+    layout_v.addWidget(text)
+    layout_v.addLayout(layout_h)
+    widget.setLayout(layout_v)
+    widget.show()
 
     sys.exit(app.exec_())

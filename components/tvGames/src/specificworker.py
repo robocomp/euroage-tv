@@ -19,25 +19,20 @@
 #    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
 #
 import json
-import time
 import traceback
 from datetime import datetime
 
 import cv2
-import imutils
 import numpy as np
-from PySide2.QtCore import Slot, Qt, QTimer
+from PySide2.QtCore import Qt, QTimer
 from PySide2.QtWidgets import QApplication
 
-from games.genericDragGame.genericDragGame import GameScreen, TakeDragGame
-from games.PaintGame.PaintGame import PaintGame
+from games.genericDragGame.draganddropgame import GameScreen
 from genericworker import *
 # from modules.AdminInterface import AdminInterface
 from modules.CalibrationStateMachine import ManualCalibrationStateMachine
 from modules.HandMouse import MultiHandMouses
 from modules.QImageWidget import QImageWidget
-from modules.QtLogin import QLoginWidget
-
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
 # sys.path.append('/opt/robocomp/lib')

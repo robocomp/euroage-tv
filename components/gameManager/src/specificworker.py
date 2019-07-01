@@ -881,7 +881,8 @@ class SpecificWorker(GenericWorker):
 				self.currentSession.lostGames += 1
 
 	def updateUI(self):
-		self.ui.date_label.setText(self.currentGame.date.strftime("%c"))
+		if self.currentGame.date is not None:
+			self.ui.date_label.setText(self.currentGame.date.strftime("%c"))
 		self.ui.status_label.setText(self.aux_currentStatus)
 		self.ui.num_screentouched_label.setText(str(self.currentGame.touched))
 		self.ui.num_closedhand_label.setText(str(self.currentGame.handClosed))

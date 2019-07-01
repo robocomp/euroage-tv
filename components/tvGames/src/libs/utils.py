@@ -1,5 +1,11 @@
 import subprocess
-
+try:
+    from termcolor import cprint
+    def printerr(str):
+        cprint(str, color="red")
+except:
+    def printerr(str):
+        print(str)
 
 def get_touchscreen_devide_id():
     try:
@@ -39,13 +45,25 @@ def init_touchscreen_device():
         if result and len(touch_devices):
             touch_device = touch_devices[0]
             try:
-                command_output = subprocess.Popen("xinput --map-to-output %d %s"%(touch_device,hdmi_device),
+                command = "xinput --map-to-output %d %s"%(touch_device,hdmi_device)
+                command_output = subprocess.Popen(command,
                                                   stdout=subprocess.PIPE,
                                                   stderr=subprocess.STDOUT, shell=True)
                 stdout, stderr = command_output.communicate()
-                return stderr == None
+                if stderr == None and "not found" not in stdout:
+                    return True
+                else:
+                    printerr("Problem found while executing command %s" % (command))
+                    return False
             except:
+                printerr("Problem found while executing command %s"%(command) )
                 return False
+        else:
+            printerr("No touch device found. Can't initialice it")
+            return False
+    else:
+        printerr("No HDMI device found. Can't initialice touch screen to any device")
+        return False
 
 
 

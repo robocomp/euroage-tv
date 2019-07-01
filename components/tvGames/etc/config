@@ -15,7 +15,7 @@ RGBDProxy = rgbd:tcp -h localhost -p 10096
 # This property is used by the clients to connect to IceStorm.
 TopicManager.Proxy=IceStorm/TopicManager:default -h localhost -p 9999
 
-games_path=games/genericDragGame/resources/final_game1
+games_path=/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources
 
 Ice.MessageSizeMax=2000480
 Ice.Warn.Connections=0

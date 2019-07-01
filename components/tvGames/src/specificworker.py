@@ -19,6 +19,7 @@
 #    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
 #
 import json
+import subprocess
 import traceback
 from datetime import datetime
 
@@ -27,12 +28,13 @@ import numpy as np
 from PySide2.QtCore import Qt, QTimer
 from PySide2.QtWidgets import QApplication
 
-from games.genericDragGame.draganddropgame import GameScreen
+from games.draganddropgame.draganddropgame import GameScreen
 from genericworker import *
 # from modules.AdminInterface import AdminInterface
 from modules.CalibrationStateMachine import ManualCalibrationStateMachine
 from modules.HandMouse import MultiHandMouses
 from modules.QImageWidget import QImageWidget
+from libs.utils import init_touchscreen_device
 
 # If RoboComp was compiled with Python bindings you can use InnerModel in Python
 # sys.path.append('/opt/robocomp/lib')
@@ -265,7 +267,7 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_session_start_wait(self):
 		print("Entered state session_start_wait")
-
+		init_touchscreen_device()
 		# TODO: Test only. Remove on production
 		# self.session_start_waittosession_init.emit()
 		self.send_status_change(StatusType.waitingSession)
@@ -297,7 +299,7 @@ class SpecificWorker(GenericWorker):
 
 		self._game = None
 		self.update_game_selection()
-		self._game.show()
+		self._game.show_on_second_screen()
 		self.game_inittogame_loop.emit()
 
 	#
@@ -448,7 +450,7 @@ class SpecificWorker(GenericWorker):
 		for root, dirs, files in os.walk(full_path):
 			for file in files:
 				if file.endswith(".json"):
-					full_file_path = os.path.join(full_path, file)
+					full_file_path = os.path.join(root, file)
 					with open(full_file_path) as file_path:
 						game_config = json.load(file_path)
 						if "title" in game_config:
@@ -984,9 +986,11 @@ class SpecificWorker(GenericWorker):
 		print "TouchPoint Detected:"+str(tp)
 		self.touchpoints_proxy.detectedTouchPoints(touch_points)
 
+
 	def send_status_change(self, status_type):
 		initialicing_status = Status()
 		initialicing_status.currentStatus = status_type
 		initialicing_status.date = datetime.now().isoformat()
 		print("Sending %s"%str(status_type))
 		self.gamemetrics_proxy.statusChanged(initialicing_status)
+

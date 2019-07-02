@@ -671,6 +671,8 @@ class SpecificWorker(GenericWorker):
 		self.ui.selplayer_combobox.setCurrentIndex(0)
 		self.ui.selgame_combobox.setCurrentIndex(0)
 		self.ui.games_list.clear()
+		self.ui.selplayer_combobox.clear()
+		self.ui.selplayer_combobox.addItem(" ")
 		self.mainMenu.setEnabled(True)
 
 		self.bbdd = BBDD()
@@ -790,8 +792,9 @@ class SpecificWorker(GenericWorker):
 		QMessageBox().information(self.focusWidget(), 'Adios',
 								  'Se ha finalizado la sesion',
 								  QMessageBox.Ok)
-		exit(-1)
 
+		# exit(-1)
+		self.session_endtosession_init.emit()
 # =================================================================
 # =================================================================
 

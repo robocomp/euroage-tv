@@ -36,7 +36,7 @@ class SpecificWorker(GenericWorker):
 
 	def setParams(self, params):
 		testing = Status()
-		testing.currentStatus = StatusType.ready
+		testing.currentStatus = StatusType.waitingGame
 		testing.date = datetime.now().isoformat()
 		self.gamemetrics_proxy.statusChanged(testing)
 
@@ -45,7 +45,7 @@ class SpecificWorker(GenericWorker):
 
 	@QtCore.Slot()
 	def compute(self):
-		if self.currentStatus == "playing":
+		if self.currentStatus == "playingGame":
 
 			if self.first:
 				self.metrics.currentDate = datetime.now().isoformat()
@@ -73,10 +73,10 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminContinue
 	#
-	def adminContinue(self):
+	def adminContinueGame(self):
 		testing = Status()
-		testing.currentStatus = StatusType.playing
-		self.currentStatus = "playing"
+		testing.currentStatus = StatusType.playingGame
+		self.currentStatus = "playingGame"
 		testing.date = datetime.now().isoformat()
 		self.gamemetrics_proxy.statusChanged(testing)
 		print "Continue game"
@@ -84,10 +84,10 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminReset
 	#
-	def adminReset(self):
+	def adminResetGame(self):
 		testing = Status()
-		testing.currentStatus = StatusType.reseted
-		self.currentStatus = "reseted"
+		testing.currentStatus = StatusType.resetedGame
+		self.currentStatus = "resetedGame"
 		testing.date = datetime.now().isoformat()
 		self.gamemetrics_proxy.statusChanged(testing)
 		print "Reset game"
@@ -97,8 +97,8 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminStartGame(self, game):
 		testing = Status()
-		testing.currentStatus = StatusType.playing
-		self.currentStatus = "playing"
+		testing.currentStatus = StatusType.playingGame
+		self.currentStatus = "playingGame"
 		testing.date = datetime.now().isoformat()
 		self.gamemetrics_proxy.statusChanged(testing)
 		print "Start game ", game
@@ -106,10 +106,10 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminPause
 	#
-	def adminPause(self):
+	def adminPauseGame(self):
 		testing = Status()
-		testing.currentStatus = StatusType.paused
-		self.currentStatus = "paused"
+		testing.currentStatus = StatusType.pausedGame
+		self.currentStatus = "pausedGame"
 		testing.date = datetime.now().isoformat()
 		self.gamemetrics_proxy.statusChanged(testing)
 		print "Pause game"
@@ -119,8 +119,8 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminStartSession(self, player):
 		testing = Status()
-		testing.currentStatus = StatusType.initializing
-		self.currentStatus = "initializing"
+		testing.currentStatus = StatusType.initializingSession
+		self.currentStatus = "initializingSession"
 		testing.date = datetime.now().isoformat()
 		self.gamemetrics_proxy.statusChanged(testing)
 		print "Start session with ", player
@@ -128,10 +128,10 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminStop
 	#
-	def adminStop(self):
+	def adminStopGame(self):
 		testing = Status()
-		testing.currentStatus = StatusType.wongame
-		self.currentStatus = "stopped"
+		testing.currentStatus = StatusType.wonGame
+		self.currentStatus = "Stopped game"
 		testing.date = datetime.now().isoformat()
 		self.gamemetrics_proxy.statusChanged(testing)
 		print "Stop game"
@@ -141,7 +141,7 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminEndSession(self):
 		testing = Status()
-		testing.currentStatus = StatusType.endsession
+		testing.currentStatus = StatusType.endSession
 		testing.date = datetime.now().isoformat()
 		self.gamemetrics_proxy.statusChanged(testing)
 		print "End session"

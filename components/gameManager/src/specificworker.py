@@ -242,6 +242,7 @@ class SpecificWorker(GenericWorker):
 		self.aux_reseted = False
 		self.aux_prevPos = Position()
 		self.aux_firstMetricReceived = True
+		self.aux_savedGames = False
 
 		self.selected_player_incombo = ""
 		self.selected_game_inlist = ""
@@ -569,13 +570,6 @@ class SpecificWorker(GenericWorker):
 		self.ui.username_lineedit.setCompleter(completer)
 		self.login_executed.connect(self.update_login_status)
 
-	#
-	# sm_admin_games
-	#
-	@QtCore.Slot()
-	def sm_admin_games(self):
-		print("Entered state admin_games")
-		pass
 
 	#
 	# sm_create_player
@@ -608,6 +602,7 @@ class SpecificWorker(GenericWorker):
 									 ' Desea guardar los datos del juego?', QMessageBox.Yes, QMessageBox.No)
 		if reply == QMessageBox.Yes:
 			self.currentGame.gameWon = self.aux_wonGame
+			self.aux_savedGames = True
 			timeplayed = self.aux_currentDate - self.currentGame.date
 			self.currentGame.timePlayed = timeplayed.total_seconds() * 1000
 			print "Time played =  ", self.currentGame.timePlayed, "milliseconds"
@@ -671,9 +666,12 @@ class SpecificWorker(GenericWorker):
 		self.ui.selplayer_combobox.setCurrentIndex(0)
 		self.ui.selgame_combobox.setCurrentIndex(0)
 		self.ui.games_list.clear()
+		self.ui.selgame_combobox.clear()
+		self.ui.selgame_combobox.addItem(" ")
 		self.ui.selplayer_combobox.clear()
 		self.ui.selplayer_combobox.addItem(" ")
 		self.mainMenu.setEnabled(True)
+		self.aux_savedGames = False
 
 		self.bbdd = BBDD()
 		self.bbdd.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba.db")
@@ -778,16 +776,17 @@ class SpecificWorker(GenericWorker):
 	def sm_session_end(self):
 		print("Entered state session_end")
 
-		reply = QMessageBox.question(self.focusWidget(), 'Juegos finalizados',
-									 ' Desea guardar los datos de la sesion actual?', QMessageBox.Yes, QMessageBox.No)
-		if reply == QMessageBox.Yes:
-			time = self.aux_currentDate - self.currentSession.date
-			self.currentSession.totaltime = time.total_seconds() * 1000
-			print "Session time =  ", self.currentSession.totaltime, "milliseconds"
+		if (self.aux_savedGames):
+			reply = QMessageBox.question(self.focusWidget(), 'Juegos finalizados',
+										 ' Desea guardar los datos de la sesion actual?', QMessageBox.Yes, QMessageBox.No)
+			if reply == QMessageBox.Yes:
+				time = self.aux_currentDate - self.currentSession.date
+				self.currentSession.totaltime = time.total_seconds() * 1000
+				print "Session time =  ", self.currentSession.totaltime, "milliseconds"
 
-			self.compute_session_metrics()
-			self.currentSession.save_session()
-			self.sessions.append(self.currentSession)
+				self.compute_session_metrics()
+				self.currentSession.save_session()
+				self.sessions.append(self.currentSession)
 
 		QMessageBox().information(self.focusWidget(), 'Adios',
 								  'Se ha finalizado la sesion',

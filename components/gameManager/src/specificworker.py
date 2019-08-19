@@ -670,6 +670,7 @@ class SpecificWorker(GenericWorker):
 		self.ui.selgame_combobox.addItem(" ")
 		self.ui.selplayer_combobox.clear()
 		self.ui.selplayer_combobox.addItem(" ")
+		self.ui.selplayer_combobox.addItem("Crear nuevo paciente")
 		self.mainMenu.setEnabled(True)
 		self.aux_savedGames = False
 

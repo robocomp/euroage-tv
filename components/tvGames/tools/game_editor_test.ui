@@ -202,7 +202,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="size_width_sb_2">
+         <widget class="QSpinBox" name="piece_width_sb">
           <property name="suffix">
            <string> pixels</string>
           </property>
@@ -237,7 +237,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="size_height_sb_2">
+         <widget class="QSpinBox" name="piece_height_sb">
           <property name="suffix">
            <string> pixels</string>
           </property>
@@ -291,6 +291,13 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QPushButton" name="generate_button">
+      <property name="text">
+       <string>Generate</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

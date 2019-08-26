@@ -1,9 +1,9 @@
 import signal
 import sys
 
-from PySide2.QtCore import QObject, Signal, QFile
+from PySide2.QtCore import QFile
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QWidget, QLabel, QGroupBox, QPushButton, QLineEdit, QHBoxLayout, QVBoxLayout, QApplication,QStackedWidget
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication
 
 
 class LoginWindow(QWidget): # crea widget vacio

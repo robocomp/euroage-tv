@@ -236,6 +236,7 @@ class ActionsVideoPlayer(ListVideoPlayer):
         self.hide()
 
     def show_on_second_screen(self):
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         desktop_widget = QApplication.desktop()
         if desktop_widget.screenCount() > 1:
             second_screen_size = desktop_widget.screenGeometry(1)

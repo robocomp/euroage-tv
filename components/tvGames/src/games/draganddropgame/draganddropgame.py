@@ -922,6 +922,8 @@ class TakeDragGame(QWidget):
 			self._scene.addItem(self._pointers[pointer_id].closed_widget)
 
 	def update_pointer(self, pointer_id, xpos, ypos, grab):
+        if pointer_id == -1:
+            return
 		if pointer_id not in self._pointers:
 			self.add_new_pointer(pointer_id, xpos, ypos, grab)
 		self._pointers[pointer_id].position = (xpos, ypos)

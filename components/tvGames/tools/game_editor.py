@@ -92,12 +92,17 @@ class EditorWindow(QWidget):  # crea widget vacio
 
     def show_piece(self, item):
         item_name = item.text()
-        self.pieces[item_name].show()
+        self.modifying_key = item_name
+        self.current_piece = self.pieces[item_name]
+        self.current_piece.ui.save_button.clicked.disconnect()
+        self.current_piece.ui.save_button.clicked.connect(self.modify_piece)
+        self.current_piece.show()
+
 
     def save_piece(self):
         key = self.current_piece.ui.name_lineEdit.text()
         if key != "":
-            if key not in self.pieces.keys():
+            if key not in self.pieces:
                 print ("Saving piece...")
                 print ("Name", key)
                 print ("Position", self.current_piece.ui.index_sb.value())
@@ -106,12 +111,20 @@ class EditorWindow(QWidget):  # crea widget vacio
 
                 self.pieces[key] = self.current_piece
                 self.ui.pieces_listWidget.addItem(key)
-                self.current_piece.hide()
 
             else:
                 QMessageBox().information(self.focusWidget(), 'Error',
                                           'El nombre de la pieza ya existe',
                                           QMessageBox.Ok)
+        self.current_piece.hide()
+
+    def modify_piece(self):
+        original_key = self.modifying_key
+        current_key = self.current_piece.ui.name_lineEdit.text()
+        self.pieces[current_key]=self.pieces.pop(original_key)
+        listwidget_item = self.ui.pieces_listWidget.findItems(original_key,Qt.MatchExactly)[0]
+        listwidget_item.setText(current_key)
+        self.current_piece.hide()
 
     def delete_piece(self):
         key = self.ui.pieces_listWidget.currentItem().text()

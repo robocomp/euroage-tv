@@ -9,7 +9,7 @@ import json
 
 from games.draganddropgame.draganddropgame import GameScreen
 
-class PieceWindow(QWidget):
+
 class PieceWindow(QDialog):
     def __init__(self, parent=None):
         super(PieceWindow, self).__init__(parent)
@@ -21,7 +21,7 @@ class PieceWindow(QDialog):
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0, 0, 0, 0)
+        # self.mylayout.setContentsMargins(0, 0, 0, 0)
         file.close()
         self.ui.image_path_lineEdit.installEventFilter(self)
         self.ui.video_path_lineEdit.installEventFilter(self)
@@ -64,15 +64,30 @@ class EditorWindow(QWidget):  # crea widget vacio
         self.ui.pieces_listWidget.itemDoubleClicked.connect(self.show_piece)
         self.ui.generate_button.clicked.connect(self.generate_dict)
 
+
+
     def open_piece_window(self):
         print("Creating piece")
-        self.current_piece = PieceWindow()
+        self.current_piece = PieceWindow(self)
         self.current_piece.ui.save_button.clicked.connect(self.save_piece)
         self.current_piece.ui.name_lineEdit.clear()
-        self.current_piece.ui.index_sb.setValue(0)
+        self.current_piece.ui.index_sb.setValue(len(self.pieces)+1)
 
         self.current_piece.ui.image_path_lineEdit.clear()
         self.current_piece.ui.video_path_lineEdit.clear()
+        self.current_piece.ui.piece_pos_x_sb.setValue(5+int(len(self.pieces)*self.ui.piece_width_sb.value() + 5*len(self.pieces)))
+
+        # self.current_piece.ui.piece_pos_x_sb.setValue(10)
+        self.current_piece.ui.piece_pos_y_sb.setValue(20)
+        # self.current_piece.ui.piece_pos_y_sb.setValue(10)
+        # ############### TESTING #########3
+        key = "una bonita pieza"
+        self.current_piece.ui.name_lineEdit.setText(key)
+        self.current_piece.ui.image_path_lineEdit.setText(
+            "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/photos/action_1.jpg")
+        self.current_piece.ui.video_path_lineEdit.setText(
+            "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/videos/action_1.MP4")
+        # ############### TESTING #########3
         self.current_piece.show()
 
     def show_piece(self, item):

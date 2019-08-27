@@ -58,7 +58,7 @@ class GameScreen(QWidget):
 	help_clicked = Signal()
 	check_clicked = Signal()
 	score_update = Signal(int, int)
-	def __init__(self, width, height, parent = None):
+    def __init__(self, parent = None, width=1920, height=1080):
 		super(GameScreen, self).__init__(parent)
 
 		self._main_layout = QStackedLayout()
@@ -153,7 +153,7 @@ class GameScreen(QWidget):
 			for piece in pieces:
 				self._video_player.add_action(piece.id, piece.clip_path, piece.current_destination.index)
 			if len(pieces)>0:
-				self._video_player.show()
+                self._video_player.show_on_second_screen()
 				print(self._video_player.current_status())
 				self._video_player.play_all_actions_as_inserted()
 
@@ -186,10 +186,13 @@ class GameScreen(QWidget):
 		self._top_bar.resume_clock()
 
 
-	def init_game(self, path):
-		with open(os.path.join(CURRENT_PATH, path)) as file_path:
-			self._game_config = json.load(file_path)
-		self._game_frame.init_game(path)
+    def init_game(self, full_path):
+        if isinstance(full_path, basestring):
+            full_path = os.path.join(CURRENT_PATH, full_path)
+            if os.path.isfile(full_path):
+                with open(full_path) as file_path:
+                    self._game_config = json.load(file_path)
+                self._game_frame.init_game(full_path)
 		self._top_bar.set_game_name(self._game_config["title"])
 		self._top_bar.set_time(int(self._game_config["time"]))
 		self._top_bar.start_clock()
@@ -226,6 +229,9 @@ class GameScreen(QWidget):
 class MyQGraphicsScene(QGraphicsScene):
 	moved = Signal(int, int, int, bool)
 
+    def __init__(self,*args, **kwargs):
+        super(MyQGraphicsScene, self).__init__(*args, **kwargs)
+
 	def mousePressEvent(self, event):
 		self.moved.emit(-1, event.scenePos().x(), event.scenePos().y(), event.buttons() == Qt.LeftButton)
 
@@ -240,98 +246,113 @@ class MyQGraphicsScene(QGraphicsScene):
 # It's the item to be moved on the game
 class DraggableItem(QGraphicsPixmapItem):
 
-	def __init__(self, id, image_path, width, height,  parent=None):
-		super(DraggableItem, self).__init__(parent)
-		self._id = id
-		self._width = width
-		self._height = height
-		self._image_path = None
-		self._image = None
-		self.correct_position = False
-		self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
-		self.image_path = image_path
-		# self.setAcceptTouchEvents(True)
-		# self.pixmap().setAttribute(Qt.WA_AcceptTouchEvents)
+    def __init__(self, id, image_path,  parent=None):
+        super(DraggableItem, self).__init__(parent)
+        self.id = id
+        self.image_path = image_path
+        self.correct_position = False
+        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+        self.c_image = None
+        self.overlay = None
+        # self.setAcceptTouchEvents(True)
+        # self.pixmap().setAttribute(Qt.WA_AcceptTouchEvents)
 
 
-	@property
-	def id(self):
-		return self._id
+    @property
+    def id(self):
+        return self.__id
 
-	@id.setter
-	def id(self, id):
-		self._id = id
+    @id.setter
+    def id(self, id):
+        self.__id = id
 
-	@property
-	def image_path(self):
-		return self._image_path
+    @property
+    def image_path(self):
+        return self.__image_path
 
-	@image_path.setter
-	def image_path(self, image_path):
-		if image_path is not None:
-			self._image = QImage(image_path).scaled(self._width, self._height, Qt.KeepAspectRatio)
-			self._width = self._image.width()
-			self._height = self._image.height()
-			self.setPixmap(QPixmap.fromImage(self._image))
-			self._image_path = image_path
+    @image_path.setter
+    def image_path(self, image_path):
+        if image_path is not None:
+            self.image = QImage(image_path).scaled(320,240, Qt.KeepAspectRatio)
+            self.setPixmap(QPixmap.fromImage(self.image))
+            self.__image_path = image_path
 
-	@property
-	def image(self):
-		return self._image
+    @property
+    def image(self):
+        return self.__image
 
-	@image.setter
-	def image(self, image):
-		if image is not None:
-			self._image = image
-			self.setPixmap(QPixmap.fromImage(self._image))
+    @image.setter
+    def image(self, image):
+        if image is not None:
+            self.__image = image
+            self.setPixmap(QPixmap.fromImage(image))
 
+    @property
+    def width(self):
+        return self.boundingRect().width()
 
-	def set_overlay(self, value):
-		if value:
-			self.overlay = True
-			self.setPixmap(QPixmap.fromImage(self.c_image))
-		else:
-			self.overlay = False
-			self.setPixmap(QPixmap.fromImage(self.image))
-
-	def resize(self, width, height):
-		self._width = width
-		self._height = height
-		self.image = QImage(self.image_path).scaled(self._width, self._height, Qt.KeepAspectRatio)
-		if self.c_image:
-			self.create_overlary_image()
-		if self.overlay:
-			self.setPixmap(QPixmap.fromImage(self.c_image))
-		else:
-			self.setPixmap(QPixmap.fromImage(self.image))
-
-	def itemChange(self, change, value ):
-		# Check that the piece is kept inside the scene rect
-		if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
-			newPos = value
-			rect = self.scene().sceneRect()
-			# If it doen't it position the piece on a valid position inside the scene rect
-			if not rect.contains(newPos):
-				newPos.setX(min(rect.right(), max(newPos.x(), rect.left())))
-				newPos.setY(min(rect.bottom(), max(newPos.y(), rect.top())))
-				return newPos
-		return super(DraggableItem, self).itemChange(change, value)
+    @width.setter
+    def width(self, value):
+        if value>0:
+            current_ratio = self.height/self.width
+            new_height = value * current_ratio
+            self.resize(value, new_height)
 
 
-	# def paint(self, painter, style, widget):
-	# 	r = self.boundingRect()
-	# 	p = painter.pen()
-	# 	painter.drawRect(QRect(r.x(), r.y(), r.width() - p.width(), r.height() - p.width()));
-	# 	super(DraggableItem, self).paint(painter, style, widget)
+    @property
+    def height(self):
+        return self.boundingRect().height()
 
-	def clone(self):
-		return DraggableItem(self._id, self.image_path, self._width, self._height)
+    @height.setter
+    def height(self, value):
+        if value>0:
+            current_ratio = self.width/self.height
+            new_width = value * current_ratio
+            self.resize(new_width, value)
 
-	def width(self):
-		return self.boundingRect().width()
 
-	def height(self):
-		return self.boundingRect().height()
+    def set_overlay(self, value):
+        if value:
+            self.overlay = True
+            self.setPixmap(QPixmap.fromImage(self.c_image))
+        else:
+            self.overlay = False
+            self.setPixmap(QPixmap.fromImage(self.image))
+
+    def resize(self, width, height):
+        current_pos = self.pos()
+        self.image = QImage(self.image_path).scaled(width, height, Qt.KeepAspectRatio)
+        self.setPos(current_pos)
+        # if self.c_image:
+        #     self.create_overlary_image()
+        # if self.overlay:
+        #     self.setPixmap(QPixmap.fromImage(self.c_image))
+        # else:
+        #     self.setPixmap(QPixmap.fromImage(self.image))
+
+    def itemChange(self, change, value ):
+        # Check that the piece is kept inside the scene rect
+        if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
+            newPos = value
+            rect = self.scene().sceneRect()
+            # If it doen't it position the piece on a valid position inside the scene rect
+            if not rect.contains(newPos):
+                newPos.setX(min(rect.right(), max(newPos.x(), rect.left())))
+                newPos.setY(min(rect.bottom(), max(newPos.y(), rect.top())))
+                return newPos
+        return super(DraggableItem, self).itemChange(change, value)
+
+
+    # def paint(self, painter, style, widget):
+    # 	r = self.boundingRect()
+    # 	p = painter.pen()
+    # 	painter.drawRect(QRect(r.x(), r.y(), r.width() - p.width(), r.height() - p.width()));
+    # 	super(DraggableItem, self).paint(painter, style, widget)
+
+    def clone(self):
+        return DraggableItem(self.id, self.image_path)
+
+
 
 
 class PieceItem(DraggableItem):
@@ -356,7 +377,6 @@ class PieceItem(DraggableItem):
 		self._label.setY(self.height()-10) # Posicionar abajo
 		# self._label.setY(-20) # Posicionar arriba
 		self._label.setTextWidth(self.width())
-
 		self._final_destination = None
 		self._current_destination = None
 		self.c_image = None
@@ -515,14 +535,14 @@ class QOpencvGraphicsVideoItem(DraggableItem):
 			frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 			rows, cols, channels = frame.shape
 			frame_ratio = frame.shape[1] / float(frame.shape[0])
-			image_ratio = self._width / float(self._height)
+            image_ratio = self.width / float(self.height)
 			background_size = (int(frame.shape[1] / image_ratio), frame.shape[1], 3)
 			blank_image = np.zeros(background_size, np.uint8)
 			# blank_image[:] = (255, 255, 255)
 			height_offset = int((background_size[0] - frame.shape[0]) / 2)
 			blank_image[height_offset:height_offset + rows, 0:cols] = frame
 			self._video_frame = QImage(blank_image, blank_image.shape[1], blank_image.shape[0], blank_image.shape[1] * 3, QImage.Format_RGB888)
-			self._video_frame = self._video_frame.scaled(self._width, self._height, Qt.KeepAspectRatio)
+            self._video_frame = self._video_frame.scaled(self.width, self.height, Qt.KeepAspectRatio)
 			self.image = self._video_frame
 
 		else:
@@ -583,9 +603,11 @@ class DestinationItem(QGraphicsRectItem):
 		if piece is not None:
 			piece.current_destination = self
 
+    @property
 	def width(self):
 		return self.boundingRect().width()
 
+    @property
 	def height(self):
 		return self.boundingRect().height()
 
@@ -697,7 +719,7 @@ class TakeDragGame(QWidget):
 		self._height = height
 		self._main_layout = QHBoxLayout()
 		self.setLayout(self._main_layout)
-		self._scene = MyQGraphicsScene()
+        self._scene = MyQGraphicsScene(0,0, width, height)
 		# DISCONNECT MOUSE
 		self._scene.moved.connect(self.update_pointer)
 		self.setCursor(Qt.BlankCursor)
@@ -727,7 +749,6 @@ class TakeDragGame(QWidget):
 		# game data
 		self.total_images = 0
 		self.correct_images = 0
-
 		self._scene.setSceneRect(0, 0, width, height)
 		self.grabbed = None
 		self.game_config = None
@@ -964,8 +985,8 @@ class TakeDragGame(QWidget):
 		# If the distance to the correct position is less that a configured threshold
 		if nearest_dest is not None and lowest_distance < int(self.game_config["difficult"]):
 			# Adjust the position of the taken object to the exact correct one
-			widths_diff = int((taken_widget.width() - dest.width())/2)
-			heights_diff = int((taken_widget.height() - dest.height()) / 2)
+            widths_diff = int((taken_widget.width - dest.width)/2)
+            heights_diff = int((taken_widget.height - dest.height) / 2)
 
 			new_xpos = nearest_dest.scenePos().x() - widths_diff
 			new_ypos = nearest_dest.scenePos().y() - heights_diff
@@ -1026,12 +1047,12 @@ class TakeDragGame(QWidget):
 
 
 	def items_distance(self, item1, item2):
-		item1_center_x = item1.scenePos().x() + item1.width() / 2.
-		item2_center_x = item2.scenePos().x() + item2.width() / 2.
-		xdistance = item1_center_x - item2_center_x
+        item1_center_x = item1.scenePos().x() + item1.width / 2.
+        item2_center_x = item2.scenePos().x() + item2.width / 2.
+        xdistance = item1_center_x - item2_center_x
 
-		item1_center_y = item1.scenePos().y() + item1.height() / 2.
-		item2_center_y = item2.scenePos().y() + item2.height() / 2.
+        item1_center_y = item1.scenePos().y() + item1.height / 2.
+        item2_center_y = item2.scenePos().y() + item2.height / 2.
 		ydistance = item1_center_y - item2_center_y
 
 		distance = math.sqrt(pow(xdistance, 2) + pow(ydistance, 2))
@@ -1047,13 +1068,15 @@ class TakeDragGame(QWidget):
 
 				if "video_path" in item:
 					clip_path = os.path.join(config_path, item["video_path"])
-					new_image = QOpencvGraphicsVideoItem(image_id, image_path, clip_path, item["size"][0], item["size"][1], item["title"])
+                    new_image = QOpencvGraphicsVideoItem(image_id, image_path, clip_path, item["title"])
 				else:
-					new_image = DraggableItem(image_id, image_path, item["size"][0], item["size"][1])
+                    new_image = DraggableItem(image_id, image_path)
 
 
+                new_image.setZValue(int(self.game_config["depth"][item["category"]]))
 				new_image.setPos(item["initial_pose"][0], item["initial_pose"][1])
-				new_image.setZValue(int(self.game_config["depth"][item["category"]]))
+                # Height is calculate proportional to the width
+                new_image.width = item["size"][0]
 				self.game_config["images"][image_id]["widget"] = new_image
 				if item["category"] != "mouse":
 					self._scene.addItem(new_image)

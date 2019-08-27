@@ -401,8 +401,6 @@ class PieceItem(DraggableItem):
 	def current_destination(self, new_dest):
 		self._current_destination = new_dest
 
-	def is_set(self):
-		return (self._current_destination is not None)
 
 	@property
 	def clip_path(self):
@@ -487,24 +485,6 @@ class QOpencvGraphicsVideoItem(DraggableItem):
 
         self._final_destination = None
         self._current_destination = None
-        self.__initial_pos = None
-        self.__on_initial_pos = True
-
-    @property
-    def initial_pos(self):
-        return self.__initial_pos
-
-    @initial_pos.setter
-    def initial_pos(self, value):
-        self.__initial_pos = value
-
-    @property
-    def on_initial_pos(self):
-        return self.__on_initial_pos
-
-    @on_initial_pos.setter
-    def on_initial_pos(self, value):
-        self.__on_initial_pos = value
 
     @property
     def width(self):
@@ -535,9 +515,6 @@ class QOpencvGraphicsVideoItem(DraggableItem):
 	@current_destination.setter
 	def current_destination(self, new_dest):
 		self._current_destination = new_dest
-
-	def is_set(self):
-		return (self._current_destination is not None)
 
 	@property
 	def clip_path(self):
@@ -1114,6 +1091,7 @@ class TakeDragGame(QWidget):
 				if item["category"] != "mouse":
 					self._scene.addItem(new_image)
 				if item["category"] == "piece":
+                    # used to set random initial position
 					temp_pieces_pos.append((item["initial_pose"][0], item["initial_pose"][1]))
 					dest_item = DestinationItem(new_image.boundingRect(), item["index"])
 					dest_item.setPos(item["final_pose"][0], item["final_pose"][1])

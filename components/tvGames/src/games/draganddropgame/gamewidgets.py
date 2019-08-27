@@ -156,10 +156,12 @@ class ClockLabelWidget(QLabel):
         try:
             time_string = QDateTime.fromTime_t(self._time).toString("mm:ss")
             self.setText(time_string)
-            if self._timer.isActive() and self._time <= 0:
-                self.timeout.emit()
-                self._timer.stop()
-            self._time = self._time - 1
+            if self._timer.isActive():
+                if self._time <= 0:
+                    self.timeout.emit()
+                    self._timer.stop()
+                else:
+                    self._time = self._time - 1
         except Exception as e:
             print("Catched exception %s" % e.message)
 
@@ -197,6 +199,7 @@ class CountDownWidget(QFrame):
         self.setStyleSheet(
             ".CountDownWidget{ background-color: lightgray; border : 0px solid blue; border-right : 2px solid gray;border-left : 2px solid gray;}")
         self._clock_label.timeout.connect(self.timeout.emit)
+        self._clock_label.timeout.connect(self.pause)
 
 
 
@@ -206,6 +209,7 @@ class CountDownWidget(QFrame):
 
     def start(self):
         self._clock_label.start()
+        self._analog_clock.resume()
 
     def pause(self):
         self._clock_label.pause()

@@ -1,3 +1,4 @@
+import os
 import signal
 import sys
 from collections import OrderedDict
@@ -6,8 +7,10 @@ from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox, QFileDialog, QDialog
 import json
 
+from games.draganddropgame.draganddropgame import GameScreen
 
 class PieceWindow(QWidget):
+class PieceWindow(QDialog):
     def __init__(self, parent=None):
         super(PieceWindow, self).__init__(parent)
         self.mylayout = QVBoxLayout()
@@ -51,7 +54,8 @@ class EditorWindow(QWidget):  # crea widget vacio
         self.mylayout.addWidget(self.ui)
         self.mylayout.setContentsMargins(0, 0, 0, 0)
         file.close()
-
+        self._view = GameScreen()
+        # self.ui.pieces_hl.addWidget(self._view)
         self.pieces = {}
         self.current_piece = None
 
@@ -113,8 +117,7 @@ class EditorWindow(QWidget):  # crea widget vacio
         piece_size = [self.ui.piece_width_sb.value(), self.ui.piece_height_sb.value()]
         pieces_dict = {}
 
-        for name in self.pieces:
-            piece = self.pieces[name]
+        for name, piece in self.pieces.items():
             index = piece.ui.index_sb.value()
             action_name = "action_" + str(index)
 
@@ -123,8 +126,8 @@ class EditorWindow(QWidget):  # crea widget vacio
             attributes_dict["title"] = name
             attributes_dict["size"] = piece_size
 
-            attributes_dict["initial_pose"] = None
-            attributes_dict["final_pose"] = None
+            attributes_dict["initial_pose"] = [piece.ui.piece_pos_x_sb.value(), piece.ui.piece_pos_y_sb.value()]
+            attributes_dict["final_pose"] = [piece.ui.piece_pos_x_sb.value(), piece.ui.piece_pos_y_sb.value() + self.ui.piece_height_sb.value()*2+10]
 
             attributes_dict["image_path"] = piece.ui.image_path_lineEdit.text()
             attributes_dict["video_path"] = piece.ui.video_path_lineEdit.text()
@@ -135,9 +138,20 @@ class EditorWindow(QWidget):  # crea widget vacio
 
         game_dict["images"] = pieces_dict
 
-        with open('game.json', 'w') as file:
+        with open('./game.json', 'w') as file:
             json.dump(game_dict, file, indent=4)
             print("Saved json file")
+        self._view.init_game(os.path.abspath("./game.json"))
+        self._view.show_on_second_screen()
+        self._view._game_frame.adjust_view()
+        print(self._view._game_frame._scene.sceneRect())
+        print(self._view._game_frame._view.sceneRect())
+        for piece in self._view._game_frame._pieces:
+            print("piece size: ", piece.width, piece.height)
+
+
+
+
 
 
 if __name__ == '__main__':
@@ -145,6 +159,6 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     editor = EditorWindow()
-    editor.show()
+    editor.showMaximized()
 
     app.exec_()

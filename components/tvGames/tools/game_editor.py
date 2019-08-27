@@ -1,9 +1,9 @@
 import signal
 import sys
 from collections import OrderedDict
-from PySide2.QtCore import QFile
+from PySide2.QtCore import QFile, QEvent, Qt
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox, QFileDialog, QDialog
 import json
 
 
@@ -20,6 +20,22 @@ class PieceWindow(QWidget):
         self.mylayout.addWidget(self.ui)
         self.mylayout.setContentsMargins(0, 0, 0, 0)
         file.close()
+        self.ui.image_path_lineEdit.installEventFilter(self)
+        self.ui.video_path_lineEdit.installEventFilter(self)
+
+    def eventFilter(self, watched, event):
+        if event.type() == QEvent.MouseButtonDblClick:
+            filePath =  None
+            accepted = False
+            if watched == self.ui.image_path_lineEdit:
+                filePath, accepted = QFileDialog.getOpenFileName(self, "Open File",
+                                                          '' , "IMAGE files (*.jpeg *.jpg *.png)")
+            if watched == self.ui.video_path_lineEdit:
+                filePath, accepted = QFileDialog.getOpenFileName(self, "Open File",
+                                                                 '', "MP4 files (*.mp4 *.MP4)")
+            if filePath is not None and accepted:
+                watched.setText(filePath)
+        return QWidget.eventFilter(self, watched, event)
 
 
 class EditorWindow(QWidget):  # crea widget vacio

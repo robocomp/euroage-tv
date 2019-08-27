@@ -1185,10 +1185,15 @@ class TakeDragGame(QWidget):
 					wrong+=1
 		return right, wrong
 
-	def resizeEvent(self, event):
-		# skip initial entry
-		self._view.fitInView(self._scene.itemsBoundingRect(), Qt.KeepAspectRatio)
-		self._scene.setSceneRect(self._scene.itemsBoundingRect())
+    def adjust_view(self):
+        self._view.fitInView(self._scene.itemsBoundingRect(), Qt.KeepAspectRatio)
+        self._scene.setSceneRect(self._scene.itemsBoundingRect())
+
+    def resizeEvent(self, event):
+        # skip initial entry
+        self.adjust_view()
+        # if self.game_config is not None:
+            # self.set_random_initial_auto_pieces_positions()
 		super(TakeDragGame, self).resizeEvent(event)
 		# if self.game_config is None:
 		# 	return

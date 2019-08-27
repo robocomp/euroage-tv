@@ -51,24 +51,24 @@ class Player:
 		self.name = name
 		self.tracked = False
 
-#      struct Position
-#      {
-#         float x;
-#         float y;
-#      };
-#
-#     struct Metrics
-#     {
-#         string	currentDate;
-#         Position pos;
-#         bool	screenTouched;
-#         bool	handClosed;
-#         int	numHelps;
-#         int	numChecked;
-#         int	numHits;
-#         int	numFails;
-#
-#     };
+    #  struct Position
+    #  {
+    #     float x;
+    #     float y;
+    #  };
+    #
+    # struct Metrics
+    # {
+    #     string	currentDate;
+    #     Position pos;
+    #     bool	screenTouched;
+    #     bool	handClosed;
+    #     int	numHelps;
+    #     int	numChecked;
+    #     int	numHits;
+    #     int	numFails;
+    #
+    # };
 class GameMetrics(Metrics):
 	def __init__(self):
 		super(GameMetrics, self).__init__()
@@ -320,7 +320,7 @@ class SpecificWorker(GenericWorker):
 	def sm_game_lost(self):
 		print("Entered state game_lost")
 		self.send_status_change(StatusType.lostGame)
-		QTimer.singleShot(3000, self.game_losttogame_start_wait)
+		QTimer.singleShot(200, self.game_losttogame_start_wait)
 
 
 
@@ -341,6 +341,7 @@ class SpecificWorker(GenericWorker):
 	def sm_game_reset(self):
 		print("Entered state game_reset")
 		self._game.hide()
+		self.send_status_change(StatusType.resetedGame)
 		self.game_resettogame_start_wait.emit()
 		pass
 
@@ -374,18 +375,8 @@ class SpecificWorker(GenericWorker):
 	def sm_game_won(self):
 		print("Entered state game_won")
 		self.send_status_change(StatusType.wonGame)
-		QTimer.singleShot(3000, self.game_losttogame_start_wait)
+		QTimer.singleShot(200, self.game_wontogame_start_wait)
 
-
-	#
-	# sm_session_init
-	#
-	@QtCore.Slot()
-	def sm_session_init(self):
-		print("Entered state session_init")
-		self.send_status_change(StatusType.initializingSession)
-
-	
 
 	#
 	# sm_session_end
@@ -397,6 +388,18 @@ class SpecificWorker(GenericWorker):
 		self._game.pause_game()
 		self._game.hide()
 		self._game = None
+		QTimer.singleShot(100, self.session_endtosession_start_wait)
+
+
+	#
+	# sm_session_init
+	#
+	@QtCore.Slot()
+	def sm_session_init(self):
+		print("Entered state session_init")
+		self.send_status_change(StatusType.initializingSession)
+
+
 
 	#
 	# sm_player_acquisition_init

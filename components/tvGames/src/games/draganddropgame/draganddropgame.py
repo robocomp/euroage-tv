@@ -467,25 +467,56 @@ class PieceItem(DraggableItem):
 
 # Replacement for the PieceItem (working implementation for video piece)
 class QOpencvGraphicsVideoItem(DraggableItem):
-	def __init__(self, id, image_path, video_path, width, height, title, parent=None):
-		super(QOpencvGraphicsVideoItem, self).__init__(id, image_path, width, height, parent)
-		self._video_source = None
-		self._video_path = video_path
-		self._video_frame = None
-		if video_path is not None:
-			self.set_video_path(video_path)
-		self._play_timer = QTimer()
-		self._play_timer.timeout.connect(self.show_next_frame)
-		self._old_image = None
-		self._label = QGraphicsTextItem(self)  # Label
-		self._set_label(title.upper(), "margin:10px; font-weight: bold; font-size: " + str(
-			self.width() / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")  # Nombre
-		self._label.setY(self.height() - 10)  # Posicionar abajo
-		# self._label.setY(-20) # Posicionar arriba
-		self._label.setTextWidth(self.width())
+    def __init__(self, id, image_path, video_path, title, parent=None):
+        super(QOpencvGraphicsVideoItem, self).__init__(id, image_path, parent)
+        self._video_source = None
+        self._video_path = video_path
+        self._video_frame = None
+        if video_path is not None:
+            self.set_video_path(video_path)
+        self._play_timer = QTimer()
+        self._play_timer.timeout.connect(self.show_next_frame)
+        self._old_image = None
+        self._title = title
+        self._label = QGraphicsTextItem(self)  # Label
+        self._set_label(self._title.upper(), "margin:10px; font-weight: bold; font-size: " + str(
+            self.width / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")  # Nombre
+        self._label.setY(self.height - 10)  # Posicionar abajo
+        # self._label.setY(-20) # Posicionar arriba
+        self._label.setTextWidth(self.width)
 
-		self._final_destination = None
-		self._current_destination = None
+        self._final_destination = None
+        self._current_destination = None
+        self.__initial_pos = None
+        self.__on_initial_pos = True
+
+    @property
+    def initial_pos(self):
+        return self.__initial_pos
+
+    @initial_pos.setter
+    def initial_pos(self, value):
+        self.__initial_pos = value
+
+    @property
+    def on_initial_pos(self):
+        return self.__on_initial_pos
+
+    @on_initial_pos.setter
+    def on_initial_pos(self, value):
+        self.__on_initial_pos = value
+
+    @property
+    def width(self):
+        return super(QOpencvGraphicsVideoItem, self).width
+
+    @width.setter
+    def width(self, value):
+        super(QOpencvGraphicsVideoItem, self.__class__).width.fset(self, value)
+        self._set_label(self._title.upper(), "margin:10px; font-weight: bold; font-size: " + str(
+            self.width / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")
+        self._label.setY(self.height - 10)
+        self._label.setTextWidth(self.width)
 
 
 

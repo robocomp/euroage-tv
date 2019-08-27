@@ -46,8 +46,8 @@ CURRENT_PATH = os.path.dirname(__file__)
 
 CONGRAT_STRING = ["¡Vas muy bien!", "¡Sigue así!", "¡Genial!", "¡Estupendo!", "¡Fabulóso!", "¡Maravilloso!", "¡Ánimo!",
 				  "¡Lo estás haciendo muy bien!"]
-WINNING_SOUNDS = ["../resources/sounds/happy1.mp3", "resources/sounds/happy2.mp3"]
-LOST_SOUNDS = ["../resources/sounds/sad1.mp3", "resources/sounds/sad2-2.mp3"]
+WINNING_SOUNDS = ["../resources/common/sounds/happy1.mp3", "resources/sounds/happy2.mp3"]
+LOST_SOUNDS = ["../resources/common/sounds/sad1.mp3", "resources/sounds/sad2-2.mp3"]
 SPEECH_COMMAND = "gtts es "
 
 GREEN_TITTLE_COLOR = "#91C69A"
@@ -77,9 +77,9 @@ class GameScreen(QWidget):
 		self._game_layout.addWidget(self._top_bar, 0, 0, 1, 20)
 		self._game_frame = TakeDragGame(width, height)
 		self._game_layout.addWidget(self._game_frame, 1, 1, 1, 18)
-		self._help_button = CoolButton(text="AYUDA", size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","button","justQuestion.png"))
+        self._help_button = CoolButton(text="AYUDA", size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","common","button","justQuestion.png"))
 		self._help_button.set_color(QColor("Green"))
-		self._check_button = CoolButton(text="TERMINAR", size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","button","justQuestion.png"))
+        self._check_button = CoolButton(text="TERMINAR", size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","common","button","checked.png"))
 		self._help_button.set_color(QColor("Orange"))
 		self._game_layout.addWidget(self._help_button, 2, 1, 1, 2, Qt.AlignRight)
 		self._game_layout.addWidget(self._check_button, 2, 3, 1, 2)
@@ -93,7 +93,7 @@ class GameScreen(QWidget):
 
 		# self.setStyleSheet("GameWidget {font-weight: bold; background-color: red;}")
 		self.setAutoFillBackground(True)
-		style_sheet_string = "GameScreen {background-image: url("+os.path.join(CURRENT_PATH,"..","resources","kitchen-2165756_1920.jpg")+");}"
+        style_sheet_string = "GameScreen {background-image: url("+os.path.join(CURRENT_PATH,"..","resources","common", "kitchen-2165756_1920.jpg")+");}"
 		self.setStyleSheet(style_sheet_string)
 
 		self.end_message = QLabel(u"¡Has perdido!")

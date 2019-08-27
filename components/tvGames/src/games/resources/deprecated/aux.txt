@@ -14,32 +14,32 @@
     "initial_pose": [100,100],
     "final_pose": [100,100],
     "draggable": "False",
-    "path": "resources/closet.png",
+    "path": "resources/deprecated/closet.png",
     "name": "armario"
   }
 
   "Image22":
   {
-    "path": "resources/pantalon.png",
+    "path": "resources/deprecated/pantalon.png",
     "name": "pantalon",
     "categories": ["clothes", "all"]
   }
   ,
   "Image3":
   {
-    "path": "resources/polo.png",
+    "path": "resources/deprecated/polo.png",
     "name": "polo",
     "categories": ["clothes", "summer"]
   },
   "Image4":
   {
-    "path": "resources/shorts.png",
+    "path": "resources/deprecated/shorts.png",
     "name": "pantalon corto",
     "categories": ["clothes", "summer"]
   },
   "Background to":
   {
-    "path": "resources/cajon.png",
+    "path": "resources/deprecated/cajon.png",
     "name": "caja",
     "categories": ["background", "to"]
   }

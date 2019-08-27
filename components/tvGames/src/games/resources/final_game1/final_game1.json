@@ -67,14 +67,14 @@
     "handOpen": {
       "size": [100,100],
       "initial_pose": [400,300],
-      "image_path": "../../resources/00-Pointer-Hand-icon_2.png",
+      "image_path": "../../resources/common/icons/00-Pointer-Hand-icon_2.png",
       "name": "handOpen",
       "category": "mouse"
     },
     "handClose": {
       "size": [100,100],
       "initial_pose": [400,300],
-      "image_path": "../../resources/01-Pointer-Hand-icon_2.png",
+      "image_path": "../../resources/common/icons/01-Pointer-Hand-icon_2.png",
       "name": "handClose",
       "category": "mouse"
     }

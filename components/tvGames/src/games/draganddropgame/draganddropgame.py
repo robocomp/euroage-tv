@@ -806,20 +806,20 @@ class TakeDragGame(QWidget):
 		with open(os.path.join(CURRENT_PATH, config_file_path)) as config_file:
 			self.game_config = json.load(config_file)
 			self.game_config["config_path"] = config_file_path
+        self.setWindowState(Qt.WindowMaximized)
 		# self.resize(self.game_config["size"][0], self.game_config["size"][1])
 		self.create_and_add_images()
 
 		# self.draw_position(self.scene.width()/2, self.scene.height()/2, False)
 		# self.clock.set_time(int(self.game_config["time"]))
 		# self.clock.set_time(3)
-		self.setWindowState(Qt.WindowMaximized)
 		# self._update_scores()
 		# self.clock.show()
 
 		# TODO: Fix it
 		# to avoid the resize to the exact escen we create a invisible item at 0,0 in the scene
 		# it's beacuse the wai the resizeEvent is implemented
-		self._invisible_00_item = QGraphicsRectItem(250,230,0,0)
+        self._invisible_00_item = QGraphicsRectItem(0,0, 0,0)
 		self._scene.addItem(self._invisible_00_item)
 
 	# Detecting touch events on multitouch screen

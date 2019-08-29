@@ -799,6 +799,19 @@ class TakeDragGame(QWidget):
         self._invisible_00_item = QGraphicsRectItem(0,0, 0,0)
         self._scene.addItem(self._invisible_00_item)
 
+        # Calculate the bottom right position
+        far_right_piece_pos = [0,0]
+        for destination in self._destinations.values():
+            if destination.pos().y()+destination.height > far_right_piece_pos[1]:
+                far_right_piece_pos = [destination.pos().x()+destination.width, destination.pos().y()+destination.height]
+            elif destination.pos().y()+destination.height == far_right_piece_pos[1]:
+                if destination.pos().x() > far_right_piece_pos[0]:
+                    far_right_piece_pos = [destination.pos().x()+destination.width, destination.pos().y()+destination.height]
+
+        # add invisible item to let the title been seen
+        self._invisible_last_item = QGraphicsRectItem(far_right_piece_pos[0]+10, far_right_piece_pos[1]+20, 0, 0)
+        self._scene.addItem(self._invisible_last_item)
+
     # Detecting touch events on multitouch screen
     def event(self, event):
         # print "QWidget event "+str(event.type)
@@ -888,6 +901,7 @@ class TakeDragGame(QWidget):
 
     def add_new_pointer(self, pointer_id, xpos, ypos, grab, visible=False):
         # print "TakeDragGame.add_new_pointer: ID=%d"%pointer_id
+
         open_pointer_widget = self.game_config["images"]["handOpen"]["widget"].clone()
         close_pointer_widget = self.game_config["images"]["handClose"]["widget"].clone()
         open_pointer_widget.setZValue(int(self.game_config["depth"]["mouse"]))
@@ -899,8 +913,6 @@ class TakeDragGame(QWidget):
             self._scene.addItem(self._pointers[pointer_id].closed_widget)
 
     def update_pointer(self, pointer_id, xpos, ypos, grab):
-        if pointer_id == -1:
-            return
         if pointer_id not in self._pointers:
             self.add_new_pointer(pointer_id, xpos, ypos, grab)
         self._pointers[pointer_id].position = (xpos, ypos)
@@ -1097,7 +1109,7 @@ class TakeDragGame(QWidget):
                     dest_item.setPos(item["final_pose"][0], item["final_pose"][1])
                     new_image.final_destination = dest_item
                     self._pieces.append(new_image)
-					self._destinations[dest_item.index]=dest_item
+                    self._destinations[dest_item.index]=dest_item
                     self.total_images = self.total_images + 1
                     self._scene.addItem(dest_item)
 
@@ -1223,7 +1235,7 @@ def main():
     app = QApplication(sys.argv)
     game = GameScreen(None, 1920, 1080)
     # game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/final_game1.json")
-    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/game.json")
+    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
     game.showMaximized()
 
     # main_widget = GameWidget()

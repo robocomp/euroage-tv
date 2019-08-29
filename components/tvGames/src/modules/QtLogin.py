@@ -12,11 +12,12 @@ from PyQt4.QtGui import QWidget, QLabel, QGroupBox, QPushButton, QLineEdit, QHBo
 from passlib.hash import pbkdf2_sha256
 
 FILE_PATH = os.path.abspath(__file__)
+print(FILE_PATH)
 # DATABASE_PATH = "resources/users_db.sqlite"
-USERS_FILE_PATH = "resources/passwords.json"
-SHADOWS_FILE_PATH = "resources/shadows.json"
+USERS_FILE_PATH = "../../resources/passwords.json"
+SHADOWS_FILE_PATH = "../../resources/shadows.json"
 # print FILE_PATH
-print os.getcwd()
+#print os.getcwd()
 
 
 # SQL_USER_TABLE_CREATION='create table if not exists users ' \
@@ -127,16 +128,16 @@ class QUserManager(QObject):
                             if pbkdf2_sha256.verify(password_to_check, hash):
                                 return True
                             else:
-                                print "WARNING: check_user_password: password mismatch"
+                                print ("WARNING: check_user_password: password mismatch")
                                 return False
                         else:
-                            print "ERROR: check_user_password: Password should be shadowed"
+                            print ("ERROR: check_user_password: Password should be shadowed")
                     else:
-                        print "ERROR: check_user_password: username does't exist"
+                        print ("ERROR: check_user_password: username does't exist")
                 else:
-                    print "ERROR: check_user_password: username does't exist"
+                    print ("ERROR: check_user_password: username does't exist")
         else:
-            print "ERROR: check_user_password: No user load."
+            print ("ERROR: check_user_password: No user load.")
             return False
 
     def set_username_password(self, username, plain_password, role='admin'):
@@ -173,7 +174,7 @@ class QLoginWidgetBase(QWidget):
         f.setPointSize(6)
         self.login_status.setFont(f)
 
-        self.login_groupbox = QGroupBox(u"Iniciar sesión::")
+        self.login_groupbox = QGroupBox(u"Iniciar sesión:")
         self.login_layout = QVBoxLayout()
 
         self.build_widget()

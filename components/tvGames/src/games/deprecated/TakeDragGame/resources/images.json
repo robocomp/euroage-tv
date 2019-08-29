@@ -1,0 +1,39 @@
+{
+  "Image1":
+  {
+    "path": "resources/deprecated/abrigo.png",
+    "name": "abrigo",
+    "categories": ["clothes", "winter"]
+  },
+  "Image2":
+  {
+    "path": "resources/deprecated/pantalon.png",
+    "name": "pantalon",
+    "categories": ["clothes", "all"]
+  }
+  ,
+  "Image3":
+  {
+    "path": "resources/deprecated/polo.png",
+    "name": "polo",
+    "categories": ["clothes", "summer"]
+  },
+  "Image4":
+  {
+    "path": "resources/deprecated/shorts.png",
+    "name": "pantalon corto",
+    "categories": ["clothes", "summer"]
+  },
+  "Background from":
+  {
+    "path": "resources/deprecated/closet.png",
+    "name": "armario",
+    "categories": ["background", "from"]
+  },
+  "Background to":
+  {
+    "path": "resources/deprecated/cajon.png",
+    "name": "caja",
+    "categories": ["background", "to"]
+  }
+}

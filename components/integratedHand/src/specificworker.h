@@ -37,9 +37,31 @@
 
 using namespace std::chrono;
 
+#define MAX_HISTORY 5
+#define MAX_TIMEOUT 500
+#define ANATOMIC_MIN_DISTANCE 100
+
+struct TimedApril
+{
+	std::chrono::time_point<std::chrono::steady_clock> timestamp;
+	RoboCompAprilTags::tag tag;
+};
+
 class SpecificWorker : public GenericWorker
 {
 Q_OBJECT
+
+//	QTimer apriltag_timeout;
+	std::shared_ptr<InnerModel> innerModel;
+	QHash<int, QQueue<TimedApril> > seen_tags;
+	std::map<int, RoboCompHandDetection::Hand> hands;
+	QMap<int, RoboCompAprilTags::tag > april_averages;
+	QMap<int, int> hands_history;
+	QMap<int, int> hand_to_april_id;
+	mutable std::mutex mutex_inner;
+	typedef std::lock_guard<std::mutex> guard;
+
+
 public:
 	SpecificWorker(MapPrx& mprx);
 	~SpecificWorker();
@@ -49,15 +71,21 @@ public:
 	void AprilTags_newAprilTag(const tagsList &tags);
 	void TouchPoints_detectedTouchPoints(const TouchPointsSeq &touchpoints);
 
+
 public slots:
 	void compute();
 	void initialize(int period);
+//	void remove_old_apritag();
 
 private:
+	void get_apriltag_average();
+	void delete_apriltag(int id);
+	void update_hands(RoboCompHandDetection::Hands hands);
+	float euclidean3D_distance(float x1, float y1, float z1, float x2, float y2, float z2);
+	RoboCompIntegratedHand::Hand fill_integrated_hand(RoboCompHandDetection::Hand hand, int id);
+
 //	InnerModel *innerModel;
-	std::shared_ptr<InnerModel> innerModel;
-	std::map<int, RoboCompAprilTags::tag> seen_tags;
-	std::map<int, RoboCompHandDetection::Hand> hands;
+
 #ifdef USE_QTGUI
 	OsgView *osgView;
 	InnerModelViewer *innerModelViewer;

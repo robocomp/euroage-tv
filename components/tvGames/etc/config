@@ -1,18 +1,21 @@
 # Endpoints for implemented interfaces
+AdminGame.Endpoints=tcp -p 18888
 CommonBehavior.Endpoints=tcp -p 10006
 TvGames.Endpoints=tcp -p 10007
 
 
 # Proxies for required interfaces
+CameraSimpleProxy = camerasimple:tcp -h localhost -p 10005
 GetAprilTagsProxy = getapriltags:tcp -h localhost -p 14310
 HandDetectionProxy = handdetection:tcp -h localhost -p 21222
 RGBDProxy = rgbd:tcp -h localhost -p 10096
-CameraSimpleProxy = camerasimple:tcp -h localhost -p 10005
+
 
 
 # This property is used by the clients to connect to IceStorm.
-TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
+TopicManager.Proxy=IceStorm/TopicManager:default -h localhost -p 9999
 
+games_path=/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources
 
 Ice.MessageSizeMax=2000480
 Ice.Warn.Connections=0

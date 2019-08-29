@@ -60,7 +60,8 @@ import sys, traceback, IceStorm, subprocess, threading, time, Queue, os, copy
 # Ctrl+c handling
 import signal
 
-from PySide import QtGui, QtCore
+from PySide2 import QtCore
+from PySide2 import QtWidgets
 
 from specificworker import *
 
@@ -68,7 +69,6 @@ from specificworker import *
 class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 	def __init__(self, _handler):
 		self.handler = _handler
-
 	def getFreq(self, current = None):
 		self.handler.getFreq()
 	def setFreq(self, freq, current = None):
@@ -89,10 +89,12 @@ class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 			status = 1
 			return
 
-
-
+#SIGNALS handler
+def sigint_handler(*args):
+	QtCore.QCoreApplication.quit()
+    
 if __name__ == '__main__':
-	app = QtGui.QApplication(sys.argv)
+	app = QtWidgets.QApplication(sys.argv)
 	params = copy.deepcopy(sys.argv)
 	if len(params) > 1:
 		if not params[1].startswith('--Ice.Config='):
@@ -113,7 +115,7 @@ if __name__ == '__main__':
 		topicManager = IceStorm.TopicManagerPrx.checkedCast(obj)
 	except Ice.ConnectionRefusedException, e:
 		print 'Cannot connect to IceStorm! ('+proxy+')'
-		sys.exit(-1)
+		status = 1
 
 	# Remote object connection for CameraSimple
 	try:
@@ -129,23 +131,6 @@ if __name__ == '__main__':
 	except Ice.Exception, e:
 		print e
 		print 'Cannot get CameraSimpleProxy property.'
-		status = 1
-
-
-	# Remote object connection for HandDetection
-	try:
-		proxyString = ic.getProperties().getProperty('HandDetectionProxy')
-		try:
-			basePrx = ic.stringToProxy(proxyString)
-			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
-			mprx["HandDetectionProxy"] = handdetection_proxy
-		except Ice.Exception:
-			print 'Cannot connect to the remote object (HandDetection)', proxyString
-			#traceback.print_exc()
-			status = 1
-	except Ice.Exception, e:
-		print e
-		print 'Cannot get HandDetectionProxy property.'
 		status = 1
 
 
@@ -166,6 +151,23 @@ if __name__ == '__main__':
 		status = 1
 
 
+	# Remote object connection for HandDetection
+	try:
+		proxyString = ic.getProperties().getProperty('HandDetectionProxy')
+		try:
+			basePrx = ic.stringToProxy(proxyString)
+			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
+			mprx["HandDetectionProxy"] = handdetection_proxy
+		except Ice.Exception:
+			print 'Cannot connect to the remote object (HandDetection)', proxyString
+			#traceback.print_exc()
+			status = 1
+	except Ice.Exception, e:
+		print e
+		print 'Cannot get HandDetectionProxy property.'
+		status = 1
+
+
 	# Remote object connection for RGBD
 	try:
 		proxyString = ic.getProperties().getProperty('RGBDProxy')
@@ -181,6 +183,25 @@ if __name__ == '__main__':
 		print e
 		print 'Cannot get RGBDProxy property.'
 		status = 1
+
+
+	# Create a proxy to publish a GameMetrics topic
+	topic = False
+	try:
+		topic = topicManager.retrieve("GameMetrics")
+	except:
+		pass
+	while not topic:
+		try:
+			topic = topicManager.retrieve("GameMetrics")
+		except IceStorm.NoSuchTopic:
+			try:
+				topic = topicManager.create("GameMetrics")
+			except:
+				print 'Another client created the GameMetrics topic? ...'
+	pub = topic.getPublisher().ice_oneway()
+	gamemetricsTopic = GameMetricsPrx.uncheckedCast(pub)
+	mprx["GameMetricsPub"] = gamemetricsTopic
 
 
 	# Create a proxy to publish a TouchPoints topic
@@ -204,6 +225,14 @@ if __name__ == '__main__':
 	if status == 0:
 		worker = SpecificWorker(mprx)
 		worker.setParams(parameters)
+	else:
+		print "Error getting required connections, check config file"
+		sys.exit(-1)
+
+	adapter = ic.createObjectAdapter('AdminGame')
+	adapter.add(AdminGameI(worker), ic.stringToIdentity('admingame'))
+	adapter.activate()
+
 
 	adapter = ic.createObjectAdapter('CommonBehavior')
 	adapter.add(CommonBehaviorI(worker), ic.stringToIdentity('commonbehavior'))
@@ -215,7 +244,7 @@ if __name__ == '__main__':
 	adapter.activate()
 
 
-	signal.signal(signal.SIGINT, signal.SIG_DFL)
+	signal.signal(signal.SIGINT, sigint_handler)
 	app.exec_()
 
 	if ic:

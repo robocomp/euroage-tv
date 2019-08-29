@@ -1,0 +1,82 @@
+{
+  "title": "Prepara la tortilla",
+  "size":[1900, 1070],
+  "difficult": "100",
+  "time": "599",
+  "depth":{
+    "destination": "0",
+    "piece": "10",
+    "mouse": "50"
+  },
+  "images": {
+    "action_1": {
+      "index": 1,
+      "title": "Echar aceite",
+      "size": [320,240],
+      "initial_pose": [20,20],
+      "final_pose": [20, 500],
+      "image_path": "photos/action_1.jpg",
+      "video_path": "videos/action_1.MP4",
+      "name": "action_1",
+      "category": "piece"
+    },
+    "action_2": {
+      "index": 2,
+      "title": "Batir huevos",
+      "size": [320,240],
+      "initial_pose": [356,20],
+      "final_pose": [356,500],
+      "image_path": "photos/action_4.jpg",
+      "video_path": "videos/action_4.MP4",
+      "name": "action_2",
+      "category": "piece"
+    },
+    "action_3": {
+      "index": 3,
+      "title": "Echar huevos sartén",
+      "size": [320,240],
+      "initial_pose": [672,20],
+      "final_pose": [672,500],
+      "image_path": "photos/action_5.jpg",
+      "video_path": "videos/action_5.MP4",
+      "name": "action_3",
+      "category": "piece"
+    },
+    "action_4": {
+      "index": 4,
+      "title": "Hacer tortilla",
+      "size": [320,240],
+      "initial_pose": [998,20],
+      "final_pose": [998,500],
+      "image_path": "photos/action_6.jpg",
+      "video_path": "videos/action_6.MP4",
+      "name": "action_4",
+      "category": "piece"
+    },
+    "action_5": {
+      "index": 5,
+      "title": "Servir tortilla",
+      "size": [320,240],
+      "initial_pose": [1324,20],
+      "final_pose": [1324,500],
+      "image_path": "photos/action_7.jpg",
+      "video_path": "videos/action_7.MP4",
+      "name": "action_5",
+      "category": "piece"
+    },
+    "handOpen": {
+      "size": [100,100],
+      "initial_pose": [400,300],
+      "image_path": "../../resources/common/icons/00-Pointer-Hand-icon_2.png",
+      "name": "handOpen",
+      "category": "mouse"
+    },
+    "handClose": {
+      "size": [100,100],
+      "initial_pose": [400,300],
+      "image_path": "../../resources/common/icons/01-Pointer-Hand-icon_2.png",
+      "name": "handClose",
+      "category": "mouse"
+    }
+  }
+}

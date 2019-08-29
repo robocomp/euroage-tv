@@ -33,9 +33,9 @@ SpecificWorker::SpecificWorker(MapPrx& mprx) : GenericWorker(mprx)
 //	osgView->setUpViewInWindow(50,50,800,800);
 	osgGA::TrackballManipulator *tb = new osgGA::TrackballManipulator;
 	// The place where the camera will have its home position
-	osg::Vec3d eye(osg::Vec3(-1100,900., 0000.));
+	osg::Vec3d eye(osg::Vec3(-1500,700., 100.));
 	// The point where the camera will look at
-	osg::Vec3d center(osg::Vec3(0.,400.,-0.));
+	osg::Vec3d center(osg::Vec3(0.,600.,-0.));
 	// Define where the camera have it up/top position
 	osg::Vec3d up(osg::Vec3(0.,1.,0.));
 	// Set the Home / Default /Intial position of the camera. It's also the position where it goes when you use the spacebar
@@ -76,6 +76,7 @@ void SpecificWorker::initialize(int period)
 {
 	std::cout << "Initialize worker" << std::endl;
 	this->Period = period;
+//	connect(this->apriltag_timeout, SIGNAL(timeout()), this, SLOT(this->remove_old_apritag()));
 	timer.start(Period);
 //	TRoi search_roi_class;
 //	search_roi_class.y = 480 / 2 - 100;
@@ -89,26 +90,57 @@ void SpecificWorker::initialize(int period)
 
 void SpecificWorker::compute()
 {
+	guard inner(mutex_inner);
+	this->get_apriltag_average();
 	QMutexLocker locker(mutex);
  	try {
- 		auto handCount = handdetection_proxy->getHandsCount();
- 		if(handCount > 0)
-		{
-			 auto hands = handdetection_proxy->getHands();
-			try {
-				std::cout<<"Detected Hands:"<< handCount <<" Coordinates: "<<hands[0].centerMass3D[0]<<", "<<hands[0].centerMass3D[1]<<", "<<hands[0].centerMass3D[2]<<endl;
-				innerModel->updateTransformValues("hand_t", -hands[0].centerMass3D[1],-hands[0].centerMass3D[2], -hands[0].centerMass3D[0], 0,0,0);
-			}
-			catch(...)
-			{
-				std::cout<<"Problem updating transform"<<endl;
-			}
+ 		auto hands = handdetection_proxy->getHands();
+		try {
+
+			this->update_hands(hands);
 
 		}
-		else
+		catch(...)
 		{
-			std::cout<<"Waiting for hands"<<endl;
- 		}
+			std::cout<<"Problem updating transform"<<endl;
+		}
+		int unknown_hands_count = 0;
+		RoboCompIntegratedHand::Hands out_hands;
+		for(auto &hand: hands)
+		{
+			RoboCompIntegratedHand::Hand out_hand;
+			if(!this->hand_to_april_id.contains(hand.id)) {
+				float min_distance = MAXFLOAT;
+				int min_apriltag_id = -1;
+				for (auto tag: this->april_averages) {
+					auto distance = this->euclidean3D_distance(tag.ty, -tag.tz, -tag.tx, -hand.centerMass3D[1],
+															   -hand.centerMass3D[2], -hand.centerMass3D[0]);
+					std::cout << "Distance " << distance;
+					if (distance < min_distance and distance < ANATOMIC_MIN_DISTANCE) {
+						min_distance = distance;
+						min_apriltag_id = tag.id;
+					}
+				}
+				if (min_apriltag_id != -1) {
+					this->hand_to_april_id[hand.id] = min_apriltag_id;
+					out_hand = this->fill_integrated_hand(hand, min_apriltag_id);
+				} else{
+					unknown_hands_count++;
+					out_hand = this->fill_integrated_hand(hand, -unknown_hands_count);
+				}
+			} else{
+				out_hand = this->fill_integrated_hand(hand, this->hand_to_april_id[hand.id]);
+			}
+			out_hands.push_back(out_hand);
+		}
+		try {
+			this->integratedhand_pubproxy->detectedHands(out_hands);
+		}
+		catch(const Ice::Exception &e)
+		{
+			std::cout << "Error publishing hand" << e << std::endl;
+		}
+
 
 	}
  	catch(const Ice::Exception &e)
@@ -128,6 +160,28 @@ void SpecificWorker::compute()
 //	innerModel->save(QString("mejillon.xml"));
 }
 
+RoboCompIntegratedHand::Hand SpecificWorker::fill_integrated_hand(RoboCompHandDetection::Hand hand, int id)
+{
+	RoboCompIntegratedHand::Hand out_hand;
+	out_hand.id = id;
+	out_hand.touched = false;
+	out_hand.fist = false;
+	out_hand.centerMass.x = hand.centerMass3D[0];
+	out_hand.centerMass.y = hand.centerMass3D[1];
+	out_hand.centerMass.z = hand.centerMass3D[2];
+	return out_hand;
+
+}
+
+
+float SpecificWorker::euclidean3D_distance(float x1, float y1, float z1, float x2, float y2, float z2)
+{
+	float xSqr = (x1 - x2) * (x1 - x2);
+	float ySqr = (y1 - y2) * (y1 - y2);
+	float zSqr = (z1 - z2) * (z1 - z2);
+
+	return sqrt(xSqr + ySqr + zSqr);
+}
 
 void SpecificWorker::AprilTags_newAprilTagAndPose(const tagsList &tags, const RoboCompGenericBase::TBaseState &bState, const RoboCompJointMotor::MotorStateMap &hState)
 {
@@ -136,31 +190,42 @@ void SpecificWorker::AprilTags_newAprilTagAndPose(const tagsList &tags, const Ro
 
 void SpecificWorker::AprilTags_newAprilTag(const tagsList &tags)
 {
-
-	for(int i = 0; i< tags.size(); i++)
+	guard inner(mutex_inner);
+	std::chrono::time_point current_time = std::chrono::steady_clock::now();
+	for(auto tag: tags)
 	{
-		map<int, RoboCompAprilTags::tag>::const_iterator it = seen_tags.find(tags[i].id);
-		if(it!=seen_tags.end())
+		if(seen_tags.contains(tag.id))
 		{
-			std::cout<<"Moving tag ("<<tags[i].id<<") "<<tags[i].ty<<", "<<-tags[i].tz<<", "<<-tags[i].tx<<endl;
-//			innerModel->updateTransformValues("tag_t_"+QString::number(tags[i].id), tags[i].ty, -tags[i].tz, -tags[i].tx, 0,0,0);
+			TimedApril t;
+			t.timestamp = current_time;
+			t.tag = tag;
+			seen_tags[tag.id].enqueue(t);
+			if(seen_tags[tag.id].size()>MAX_HISTORY)
+			{
+				seen_tags[tag.id].dequeue();
+
+			}
+			std::cout<<"Apriltags quque size: "<<seen_tags[tag.id].size();
 		}
 		else
 		{
-			std::cout<<"New tag ("<<tags[i].id<<") "<<tags[i].ty<<", "<<-tags[i].tz<<", "<<-tags[i].tx<<endl;
-			seen_tags.insert(std::make_pair(tags[i].id, tags[i]));
-//			auto new_tag_transform = innerModel->newTransform(QString::number(tags[i].id), "static", innerModel->getNode("t_tcamera"), tags[i].ty, -tags[i].tz, -tags[i].tx, 0, 0, 0);
+			seen_tags[tag.id] = QQueue<TimedApril>();
+			TimedApril t;
+			t.timestamp = current_time;
+			t.tag = tag;
+			seen_tags[tag.id].enqueue(t);
+			std::cout<<"New tag ("<<tag.id<<") "<<tag.ty<<", "<<-tag.tz<<", "<<-tag.tx<<endl;
+//			auto new_tag_transform = innerModel->newTransform(QString::number(tag.id), "static", innerModel->getNode("t_tcamera"), tag.ty, -tag.tz, -tag.tx, 0, 0, 0);
 			InnerModelNode *camera_transform;
 			camera_transform = innerModel->getNode("t_tcamera");
 			InnerModelTransform *new_tag_transform;
-			new_tag_transform = innerModel->newTransform("tag_t_"+QString::number(tags[i].id), "static", camera_transform, 0, 0, 0, 0, 0, 0);
+			new_tag_transform = innerModel->newTransform("tag_t_"+QString::number(tag.id), "static", camera_transform,  tag.ty, -tag.tz, -tag.tx, 0,0,0);
 			camera_transform->addChild(new_tag_transform);
 			InnerModelPlane *new_plane;
-			new_plane = innerModel->newPlane("tag_p_"+QString::number(tags[i].id), new_tag_transform, "#7FFFD4", 500, 100, 500, 1000,  0,1,0,   0,0,0,  false);
+			new_plane = innerModel->newPlane("tag_p_"+QString::number(tag.id), new_tag_transform, "#7FFFD4", 10, 10, 10, 0,  0,1,0,   0,0,0,  false);
 			new_tag_transform->addChild(new_plane);
+			innerModelViewer->recursiveConstructor(new_tag_transform);
 			innerModel->update();
-			innerModel->save("saved_inner.xml");
-
 		}
 //		std::cout<<"Id : "<<tags[i].id<<std::endl;
 //		if(tags[i].id==0)
@@ -173,7 +238,153 @@ void SpecificWorker::AprilTags_newAprilTag(const tagsList &tags)
 
 void SpecificWorker::TouchPoints_detectedTouchPoints(const TouchPointsSeq &touchpoints)
 {
-	std::cout << "TouchPoint detected" << std::endl;
+//	for(auto &touchpoint: touchpoints)
+//	{
+//		IntegratedHand::Hand hand;
+//		hand.touched = true;
+//		hand.fist = false;
+//		hand.touchPos = touchpoint.lastPos;
+//		hand.centerMass.x = this->april_averages
+//
+//		//Look for the nearest apriltag between all
+//
+//		//Publish
+//	}
+////	struct Hand{
+////		int id;
+////		bool touched;
+////		bool fist;
+////		Pos2D touchPos;
+////		Pos3D centerMass;
+////	};
+//
+////	struct TouchPoint
+////	{
+////		::Ice::Int id;
+////		StateEnum state;
+////		KeyPoint fingertip;
+////		KeyPoint lastPos;
+////	};
+//	std::cout << "TouchPoint detected" << std::endl;
+
 }
 
 
+void SpecificWorker::get_apriltag_average()
+{
+	auto current_time = std::chrono::steady_clock::now();
+
+	for(auto id: this->seen_tags.keys())
+	{
+		auto &april_time_vec = this->seen_tags[id];
+		this->april_averages[id].tx=0;
+		this->april_averages[id].ty=0;
+		this->april_averages[id].tz=0;
+
+		for(auto &aprilt_time: april_time_vec)
+		{
+			auto duration = std::chrono::duration_cast<  std::chrono::milliseconds>
+					(current_time - aprilt_time.timestamp);
+
+			if(duration.count() < MAX_TIMEOUT)
+			{
+				this->april_averages[id].tx+=aprilt_time.tag.tx;
+				this->april_averages[id].ty+=aprilt_time.tag.ty;
+				this->april_averages[id].tz+=aprilt_time.tag.tz;
+				//average
+			}
+			else {
+				//TODO: It will make boom
+				april_time_vec.dequeue();
+
+			}
+
+
+		}
+		if(april_time_vec.size()>0)
+		{
+			this->april_averages[id].tx/=april_time_vec.size();
+			this->april_averages[id].ty/=april_time_vec.size();
+			this->april_averages[id].tz/=april_time_vec.size();
+			std::cout<<"Moving tag ("<<id<<") "<<this->april_averages[id].ty<<", "<<-this->april_averages[id].tz<<", "<<-this->april_averages[id].tx<<endl;
+			innerModel->updateTransformValues("tag_t_"+QString::number(id), this->april_averages[id].ty, -this->april_averages[id].tz, -this->april_averages[id].tx, 0,0,0);
+		}
+		else
+		{
+			this->delete_apriltag(id);
+		}
+	}
+
+}
+
+void SpecificWorker::delete_apriltag(int id)
+{
+	QString name = "tag_t_"+QString::number(id);
+	std::cout<<"Removing id "<<id<<endl;
+	InnerModelNode* node = innerModel->getNode(name);
+	if(node!=NULL) {
+		QStringList l;
+		innerModelViewer->recursiveRemove(node);
+		innerModel->removeSubTree(node, &l);
+		innerModel->update();
+		qDebug() << l;
+		this->seen_tags.remove(id);
+		this->april_averages.remove(id);
+	}
+	InnerModelNode* node3 = innerModel->getNode(name);
+	if(node3 == NULL)
+	{
+		std::cout<<"BORRADO innermodel node";
+	}
+}
+
+void SpecificWorker::update_hands(RoboCompHandDetection::Hands hands)
+{
+
+	QList<int> keys = this->hands_history.keys();
+//	qDebug()<<"keys1 "<<keys;
+	for(auto &hand: hands)
+	{
+
+		if(!this->hands_history.contains(hand.id))
+		{
+			innerModel->getNode("t_tcamera");
+			InnerModelNode *camera_transform;
+			this->hands_history[hand.id]=1;
+			camera_transform = innerModel->getNode("t_tcamera");
+			InnerModelTransform *new_hand_transform = innerModel->newTransform("hand_t_"+QString::number(hand.id), "static", camera_transform,  -hand.centerMass3D[1],-hand.centerMass3D[2], -hand.centerMass3D[0], 0,0,0);
+			camera_transform->addChild(new_hand_transform);
+			InnerModelPlane *new_plane = innerModel->newPlane("hand_p_"+QString::number(hand.id), new_hand_transform, "#b969db", 15, 15, 15, 0,  0,1,0,   0,0,0,  false);
+			new_hand_transform->addChild(new_plane);
+			innerModelViewer->recursiveConstructor(new_hand_transform);
+			innerModel->update();
+		}
+		else {
+			innerModel->updateTransformValues("hand_t_"+QString::number(hand.id), -hand.centerMass3D[1],-hand.centerMass3D[2], -hand.centerMass3D[0], 0,0,0);
+			this->hands_history[hand.id]++;
+			if(this->hands_history[hand.id]>MAX_HISTORY)
+				this->hands_history[hand.id] = MAX_HISTORY;
+		}
+		keys.removeAll(hand.id);
+	}
+//	qDebug()<<"keys2 "<<keys;
+	for(auto &key: keys)
+	{
+		this->hands_history[key]--;
+//		qDebug()<<"Times seen "<<this->hands_history[key];
+		if(this->hands_history[key]<=0)
+		{
+			QString name = "hand_t_"+QString::number(key);
+//			std::cout<<"Removing key "<<key<<endl;
+			InnerModelNode* node = innerModel->getNode(name);
+			if(node!=NULL) {
+				QStringList l;
+				innerModelViewer->recursiveRemove(node);
+				innerModel->removeSubTree(node, &l);
+				innerModel->update();
+				qDebug() << l;
+				this->hands_history.remove(key);
+			}
+		}
+	}
+}

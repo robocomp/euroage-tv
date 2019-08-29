@@ -1,0 +1,15 @@
+import "AdminGame.idsl";
+import "GameMetrics.idsl";
+
+Component adminGame
+{
+    Communications
+    {
+	requires AdminGame;
+	subscribesTo GameMetrics;    
+    };
+	language python;
+	gui Qt(QMainWindow);
+
+};
+

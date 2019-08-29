@@ -1,12 +1,14 @@
 import "TouchPoints.idsl";
 import "HandDetection.idsl";
 import "AprilTags.idsl";
+import "IntegratedHand.idsl";
 
 
 Component IntegratedHand
 {
 	Communications
 	{
+	    publishes IntegratedHand;
 		requires HandDetection;
 		subscribesTo TouchPoints, AprilTags;
 	};

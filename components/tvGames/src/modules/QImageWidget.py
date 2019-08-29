@@ -1,12 +1,14 @@
+import sys
 import cv2
+import signal
 
-from PyQt4.QtCore import Qt, pyqtSignal
-from PyQt4.QtGui import QWidget, QHBoxLayout, QLabel, QPixmap, QImage, QApplication
-
+from PySide2.QtWidgets import QWidget, QHBoxLayout, QLabel, QApplication
+from PySide2.QtCore import Signal, Qt
+from PySide2.QtGui import QPixmap, QImage
 
 class QImageWidget(QWidget):
-    mouse_pressed = pyqtSignal(object)
-    mouse_released = pyqtSignal(object)
+    mouse_pressed = Signal(object)
+    mouse_released = Signal(object)
     def __init__(self, max_width= None, parent=None):
         super(QImageWidget, self).__init__(parent)
         self.layout = QHBoxLayout(self)
@@ -58,3 +60,10 @@ class QImageWidget(QWidget):
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.mouse_released.emit([event.globalX(), event.globalY()])
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    image = QImageWidget()
+    image.show()
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    app.exec_()

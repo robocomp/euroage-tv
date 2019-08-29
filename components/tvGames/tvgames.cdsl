@@ -5,16 +5,19 @@ import "CommonBehavior.idsl";
 import "TvGames.idsl";
 import "GetAprilTags.idsl";
 import "TouchPoints.idsl";
+import "AdminGame.idsl";
+import "GameMetrics.idsl";
 
 Component tvgames
 {
 	Communications
 	{
 		requires HandDetection, CameraSimple, RGBD, GetAprilTags;
-        implements CommonBehavior, TvGames;
-		publishes TouchPoints;
+        implements CommonBehavior, TvGames, AdminGame;
+		publishes TouchPoints, GameMetrics;
 	};
 	language Python;
 	gui Qt(QWidget);
+	statemachine "gamestatemachine.smdsl";
 };
 

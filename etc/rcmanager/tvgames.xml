@@ -11,6 +11,18 @@
   <simulation hookes="0.07" springlength="0.5" friction="0.4" step="0.5" fieldforce="20000.0" />
  </generalInformation>
 
+ <node alias="gameManager" endpoint="gamemetrics:tcp -h localhost -p 10158">
+  <dependence alias="tvGames" />
+  <workingDir path="/home/robolab/robocomp/components/euroage-tv/components/gameManager/" />
+  <upCommand command="rcremote localhost gameManager /home/robolab/robocomp/components/euroage-tv/components/gameManager/ python src/gameManager.py /home/robolab/robocomp/components/euroage-tv/components/gameManager/etc/config" />
+  <downCommand command="pkill -9 -f gameManager.py" />
+  <configFile path="" />
+  <xpos value="31.734059895" />
+  <ypos value="-187.269590989" />
+  <radius value="10.0" />
+  <color value="#AAAAAA" />
+ </node>
+
  <node alias="tvGames" endpoint="commonbehavior:tcp -h localhost -p 10006">
   <dependence alias="handDetection" />
   <dependence alias="cameraSimple" />
@@ -20,8 +32,8 @@
   <upCommand command="rcremote localhost tvGames /home/robolab/robocomp/components/euroage-tv/components/tvGames/ python src/tvgames.py /home/robolab/robocomp/components/euroage-tv/components/tvGames/etc/config" />
   <downCommand command="pkill -9 -f tvgames.py" />
   <configFile path="" />
-  <xpos value="14.0813789154" />
-  <ypos value="-218.49819629" />
+  <xpos value="-105.916085878" />
+  <ypos value="-187.371631805" />
   <radius value="10.0" />
   <color value="#AAAAAA" />
  </node>
@@ -32,8 +44,8 @@
   <upCommand command="rcremote localhost AprilTags /home/robolab/robocomp/components/robocomp-robolab/components/apriltagsComp/ ./bin/AprilTagsComp etc/config_rgbd" />
   <downCommand command="pkill -9 -f AprilTagsComp" />
   <configFile path="" />
-  <xpos value="241.775345256" />
-  <ypos value="60.8400570877" />
+  <xpos value="259.428026236" />
+  <ypos value="92.0686623885" />
   <radius value="10.0" />
   <color value="#AAAAAA" />
  </node>
@@ -45,8 +57,8 @@
   <upCommand command="rcremote localhost handDetection /home/robolab/robocomp/components/robocomp-robolab/components/handDetection python src/handDetection.py /home/robolab/robocomp/components/robocomp-robolab/components/handDetection/etc/config" />
   <downCommand command="pkill -9 -f handDetection" />
   <configFile path="" />
-  <xpos value="-2.06161341426" />
-  <ypos value="56.6083348161" />
+  <xpos value="15.5910675653" />
+  <ypos value="87.8369401169" />
   <radius value="10.0" />
   <color value="#FF3333" />
  </node>
@@ -56,8 +68,8 @@
   <upCommand command="rcremote localhost cameraSimple /home/robolab/robocomp/components/robocomp-robolab/components/camerasimple python src/camerasimple.py /home/robolab/robocomp/components/robocomp-robolab/components/camerasimple/etc/config" />
   <downCommand command="pkill -9 -f camerasimple" />
   <configFile path="" />
-  <xpos value="-117.769526449" />
-  <ypos value="-12.4181541034" />
+  <xpos value="-100.116845469" />
+  <ypos value="18.8104511974" />
   <radius value="10.0" />
   <color value="#FF3333" />
  </node>
@@ -67,8 +79,8 @@
   <upCommand command="rcremote localhost RGBD /home/robolab/robocomp/components/robocomp-robolab/components/astraRGBD ./bin/astraRGBD etc/config" />
   <downCommand command="pkill -9 -f astraRGBD" />
   <configFile path="etc/config" />
-  <xpos value="129.938386585" />
-  <ypos value="58.6083348157" />
+  <xpos value="147.591067565" />
+  <ypos value="89.8369401165" />
   <radius value="10.0" />
   <color value="#FF3333" />
  </node>
@@ -80,8 +92,8 @@
   <upCommand command="rcremote localhost integratedHand /home/robolab/robocomp/components/euroage-tv/components/integratedHand ./bin/IntegratedHand /home/robolab/robocomp/components/euroage-tv/components/integratedHand/etc/config" />
   <downCommand command="pkill -9 -f integratedHand" />
   <configFile path="/home/robolab/robocomp/components/euroage-tv/components/integratedHand/etc/config" />
-  <xpos value="-265.963970893" />
-  <ypos value="54.8596236744" />
+  <xpos value="-248.311289913" />
+  <ypos value="86.0882289752" />
   <radius value="10.0" />
   <color value="#FF3333" />
  </node>

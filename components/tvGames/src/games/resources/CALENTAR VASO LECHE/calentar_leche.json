@@ -1,0 +1,110 @@
+{
+    "title": "Calentar leche en microondas", 
+    "size": [
+        1900, 
+        1070
+    ], 
+    "difficult": 100, 
+    "time": 90.0, 
+    "depth": {
+        "destination": "0", 
+        "mouse": "50", 
+        "piece": "10"
+    }, 
+    "images": {
+        "action_4": {
+            "index": 4, 
+            "title": "Calentar en micro", 
+            "size": [
+                320, 
+                240
+            ], 
+            "initial_pose": [
+                980, 
+                20
+            ], 
+            "final_pose": [
+                980, 
+                510
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_04.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_04.mp4", 
+            "name": "action_4", 
+            "category": "piece"
+        }, 
+        "action_3": {
+            "index": 3, 
+            "title": "meter en el micro", 
+            "size": [
+                320, 
+                240
+            ], 
+            "initial_pose": [
+                655, 
+                20
+            ], 
+            "final_pose": [
+                655, 
+                510
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_03.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_04.mp4", 
+            "name": "action_3", 
+            "category": "piece"
+        }, 
+        "action_2": {
+            "index": 2, 
+            "title": "servir leche", 
+            "size": [
+                320, 
+                240
+            ], 
+            "initial_pose": [
+                330, 
+                20
+            ], 
+            "final_pose": [
+                330, 
+                510
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_02.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_02.mp4", 
+            "name": "action_2", 
+            "category": "piece"
+        }, 
+        "action_1": {
+            "index": 1, 
+            "title": "Coger leche", 
+            "size": [
+                320, 
+                240
+            ], 
+            "initial_pose": [
+                5, 
+                20
+            ], 
+            "final_pose": [
+                5, 
+                510
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_01.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_01.mp4", 
+            "name": "action_1", 
+            "category": "piece"
+        },
+            "handOpen": {
+      "size": [100,100],
+      "initial_pose": [400,300],
+      "image_path": "../../resources/common/icons/00-Pointer-Hand-icon_2.png",
+      "name": "handOpen",
+      "category": "mouse"
+    },
+    "handClose": {
+      "size": [100,100],
+      "initial_pose": [400,300],
+      "image_path": "../../resources/common/icons/01-Pointer-Hand-icon_2.png",
+      "name": "handClose",
+      "category": "mouse"
+    }
+    }
+}

@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'src/mainUI.ui'
+# Form implementation generated from reading ui file 'src/mainUI.ui',
+# licensing of 'src/mainUI.ui' applies.
 #
-# Created: Thu Aug 30 13:50:05 2018
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+# Created: Thu Mar 28 11:53:46 2019
+#      by: pyside2-uic  running on PySide2 5.12.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_guiDlg(object):
     def setupUi(self, guiDlg):
@@ -18,5 +19,5 @@ class Ui_guiDlg(object):
         QtCore.QMetaObject.connectSlotsByName(guiDlg)
 
     def retranslateUi(self, guiDlg):
-        guiDlg.setWindowTitle(QtGui.QApplication.translate("guiDlg", "tvgames", None, QtGui.QApplication.UnicodeUTF8))
+        guiDlg.setWindowTitle(QtWidgets.QApplication.translate("guiDlg", "tvgames", None, -1))
 

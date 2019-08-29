@@ -101,6 +101,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 	pausedtoplaying = QtCore.Signal()
 	pausedtogame_end = QtCore.Signal()
 	game_endtoadmin_games = QtCore.Signal()
+	session_endtosession_init = QtCore.Signal()
 
 #-------------------------
 
@@ -135,9 +136,9 @@ class GenericWorker(QtWidgets.QMainWindow):
 		self.playing_state = QtCore.QState(self.admin_state)
 		self.paused_state = QtCore.QState(self.admin_state)
 		self.game_end_state = QtCore.QState(self.admin_state)
+		self.session_end_state = QtCore.QState(self.admin_state)
 		self.user_login_state = QtCore.QState(self.admin_state)
 
-		self.session_end_state = QtCore.QFinalState(self.admin_state)
 
 
 #------------------
@@ -160,12 +161,12 @@ class GenericWorker(QtWidgets.QMainWindow):
 		self.paused_state.addTransition(self.pausedtoplaying, self.playing_state)
 		self.paused_state.addTransition(self.pausedtogame_end, self.game_end_state)
 		self.game_end_state.addTransition(self.game_endtoadmin_games, self.admin_games_state)
+		self.session_end_state.addTransition(self.session_endtosession_init, self.session_init_state)
 
 
 		self.admin_state.entered.connect(self.sm_admin)
 		self.app_end_state.entered.connect(self.sm_app_end)
 		self.user_login_state.entered.connect(self.sm_user_login)
-		self.session_end_state.entered.connect(self.sm_session_end)
 		self.create_user_state.entered.connect(self.sm_create_user)
 		self.session_init_state.entered.connect(self.sm_session_init)
 		self.create_player_state.entered.connect(self.sm_create_player)
@@ -175,6 +176,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 		self.playing_state.entered.connect(self.sm_playing)
 		self.paused_state.entered.connect(self.sm_paused)
 		self.game_end_state.entered.connect(self.sm_game_end)
+		self.session_end_state.entered.connect(self.sm_session_end)
 
 		self.manager_machine.setInitialState(self.admin_state)
 		self.admin_state.setInitialState(self.user_login_state)
@@ -258,13 +260,13 @@ class GenericWorker(QtWidgets.QMainWindow):
 		sys.exit(-1)
 
 	@QtCore.Slot()
-	def sm_user_login(self):
-		print "Error: lack sm_user_login in Specificworker"
+	def sm_session_end(self):
+		print "Error: lack sm_session_end in Specificworker"
 		sys.exit(-1)
 
 	@QtCore.Slot()
-	def sm_session_end(self):
-		print "Error: lack sm_session_end in Specificworker"
+	def sm_user_login(self):
+		print "Error: lack sm_user_login in Specificworker"
 		sys.exit(-1)
 
 

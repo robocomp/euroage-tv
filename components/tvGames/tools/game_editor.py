@@ -164,6 +164,20 @@ class EditorWindow(QWidget):  # crea widget vacio
 
             pieces_dict[action_name] = attributes_dict
 
+        open_hand_icon = OrderedDict()
+        open_hand_icon["size"] = [100, 100]
+        open_hand_icon["initial_pose"] = [400, 300]
+        open_hand_icon["image_path"] = "../../resources/common/icons/00-Pointer-Hand-icon_2.png"
+        open_hand_icon["name"] = "handOpen"
+        open_hand_icon["category"] = "mouse"
+        pieces_dict[action_name] = open_hand_icon
+        close__hand_icon = OrderedDict()
+        close__hand_icon["size"] = [100, 100]
+        close__hand_icon["initial_pose"] = [400, 300]
+        close__hand_icon["image_path"] = "../../resources/common/icons/01-Pointer-Hand-icon_2.png"
+        close__hand_icon["name"] = "handClose"
+        close__hand_icon["category"] = "mouse"
+        pieces_dict[action_name] = open_hand_icon
         game_dict["images"] = pieces_dict
 
         with open('./game.json', 'w') as file:

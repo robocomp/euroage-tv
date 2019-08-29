@@ -1100,7 +1100,14 @@ class TakeDragGame(QWidget):
 					self._destinations[dest_item.index]=dest_item
                     self.total_images = self.total_images + 1
                     self._scene.addItem(dest_item)
-            #Randomize initial position
+
+            # Randomize initial position
+            random.shuffle(temp_pieces_pos)
+            for piece in self._pieces:
+                random_new_pos = temp_pieces_pos.pop()
+                piece.setPos(random_new_pos[0], random_new_pos[1])
+
+            ############# FOR AUTO RESIZING AND POSITIONING PIECES ########
             # self.resize_pieces_auto()
             # self.set_random_initial_auto_pieces_positions()
             # self.set_auto_initial_destinations_positions()

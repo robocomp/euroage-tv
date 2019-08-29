@@ -189,7 +189,7 @@ class SpecificWorker(GenericWorker):
 
 	def update_game_selection(self, index=None):
 		if self._current_game_name is not None:
-			self._game = GameScreen(self._game_screen_width, self._game_screen_height)
+			self._game = GameScreen(None, self._game_screen_width, self._game_screen_height)
 			self._game.game_frame.touch_signal.connect(self.detectedTouchPoints)
 			self._game.help_clicked.connect(self.game_help_clicked)
 			self._game.check_clicked.connect(self.game_check_clicked)
@@ -293,9 +293,6 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_game_init(self):
 		print("Entered state game_init")
-
-		# TODO: Test only. Remove on production
-		self._current_game_name = "Prepara la tortilla"
 
 		self._game = None
 		self.update_game_selection()
@@ -435,7 +432,7 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_player_acquisition_ended(self):
 		print("Entered state player_acquisition_ended")
-
+		self.tv_image.hide()
 		self.send_status_change(StatusType.readySession)
 		# TODO: Testing only. remove on production
 		self.session_inittogame_start_wait.emit()
@@ -820,8 +817,8 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminStartGame(self, game):
 		print("adminStartGame")
+		self._current_game_name = game
 		self.game_start_waittogame_init.emit()
-		pass
 
 
 	#

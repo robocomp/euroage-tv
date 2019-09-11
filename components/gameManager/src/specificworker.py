@@ -117,6 +117,7 @@ class Session():
                 writer.writerows(rows)
             csvFile.close()
 
+
 class Metrics():
     def __init__(self):
         self.time = None
@@ -128,6 +129,7 @@ class Metrics():
         self.hits = 0
         self.fails = 0
 
+
 class Game():
     def __init__(self):
         self.nameGame = None
@@ -137,7 +139,7 @@ class Game():
         self.metrics = []
         self.gameWon = False
 
-    def save_game(self, dir): ####HAY QUE CAMBIAR LA FORMA EN LA QUE SE GUARDAN LOS DATOS
+    def save_game(self, dir):
         name = self.nameGame
         filename = os.path.join(dir, name.replace(" ", "").strip().lower() + ".csv")
         date = datetime.strftime(self.date, "%H:%M:%S")
@@ -147,8 +149,7 @@ class Game():
 
         for m in self.metrics:
             rows.append([date, self.timePlayed, self.timePaused, m.distance, m.touched, m.handClosed, m.helps,
-             m.checks, m.hits, m.fails, self.gameWon])
-
+                         m.checks, m.hits, m.fails, self.gameWon])
 
         with open(filename, 'w') as csvFile:
             writer = csv.writer(csvFile)
@@ -522,6 +523,10 @@ class SpecificWorker(GenericWorker):
             QMessageBox().information(self.focusWidget(), 'Error',
                                       'No se han seleccionado ningún jugador',
                                       QMessageBox.Ok)
+        elif len(self.list_games_toplay) == 0:
+            QMessageBox().information(self.focusWidget(), 'Error',
+                                      'No se ha seleccionado ningún juego',
+                                      QMessageBox.Ok)
         else:
 
             self.currentSession.patient = str(player)
@@ -698,8 +703,6 @@ class SpecificWorker(GenericWorker):
         self.mainMenu.setEnabled(True)
         self.aux_savedGames = False
 
-
-
     #
     # sm_admin_games
     #
@@ -794,7 +797,6 @@ class SpecificWorker(GenericWorker):
                                          ' Desea guardar los datos de la sesion actual?', QMessageBox.Yes,
                                          QMessageBox.No)
             if reply == QMessageBox.Yes:
-
                 time = self.aux_currentDate - self.currentSession.date
                 self.currentSession.totaltime = time.total_seconds() * 1000
                 print "Session time =  ", self.currentSession.totaltime, "milliseconds"

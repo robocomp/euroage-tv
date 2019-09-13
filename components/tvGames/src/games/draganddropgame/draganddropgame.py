@@ -526,7 +526,7 @@ class QOpencvGraphicsVideoItem(DraggableItem):
 
 
     def set_video_path(self, path):
-        assert os.path.isfile(path), "No valid path provided"
+        assert os.path.isfile(path), "No valid path provided %s" % str(path)
         self._video_source = cv2.VideoCapture(path)
         self._video_path = path
 
@@ -541,14 +541,21 @@ class QOpencvGraphicsVideoItem(DraggableItem):
         ret, frame = self._video_source.read()
         if ret == True:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            rows, cols, channels = frame.shape
-            frame_ratio = frame.shape[1] / float(frame.shape[0])
+            frame_height, frame_width, channels = frame.shape
+            frame_ratio = frame_width / float(frame_height)
             image_ratio = self.width / float(self.height)
-            background_size = (int(frame.shape[1] / image_ratio), frame.shape[1], 3)
+            scale = min(self.width / frame_width, self.height / frame_height)
+            background_size = (int(self.height), int(self.width), 3)
             blank_image = np.zeros(background_size, np.uint8)
             # blank_image[:] = (255, 255, 255)
-            height_offset = int((background_size[0] - frame.shape[0]) / 2)
-            blank_image[height_offset:height_offset + rows, 0:cols] = frame
+            if frame_ratio > image_ratio:
+                resized_frame = cv2.resize(frame, dsize=(int(self.width), int(round(self.width / frame_ratio))),
+                                           interpolation=cv2.INTER_CUBIC)
+            else:
+                resized_frame = cv2.resize(frame, dsize=(int(round(self.height * frame_ratio)), int(self.height)),
+                                           interpolation=cv2.INTER_CUBIC)
+            height_offset = int((background_size[0] - resized_frame.shape[0]) / 2)
+            blank_image[height_offset:height_offset + resized_frame.shape[0], 0:resized_frame.shape[1]] = resized_frame
             self._video_frame = QImage(blank_image, blank_image.shape[1], blank_image.shape[0], blank_image.shape[1] * 3, QImage.Format_RGB888)
             self._video_frame = self._video_frame.scaled(self.width, self.height, Qt.KeepAspectRatio)
             self.image = self._video_frame
@@ -1234,9 +1241,10 @@ def main():
     # almost every app you write
     app = QApplication(sys.argv)
     game = GameScreen(None, 1920, 1080)
-    # game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/final_game1.json")
+    # game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/LionKingGame/game.json")
     game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
-    game.showMaximized()
+    # game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/final_game1.json")
+    game.show_on_second_screen()
 
     # main_widget = GameWidget()
     # main_widget.show_on_second_screen()

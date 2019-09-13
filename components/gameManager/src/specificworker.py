@@ -50,7 +50,7 @@ SHADOWS_FILE_PATH = "src/shadows.json"
 # print os.getcwd()
 
 list_of_users = []
-list_of_games = ["Calentar leche en microondas", "Prepara la tortilla"]
+list_of_games = ["Calentar leche en microondas", "Prepara la tortilla", "El rey leon"]
 
 
 class DDBBStatus:

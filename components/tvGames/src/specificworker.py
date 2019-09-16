@@ -194,6 +194,7 @@ class SpecificWorker(GenericWorker):
 			self._game.help_clicked.connect(self.game_help_clicked)
 			self._game.check_clicked.connect(self.game_check_clicked)
 			self._game.score_update.connect(self.game_score_update)
+			self._game.game_win.connect(self.game_looptogame_won)
 			self.reset_game()
 
 

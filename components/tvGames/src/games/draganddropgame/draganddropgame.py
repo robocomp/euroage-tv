@@ -170,6 +170,7 @@ class GameScreen(QWidget):
             index = randint(0, len(WINNING_SOUNDS))
             file = WINNING_SOUNDS[index]
             subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
+            self.game_win.emit()
         else:
             self.end_message.setText(u"<font color='red'>¡Has perdido!</font>")
             index = randint(0, len(LOST_SOUNDS))
@@ -1242,8 +1243,8 @@ def main():
     app = QApplication(sys.argv)
     game = GameScreen(None, 1920, 1080)
     # game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/LionKingGame/game.json")
-    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
-    # game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/final_game1.json")
+    # game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
+    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/final_game1.json")
     game.show_on_second_screen()
 
     # main_widget = GameWidget()

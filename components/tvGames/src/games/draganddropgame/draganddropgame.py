@@ -543,21 +543,32 @@ class QOpencvGraphicsVideoItem(DraggableItem):
         if ret == True:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame_height, frame_width, channels = frame.shape
+
+            # Calculate ratios of the video frame readed and holder for it (self)
             frame_ratio = frame_width / float(frame_height)
             image_ratio = self.width / float(self.height)
-            scale = min(self.width / frame_width, self.height / frame_height)
+
+            # create a black umage of the size of the holder
             background_size = (int(self.height), int(self.width), 3)
             blank_image = np.zeros(background_size, np.uint8)
             # blank_image[:] = (255, 255, 255)
+
+            # based on the ratio difference between video frame and holder, the video is resized to the largest available size in holder (width or height)
             if frame_ratio > image_ratio:
                 resized_frame = cv2.resize(frame, dsize=(int(self.width), int(round(self.width / frame_ratio))),
                                            interpolation=cv2.INTER_CUBIC)
             else:
                 resized_frame = cv2.resize(frame, dsize=(int(round(self.height * frame_ratio)), int(self.height)),
                                            interpolation=cv2.INTER_CUBIC)
+
             height_offset = int((background_size[0] - resized_frame.shape[0]) / 2)
+
+            # video frame image is added over the black image
             blank_image[height_offset:height_offset + resized_frame.shape[0], 0:resized_frame.shape[1]] = resized_frame
+
+            # final image converted to QImage
             self._video_frame = QImage(blank_image, blank_image.shape[1], blank_image.shape[0], blank_image.shape[1] * 3, QImage.Format_RGB888)
+
             self._video_frame = self._video_frame.scaled(self.width, self.height, Qt.KeepAspectRatio)
             self.image = self._video_frame
 

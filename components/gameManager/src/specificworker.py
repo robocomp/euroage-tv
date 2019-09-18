@@ -24,12 +24,14 @@ import json
 import math
 import os
 from datetime import datetime
+
+from PySide2.QtGui import QKeySequence
 from passlib.hash import pbkdf2_sha256
 from pprint import pprint
 
 import passwordmeter
-from PySide2.QtCore import Signal, QObject
-from PySide2.QtWidgets import QMessageBox, QCompleter, QAction, qApp, QApplication
+from PySide2.QtCore import Signal, QObject, Qt
+from PySide2.QtWidgets import QMessageBox, QCompleter, QAction, qApp, QApplication, QShortcut
 
 from admin_widgets import *
 from genericworker import *
@@ -292,6 +294,8 @@ class SpecificWorker(GenericWorker):
         # fileMenu.addAction(closeAction)
 
         ## Login window
+        self.loginShortcut = QShortcut(QKeySequence(Qt.Key_Return), self)
+        self.loginShortcut.activated.connect(self.check_login)
         self.ui.login_button_2.clicked.connect(self.check_login)
         self.ui.newuser_button_2.clicked.connect(self.user_logintocreate_user.emit)
 
@@ -336,6 +340,7 @@ class SpecificWorker(GenericWorker):
         password = unicode(self.ui.password_lineedit.text())
 
         if self.user_ddbb_connector.check_user_password(username, password):
+            self.loginShortcut.activated.disconnect(self.check_login)
             self.login_executed.emit(True)
             self.user_logintosession_init.emit()
 

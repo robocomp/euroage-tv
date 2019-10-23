@@ -194,7 +194,7 @@ class SpecificWorker(GenericWorker):
 			self._game.help_clicked.connect(self.game_help_clicked)
 			self._game.check_clicked.connect(self.game_check_clicked)
 			self._game.score_update.connect(self.game_score_update)
-			self._game.game_win.connect(self.game_looptogame_won)
+			self._game.game_win.connect(self.t_game_loop_to_game_won)
 			self.reset_game()
 
 
@@ -270,7 +270,7 @@ class SpecificWorker(GenericWorker):
 		print("Entered state session_start_wait")
 		init_touchscreen_device()
 		# TODO: Test only. Remove on production
-		# self.session_start_waittosession_init.emit()
+		# self.t_session_start_wait_to_session_init.emit()
 		self.send_status_change(StatusType.waitingSession)
 
 
@@ -282,9 +282,9 @@ class SpecificWorker(GenericWorker):
 		print("Entered state game_end")
 		won = self._game.end_game()
 		if won:
-			self.game_endtogame_won.emit()
+			self.t_game_end_to_game_won.emit()
 		else:
-			self.game_endtogame_lost.emit()
+			self.t_game_end_to_game_lost.emit()
 
 
 
@@ -298,7 +298,7 @@ class SpecificWorker(GenericWorker):
 		self._game = None
 		self.update_game_selection()
 		self._game.show_on_second_screen()
-		self.game_inittogame_loop.emit()
+		self.t_game_init_to_game_loop.emit()
 
 	#
 	# sm_game_loop
@@ -309,7 +309,7 @@ class SpecificWorker(GenericWorker):
 		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 		print("Entered state game_loop")
 		self.send_status_change(StatusType.playingGame)
-		QTimer.singleShot(200, self.game_looptogame_loop)
+		QTimer.singleShot(200, self.t_game_loop_to_game_loop)
 
 	#
 	# sm_game_lost
@@ -318,7 +318,7 @@ class SpecificWorker(GenericWorker):
 	def sm_game_lost(self):
 		print("Entered state game_lost")
 		self.send_status_change(StatusType.lostGame)
-		QTimer.singleShot(200, self.game_losttogame_start_wait)
+		QTimer.singleShot(200, self.t_game_lost_to_game_start_wait)
 
 
 
@@ -340,7 +340,7 @@ class SpecificWorker(GenericWorker):
 		print("Entered state game_reset")
 		self._game.hide()
 		self.send_status_change(StatusType.resetedGame)
-		self.game_resettogame_start_wait.emit()
+		self.t_game_reset_to_game_start_wait.emit()
 		pass
 
 	#
@@ -350,7 +350,7 @@ class SpecificWorker(GenericWorker):
 	def sm_game_resume(self):
 		print("Entered state game_resume")
 		self._game.resume_game()
-		self.game_resumetogame_loop.emit()
+		self.t_game_resume_to_game_loop.emit()
 
 	#
 	# sm_game_start_wait
@@ -360,9 +360,9 @@ class SpecificWorker(GenericWorker):
 		print("Entered state game_start_wait")
 
 		# TODO: Test only. Remove on production
-		# self.game_start_waittogame_init.emit()
+		# self.t_game_start_wait_to_game_init.emit()
 		self.send_status_change(StatusType.waitingGame)
-		QTimer.singleShot(200, self.game_start_waittogame_start_wait)
+		QTimer.singleShot(200, self.t_game_start_wait_to_game_start_wait)
 
 
 
@@ -373,7 +373,7 @@ class SpecificWorker(GenericWorker):
 	def sm_game_won(self):
 		print("Entered state game_won")
 		self.send_status_change(StatusType.wonGame)
-		QTimer.singleShot(200, self.game_wontogame_start_wait)
+		QTimer.singleShot(200, self.t_game_won_to_game_start_wait)
 
 
 	#
@@ -386,7 +386,7 @@ class SpecificWorker(GenericWorker):
 		self._game.pause_game()
 		self._game.hide()
 		self._game = None
-		QTimer.singleShot(100, self.session_endtosession_start_wait)
+		QTimer.singleShot(100, self.t_session_end_to_session_start_wait)
 
 
 	#
@@ -405,7 +405,7 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_player_acquisition_init(self):
 		print("Entered state player_acquisition_init")
-		self.player_acquisition_inittoplayer_acquisition_loop.emit()
+		self.t_player_acquisition_init_to_player_acquisition_loop.emit()
 		self.send_status_change(StatusType.initializingSession)
 
 	#
@@ -423,9 +423,9 @@ class SpecificWorker(GenericWorker):
 		acquired=True
 
 		if acquired:
-			self.player_acquisition_looptoplayer_acquisition_ended.emit()
+			self.t_player_acquisition_loop_to_player_acquisition_ended.emit()
 		else:
-			QTimer.singleShot(1000 / 33, self.player_acquisition_looptoplayer_acquisition_loop)
+			QTimer.singleShot(1000 / 33, self.t_player_acquisition_loop_to_player_acquisition_loop)
 
 	#
 	# sm_player_acquisition_ended
@@ -436,7 +436,7 @@ class SpecificWorker(GenericWorker):
 		self.tv_image.hide()
 		self.send_status_change(StatusType.readySession)
 		# TODO: Testing only. remove on production
-		self.session_inittogame_start_wait.emit()
+		self.t_session_init_to_game_start_wait.emit()
 
 
 # =================================================================
@@ -635,14 +635,14 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminPauseGame(self):
 		print("adminPauseGame")
-		self.game_looptogame_pause.emit()
+		self.t_game_loop_to_game_pause.emit()
 
 	#
 	# adminStopApp
 	#
 	def adminStopApp(self):
 		print("adminStopApp")
-		self.game_machinetoapp_end.emit()
+		self.t_game_machine_to_app_end.emit()
 
 
 	#
@@ -651,7 +651,7 @@ class SpecificWorker(GenericWorker):
 	def adminResetGame(self):
 		print("adminResetGame")
 		# self.reset_game()
-		self.game_pausetogame_reset.emit()
+		self.t_game_pause_to_game_reset.emit()
 		pass
 
 
@@ -661,7 +661,7 @@ class SpecificWorker(GenericWorker):
 	def adminStartGame(self, game):
 		print("adminStartGame")
 		self._current_game_name = game
-		self.game_start_waittogame_init.emit()
+		self.t_game_start_wait_to_game_init.emit()
 
 
 	#
@@ -669,7 +669,7 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminContinueGame(self):
 		print("adminContinueGame")
-		self.game_pausetogame_resume.emit()
+		self.t_game_pause_to_game_resume.emit()
 
 
 
@@ -678,7 +678,7 @@ class SpecificWorker(GenericWorker):
 	#
 	def adminEndSession(self):
 		print("adminEndSession")
-		self.game_start_waittosession_end.emit()
+		self.t_game_start_wait_to_session_end.emit()
 		pass
 
 
@@ -693,7 +693,7 @@ class SpecificWorker(GenericWorker):
 		new_player.tracked = False
 		self._current_players.append(new_player)
 		self._current_state = "init_session"
-		self.session_start_waittosession_init.emit()
+		self.t_session_start_wait_to_session_init.emit()
 
 	#
 	# adminStopGame
@@ -701,8 +701,8 @@ class SpecificWorker(GenericWorker):
 	def adminStopGame(self):
 		print("adminStopGame")
 		# TODO: transition to check result state (need to be created)
-		self.game_looptogame_end.emit()
-		self.game_pausetogame_end.emit()
+		self.t_game_loop_to_game_end.emit()
+		self.t_game_pause_to_game_end.emit()
 
 
 

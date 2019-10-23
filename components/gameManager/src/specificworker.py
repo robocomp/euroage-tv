@@ -40,6 +40,7 @@ try:
     from bbdd import BBDD
 except:
     print ("Database module not found")
+    exit(1)
 
 FILE_PATH = os.path.abspath(__file__)
 CURRENT_PATH = os.path.dirname(__file__)
@@ -141,9 +142,9 @@ class Game():
         self.metrics = []
         self.gameWon = False
 
-    def save_game(self, dir):
+    def save_game(self, output_dir):
         name = self.nameGame
-        filename = os.path.join(dir, name.replace(" ", "").strip().lower() + ".csv")
+        filename = os.path.join(output_dir, name.replace(" ", "").strip().lower() + ".csv")
         date = datetime.strftime(self.date, "%H:%M:%S")
 
         rows = [['hora comienzo', 'tiempo total', 'tiempo pausado', 'distancia recorrida', 'num pantalla pulsada',

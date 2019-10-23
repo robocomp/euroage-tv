@@ -107,7 +107,7 @@
            <string>Iniciar sesión</string>
           </property>
           <property name="autoDefault">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="default">
            <bool>true</bool>

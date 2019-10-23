@@ -23,44 +23,44 @@
       <item>
        <layout class="QFormLayout" name="formLayout">
         <item row="0" column="0">
-         <widget class="QLabel" name="name_player_label">
+         <widget class="QLabel" name="username_player_label">
+          <property name="text">
+           <string>Username</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="nombre_player_label">
           <property name="text">
            <string>Nombre</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="surname1_player_label">
-          <property name="text">
-           <string>Primer apellido</string>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="0">
-         <widget class="QLabel" name="surname2_player_label">
+         <widget class="QLabel" name="sexo_player_label">
           <property name="text">
-           <string>Segundo apellido</string>
+           <string>Sexo</string>
           </property>
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QLabel" name="age_player_label">
+         <widget class="QLabel" name="edad_player_label">
           <property name="text">
            <string>Edad</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="name_player_lineedit"/>
+         <widget class="QLineEdit" name="username_player_lineedit"/>
         </item>
         <item row="1" column="1">
-         <widget class="QLineEdit" name="surname1_player_lineedit"/>
+         <widget class="QLineEdit" name="nombre_player_lineedit"/>
         </item>
         <item row="2" column="1">
-         <widget class="QLineEdit" name="surname2_player_lineedit"/>
+         <widget class="QLineEdit" name="sexo_player_lineedit"/>
         </item>
         <item row="3" column="1">
-         <widget class="QLineEdit" name="age_player_lineedit"/>
+         <widget class="QLineEdit" name="edad_player_lineedit"/>
         </item>
        </layout>
       </item>

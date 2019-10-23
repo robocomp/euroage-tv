@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Sequence, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Sequence, ForeignKey, Text
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -7,26 +7,43 @@ Base = declarative_base()
 
 class Patient(Base):
     __tablename__ = 'patient'
-    id = Column(Integer, Sequence('patient_id_seq'), primary_key=True)
-    name = Column(String(50))
-    surname = Column(String(50))
+    id = Column(Integer, Sequence('patient_id_seq'))
+    username = Column(String(20), primary_key=True)
+    nombre = Column(String(60))
+    sexo = Column(String(20))
+    edad = Column(Integer)
+    datosRegistro = Column(Text())
+    nivelCognitivo = Column(Integer)
+    nivelFisico = Column(Integer)
+    nivelJuego = Column(Integer)
+    centro = Column(Integer)
+    profesional = Column(String(20))
+    observaciones = Column(Text())
+    fechaAlta = Column(String(20))
 
     session = relationship("Session", back_populates="patient", cascade="all, delete")
 
     def __repr__(self):
-        return "<Patient(name='%s %s')>" % (self.name, self.surname)
+        return "<Patient(username='%s' nombre=%s')>" % (self.username, self.nombre)
 
 
 class Therapist(Base):
     __tablename__ = 'therapist'
-    id = Column(Integer, Sequence('therapist_id_seq'), primary_key=True)
-    name = Column(String(50))
-    surname = Column(String(50))
+    id = Column(Integer, Sequence('therapist_id_seq'))
+    nombre = Column(String(60))
+    username = Column(String(20), primary_key=True)
+    hash = Column(String(100))
+    salt = Column(String(50))
+    centro = Column(Integer)
+    telefono = Column(String(20))
+    profesion = Column(String(30))
+    observaciones = Column(Text)
+    fechaAlta = Column(String(20))
 
     session = relationship("Session", back_populates="therapist", cascade="all, delete")
 
     def __repr__(self):
-        return "<Therapist(name='%s %s')>" % (self.name, self.surname)
+        return "<Therapist(name='%s %s')>" % (self.nombre, self.username)
 
 
 class Game(Base):

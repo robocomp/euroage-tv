@@ -479,16 +479,16 @@ class SpecificWorker(GenericWorker):
     # New player
     def create_player(self):
 
-        name = unicode(self.ui.name_player_lineedit.text())
-        s1 = unicode(self.ui.surname1_player_lineedit.text())
-        s2 = unicode(self.ui.surname2_player_lineedit.text())
-        age = float(self.ui.age_player_lineedit.text())
+        username = unicode(self.ui.username_player_lineedit.text())
+        nombre = unicode(self.ui.nombre_player_lineedit.text())
+        sexo = unicode(self.ui.sexo_player_lineedit.text())
+        edad = float(self.ui.edad_player_lineedit.text())
 
-        self.bbdd.new_patient(name, s1 + " " + s2)
+        self.bbdd.new_patient(username=username, nombre=nombre, sexo=sexo, edad=edad)
         patients = self.bbdd.get_all_patients()
         patients_list = []
         for p in patients:
-            patients_list.append(p.name + " " + p.surname)
+            patients_list.append(p.username)
 
         completer = QCompleter(patients_list)
         self.ui.selplayer_combobox.addItem(patients_list[-1])
@@ -592,10 +592,10 @@ class SpecificWorker(GenericWorker):
     def sm_create_player(self):
         print("Entered state create_player")
         self.ui.stackedWidget.setCurrentIndex(3)
-        self.ui.name_player_lineedit.clear()
-        self.ui.surname1_player_lineedit.clear()
-        self.ui.surname2_player_lineedit.clear()
-        self.ui.age_player_lineedit.clear()
+        self.ui.username_player_lineedit.clear()
+        self.ui.nombre_player_lineedit.clear()
+        self.ui.sexo_player_lineedit.clear()
+        self.ui.edad_player_lineedit.clear()
 
     #
     # sm_create_user
@@ -684,12 +684,12 @@ class SpecificWorker(GenericWorker):
 
         if self.aux_sessionInit == False:
             self.bbdd = BBDD()
-            self.bbdd.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba.db")
+            self.bbdd.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba3.db")
 
             patients = self.bbdd.get_all_patients()
             patients_list = []
             for p in patients:
-                patients_list.append(p.name + " " + p.surname)
+                patients_list.append(p.username)
 
             completer2 = QCompleter(patients_list)
 

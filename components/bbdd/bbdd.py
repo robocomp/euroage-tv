@@ -1,10 +1,13 @@
+from __future__ import print_function
+
+import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from model import *
 
 
-class BBDD():
+class BBDD(object):
     engine = None
     session = None
 
@@ -25,13 +28,16 @@ class BBDD():
         self.session.close()
 
     #PATIENT
-    def new_patient(self, name, surname):
-        patient = Patient(name=name, surname=surname)
+    def new_patient(self, username, nombre, sexo="", edad=0, datosRegistro="", nivelCognitivo=0, nivelFisico=0, nivelJuego=0, centro="", profesional="", observaciones="", fechaAlta=None):
+        if fechaAlta is None:
+            fechaAlta = datetime.date.today().strftime("%Y %m %d")
+        patient = Patient(username=username, nombre=nombre, sexo=sexo, edad=edad, datosRegistro=datosRegistro, nivelCognitivo=nivelCognitivo, nivelFisico=nivelFisico, nivelJuego=nivelJuego, centro=centro, profesional=profesional, observaciones=observaciones, fechaAlta=fechaAlta)
         try:
             self.session.add(patient)
             self.session.commit()
             return True, patient
         except:
+            self.session.rollback()
             return False, Patient()
 
     def get_patient_by_name(self, name):
@@ -40,26 +46,35 @@ class BBDD():
         except:
             return False, Patient()
 
+    def get_patient_by_username(self, username):
+        try:
+            return True, self.session.query(Patient).filter_by(username=username).first()
+        except:
+            return False, Patient()
+
     def get_all_patients(self):
         return self.session.query(Patient).all()
 
-    def remove_patient(self, name):
-        ret, pat = self.get_patient_by_name(name)
+    def remove_patient(self, username):
+        ret, pat = self.get_patient_by_username(username)
         if ret:
             self.session.delete(pat)
             return True
         else:
-            print "Patient: ", name, " not found in database"
+            print("Patient: ", username, " not found in database")
             return False
 
     # THERAPIST
-    def new_therapist(self, name, surname):
-        therapist = Therapist(name=name, surname=surname)
+    def new_therapist(self, nombre, username, hash, salt, centro, telefono="", profesion="", observaciones="", fechaAlta=None):
+        if fechaAlta is None:
+            fechaAlta = datetime.date.today().strftime("%Y %m %d")
+        therapist = Therapist( nombre=nombre, username=username, hash=hash, salt=salt, centro=centro, telefono=telefono, profesion=profesion, observaciones=observaciones, fechaAlta=fechaAlta)
         try:
             self.session.add(therapist)
             self.session.commit()
             return True, therapist
         except:
+            self.session.rollback()
             return False, Therapist()
 
     def get_therapist_by_name(self, name):
@@ -77,7 +92,7 @@ class BBDD():
             self.session.delete(ther)
             return True
         else:
-            print "Therapist: ", name, " not found in database"
+            print("Therapist: ", name, " not found in database")
             return False
 
     # GAME
@@ -110,8 +125,9 @@ class BBDD():
         except:
             return False, Session()
 
-    def get_all_session_by_therapist_name(self, name):
-        return self.session.query(Session).join(Therapist).filter(Therapist.name == name).all()
+    def get_all_session_by_therapist_username(self, username):
+        result = self.session.query(Session).filter(Therapist.username == username).all()
+        return result
 
     def get_all_session_by_patient_id(self, id):
         return self.session.query(Session).join(Patient).filter(Patient.id == id).all()

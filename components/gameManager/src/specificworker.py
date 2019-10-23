@@ -286,8 +286,8 @@ class SpecificWorker(GenericWorker):
             self.mainMenu.setEnabled(False)
 
         exitAction = QAction('&Salir', self)
-        exitAction.triggered.connect(self.admintoapp_end)
-        QApplication.instance().aboutToQuit.connect(self.admintoapp_end)
+        exitAction.triggered.connect(self.t_admin_to_app_end)
+        QApplication.instance().aboutToQuit.connect(self.t_admin_to_app_end)
         fileMenu.addAction(exitAction)
 
         # closeAction = QAction('&Cerrar sesión', self)
@@ -298,13 +298,13 @@ class SpecificWorker(GenericWorker):
         self.loginShortcut = QShortcut(QKeySequence(Qt.Key_Return), self)
         self.loginShortcut.activated.connect(self.check_login)
         self.ui.login_button_2.clicked.connect(self.check_login)
-        self.ui.newuser_button_2.clicked.connect(self.user_logintocreate_user.emit)
+        self.ui.newuser_button_2.clicked.connect(self.t_user_login_to_create_user.emit)
 
         ## Register window
         self.ui.password_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.password_2_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.createuser_button_reg.clicked.connect(self.create_new_user)
-        self.ui.back_button_reg.clicked.connect(self.create_usertouser_login.emit)
+        self.ui.back_button_reg.clicked.connect(self.t_create_user_to_user_login.emit)
 
         ## User window
         self.ui.games_list.currentItemChanged.connect(self.selectediteminlist_changed)
@@ -317,7 +317,7 @@ class SpecificWorker(GenericWorker):
         self.ui.startsession_button.clicked.connect(self.start_session)
 
         ##new Player window
-        self.ui.back_player_button.clicked.connect(self.create_playertosession_init.emit)
+        self.ui.back_player_button.clicked.connect(self.t_create_player_to_session_init.emit)
         self.ui.create_player_button.clicked.connect(self.create_player)
 
         # Game window
@@ -343,7 +343,7 @@ class SpecificWorker(GenericWorker):
         if self.user_ddbb_connector.check_user_password(username, password):
             self.loginShortcut.activated.disconnect(self.check_login)
             self.login_executed.emit(True)
-            self.user_logintosession_init.emit()
+            self.t_user_login_to_session_init.emit()
 
         else:
             QMessageBox().information(self.focusWidget(), 'Error',
@@ -409,7 +409,7 @@ class SpecificWorker(GenericWorker):
                 completer = QCompleter(list_of_users)
                 self.ui.username_lineedit.setCompleter(completer)
 
-                self.create_usertouser_login.emit()
+                self.t_create_user_to_user_login.emit()
                 return True
         else:
             print ("[ERROR] The user couldn't be created ")
@@ -429,7 +429,7 @@ class SpecificWorker(GenericWorker):
                 return False
 
             else:
-                self.session_inittocreate_player.emit()
+                self.t_session_init_to_create_player.emit()
                 return True
 
     def selectediteminlist_changed(self):
@@ -493,7 +493,7 @@ class SpecificWorker(GenericWorker):
         completer = QCompleter(patients_list)
         self.ui.selplayer_combobox.addItem(patients_list[-1])
         self.ui.selplayer_combobox.setCompleter(completer)
-        self.create_playertosession_init.emit()
+        self.t_create_player_to_session_init.emit()
 
     # Game window functions
     def start_clicked(self):
@@ -631,7 +631,7 @@ class SpecificWorker(GenericWorker):
         self.currentGame = Game()
         self.game_metrics = []
 
-        self.game_endtoadmin_games.emit()
+        self.t_game_end_to_admin_games.emit()
 
     #
     # sm_paused
@@ -816,7 +816,7 @@ class SpecificWorker(GenericWorker):
                                   QMessageBox.Ok)
 
         # exit(-1)
-        self.session_endtosession_init.emit()
+        self.t_session_end_to_session_init.emit()
 
     # =================================================================
     # =================================================================
@@ -861,38 +861,38 @@ class SpecificWorker(GenericWorker):
         self.updateUISig.emit()
 
         if state_name == "initializingSession":
-            self.session_inittowait_ready.emit()
+            self.t_session_init_to_wait_ready.emit()
 
         if state_name == "readySession":
-            self.wait_readytoadmin_games.emit()
+            self.t_wait_ready_to_admin_games.emit()
 
         if state_name == "waitingGame":
-            self.admin_gamestowait_play.emit()
+            self.t_admin_games_to_wait_play.emit()
 
         if state_name == "playingGame":
-            self.wait_playtoplaying.emit()
-            self.pausedtoplaying.emit()
+            self.t_wait_play_to_playing.emit()
+            self.t_paused_to_playing.emit()
 
         if state_name == "pausedGame":
-            self.playingtopaused.emit()
+            self.t_playing_to_paused.emit()
 
         if state_name == "wonGame":
             self.aux_wonGame = True
-            self.playingtogame_end.emit()
-            self.pausedtogame_end.emit()
+            self.t_playing_to_game_end.emit()
+            self.t_paused_to_game_end.emit()
 
         if state_name == "lostGame":
             self.aux_wonGame = False
-            self.playingtogame_end.emit()
-            self.pausedtogame_end.emit()
+            self.t_playing_to_game_end.emit()
+            self.t_paused_to_game_end.emit()
 
         if state_name == "resetedGame":
             self.aux_reseted = True
-            self.pausedtoadmin_games.emit()
+            self.t_paused_to_admin_games.emit()
         #
         if state_name == "endSession":
-            self.admin_gamestosession_end.emit()
-            self.wait_playtosession_end.emit()
+            self.t_admin_games_to_session_end.emit()
+            self.t_wait_play_to_session_end.emit()
 
     def compute_distance_travelled(self, x, y):
         prev_x = self.aux_prevPos.x

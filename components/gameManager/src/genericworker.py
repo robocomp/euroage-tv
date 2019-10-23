@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2019 by YOUR NAME HERE
@@ -25,7 +25,7 @@ ROBOCOMP = ''
 try:
 	ROBOCOMP = os.environ['ROBOCOMP']
 except KeyError:
-	print '$ROBOCOMP environment variable not set, using the default value /opt/robocomp'
+	print('$ROBOCOMP environment variable not set, using the default value /opt/robocomp')
 	ROBOCOMP = '/opt/robocomp'
 
 preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ --all /opt/robocomp/interfaces/"
@@ -41,21 +41,21 @@ try:
 		additionalPathStr += ' -I' + p + ' '
 	icePaths.append('/opt/robocomp/interfaces')
 except:
-	print 'SLICE_PATH environment variable was not exported. Using only the default paths'
+	print('SLICE_PATH environment variable was not exported. Using only the default paths')
 	pass
 
-ice_AdminGame = False
+ice_GameMetrics = False
 for p in icePaths:
-	if os.path.isfile(p+'/AdminGame.ice'):
+	if os.path.isfile(p+'/GameMetrics.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"AdminGame.ice"
+		wholeStr = preStr+"GameMetrics.ice"
 		Ice.loadSlice(wholeStr)
-		ice_AdminGame = True
+		ice_GameMetrics = True
 		break
-if not ice_AdminGame:
-	print 'Couln\'t load AdminGame'
+if not ice_GameMetrics:
+	print('Couln\'t load GameMetrics')
 	sys.exit(-1)
-from EuroAgeGamesAdmin import *
+from EuroAgeGamesMetrics import *
 ice_AdminGame = False
 for p in icePaths:
 	if os.path.isfile(p+'/AdminGame.ice'):
@@ -65,7 +65,7 @@ for p in icePaths:
 		ice_AdminGame = True
 		break
 if not ice_AdminGame:
-	print 'Couln\'t load AdminGame'
+	print('Couln\'t load AdminGame')
 	sys.exit(-1)
 from EuroAgeGamesAdmin import *
 
@@ -75,7 +75,7 @@ from gamemetricsI import *
 try:
 	from ui_mainUI import *
 except:
-	print "Can't import UI file. Did you run 'make'?"
+	print("Can't import UI file. Did you run 'make'?")
 	sys.exit(-1)
 
 
@@ -83,25 +83,25 @@ class GenericWorker(QtWidgets.QMainWindow):
 
 	kill = QtCore.Signal()
 #Signals for State Machine
-	admintoapp_end = QtCore.Signal()
-	user_logintocreate_user = QtCore.Signal()
-	user_logintosession_init = QtCore.Signal()
-	create_usertouser_login = QtCore.Signal()
-	session_inittocreate_player = QtCore.Signal()
-	session_inittowait_ready = QtCore.Signal()
-	create_playertosession_init = QtCore.Signal()
-	wait_readytoadmin_games = QtCore.Signal()
-	admin_gamestowait_play = QtCore.Signal()
-	admin_gamestosession_end = QtCore.Signal()
-	wait_playtoplaying = QtCore.Signal()
-	wait_playtosession_end = QtCore.Signal()
-	playingtopaused = QtCore.Signal()
-	playingtogame_end = QtCore.Signal()
-	pausedtoadmin_games = QtCore.Signal()
-	pausedtoplaying = QtCore.Signal()
-	pausedtogame_end = QtCore.Signal()
-	game_endtoadmin_games = QtCore.Signal()
-	session_endtosession_init = QtCore.Signal()
+	t_admin_to_app_end = QtCore.Signal()
+	t_user_login_to_create_user = QtCore.Signal()
+	t_user_login_to_session_init = QtCore.Signal()
+	t_create_user_to_user_login = QtCore.Signal()
+	t_session_init_to_create_player = QtCore.Signal()
+	t_session_init_to_wait_ready = QtCore.Signal()
+	t_create_player_to_session_init = QtCore.Signal()
+	t_wait_ready_to_admin_games = QtCore.Signal()
+	t_admin_games_to_wait_play = QtCore.Signal()
+	t_admin_games_to_session_end = QtCore.Signal()
+	t_wait_play_to_playing = QtCore.Signal()
+	t_wait_play_to_session_end = QtCore.Signal()
+	t_playing_to_paused = QtCore.Signal()
+	t_playing_to_game_end = QtCore.Signal()
+	t_paused_to_admin_games = QtCore.Signal()
+	t_paused_to_playing = QtCore.Signal()
+	t_paused_to_game_end = QtCore.Signal()
+	t_game_end_to_admin_games = QtCore.Signal()
+	t_session_end_to_session_init = QtCore.Signal()
 
 #-------------------------
 
@@ -143,25 +143,25 @@ class GenericWorker(QtWidgets.QMainWindow):
 
 #------------------
 #Initialization State machine
-		self.admin_state.addTransition(self.admintoapp_end, self.app_end_state)
-		self.user_login_state.addTransition(self.user_logintocreate_user, self.create_user_state)
-		self.user_login_state.addTransition(self.user_logintosession_init, self.session_init_state)
-		self.create_user_state.addTransition(self.create_usertouser_login, self.user_login_state)
-		self.session_init_state.addTransition(self.session_inittocreate_player, self.create_player_state)
-		self.session_init_state.addTransition(self.session_inittowait_ready, self.wait_ready_state)
-		self.create_player_state.addTransition(self.create_playertosession_init, self.session_init_state)
-		self.wait_ready_state.addTransition(self.wait_readytoadmin_games, self.admin_games_state)
-		self.admin_games_state.addTransition(self.admin_gamestowait_play, self.wait_play_state)
-		self.admin_games_state.addTransition(self.admin_gamestosession_end, self.session_end_state)
-		self.wait_play_state.addTransition(self.wait_playtoplaying, self.playing_state)
-		self.wait_play_state.addTransition(self.wait_playtosession_end, self.session_end_state)
-		self.playing_state.addTransition(self.playingtopaused, self.paused_state)
-		self.playing_state.addTransition(self.playingtogame_end, self.game_end_state)
-		self.paused_state.addTransition(self.pausedtoadmin_games, self.admin_games_state)
-		self.paused_state.addTransition(self.pausedtoplaying, self.playing_state)
-		self.paused_state.addTransition(self.pausedtogame_end, self.game_end_state)
-		self.game_end_state.addTransition(self.game_endtoadmin_games, self.admin_games_state)
-		self.session_end_state.addTransition(self.session_endtosession_init, self.session_init_state)
+		self.admin_state.addTransition(self.t_admin_to_app_end, self.app_end_state)
+		self.user_login_state.addTransition(self.t_user_login_to_create_user, self.create_user_state)
+		self.user_login_state.addTransition(self.t_user_login_to_session_init, self.session_init_state)
+		self.create_user_state.addTransition(self.t_create_user_to_user_login, self.user_login_state)
+		self.session_init_state.addTransition(self.t_session_init_to_create_player, self.create_player_state)
+		self.session_init_state.addTransition(self.t_session_init_to_wait_ready, self.wait_ready_state)
+		self.create_player_state.addTransition(self.t_create_player_to_session_init, self.session_init_state)
+		self.wait_ready_state.addTransition(self.t_wait_ready_to_admin_games, self.admin_games_state)
+		self.admin_games_state.addTransition(self.t_admin_games_to_wait_play, self.wait_play_state)
+		self.admin_games_state.addTransition(self.t_admin_games_to_session_end, self.session_end_state)
+		self.wait_play_state.addTransition(self.t_wait_play_to_playing, self.playing_state)
+		self.wait_play_state.addTransition(self.t_wait_play_to_session_end, self.session_end_state)
+		self.playing_state.addTransition(self.t_playing_to_paused, self.paused_state)
+		self.playing_state.addTransition(self.t_playing_to_game_end, self.game_end_state)
+		self.paused_state.addTransition(self.t_paused_to_admin_games, self.admin_games_state)
+		self.paused_state.addTransition(self.t_paused_to_playing, self.playing_state)
+		self.paused_state.addTransition(self.t_paused_to_game_end, self.game_end_state)
+		self.game_end_state.addTransition(self.t_game_end_to_admin_games, self.admin_games_state)
+		self.session_end_state.addTransition(self.t_session_end_to_session_init, self.session_init_state)
 
 
 		self.admin_state.entered.connect(self.sm_admin)
@@ -185,88 +185,68 @@ class GenericWorker(QtWidgets.QMainWindow):
 
 #Slots funtion State Machine
 	@QtCore.Slot()
-	def sm_n(self):
-		print "Error: lack sm_n in Specificworker"
-		sys.exit(-1)
-
-	@QtCore.Slot()
-	def sm_o(self):
-		print "Error: lack sm_o in Specificworker"
-		sys.exit(-1)
-
-	@QtCore.Slot()
-	def sm_n(self):
-		print "Error: lack sm_n in Specificworker"
-		sys.exit(-1)
-
-	@QtCore.Slot()
-	def sm_e(self):
-		print "Error: lack sm_e in Specificworker"
-		sys.exit(-1)
-
-	@QtCore.Slot()
 	def sm_admin(self):
-		print "Error: lack sm_admin in Specificworker"
+		print("Error: lack sm_admin in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_app_end(self):
-		print "Error: lack sm_app_end in Specificworker"
+		print("Error: lack sm_app_end in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_create_user(self):
-		print "Error: lack sm_create_user in Specificworker"
+		print("Error: lack sm_create_user in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_session_init(self):
-		print "Error: lack sm_session_init in Specificworker"
+		print("Error: lack sm_session_init in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_create_player(self):
-		print "Error: lack sm_create_player in Specificworker"
+		print("Error: lack sm_create_player in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_wait_ready(self):
-		print "Error: lack sm_wait_ready in Specificworker"
+		print("Error: lack sm_wait_ready in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_admin_games(self):
-		print "Error: lack sm_admin_games in Specificworker"
+		print("Error: lack sm_admin_games in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_wait_play(self):
-		print "Error: lack sm_wait_play in Specificworker"
+		print("Error: lack sm_wait_play in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_playing(self):
-		print "Error: lack sm_playing in Specificworker"
+		print("Error: lack sm_playing in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_paused(self):
-		print "Error: lack sm_paused in Specificworker"
+		print("Error: lack sm_paused in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_game_end(self):
-		print "Error: lack sm_game_end in Specificworker"
+		print("Error: lack sm_game_end in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_session_end(self):
-		print "Error: lack sm_session_end in Specificworker"
+		print("Error: lack sm_session_end in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
 	def sm_user_login(self):
-		print "Error: lack sm_user_login in Specificworker"
+		print("Error: lack sm_user_login in Specificworker")
 		sys.exit(-1)
 
 
@@ -280,6 +260,6 @@ class GenericWorker(QtWidgets.QMainWindow):
 	# @param per Period in ms
 	@QtCore.Slot(int)
 	def setPeriod(self, p):
-		print "Period changed", p
-		Period = p
-		timer.start(Period)
+		print("Period changed", p)
+		self.Period = p
+		self.timer.start(self.Period)

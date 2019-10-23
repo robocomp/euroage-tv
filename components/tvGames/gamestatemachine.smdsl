@@ -46,37 +46,3 @@ application_machine
     };
 };
 
-/*
-:test1 parallel{
-    states test1sub1, test1sub2;
-    transition{
-	test1sub1 => test1sub1;
-	test1sub2 => test1sub2;
-    };
-};
-
-:test1sub2{
-    initial_state test1sub21;
-    end_state test1sub22;
-    transition{
-	test1sub21 => test1sub21,test1sub22;
-    };
-};
-
-:test3 parallel{
-    states test3sub1, test3sub2, test3sub3;
-    transition{
-	test3sub1 => test3sub1;
-	test3sub2 => test3sub2;
-    };
-};
-
-:test5{
-    states test5sub2;
-    initial_state test5sub1;
-    transition{
-	test5sub1 => test1sub2;
-	test1sub2 => test5sub1;
-    };
-};
-*/

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 #
@@ -55,7 +55,7 @@
 #
 #
 
-import sys, traceback, IceStorm, subprocess, threading, time, Queue, os, copy
+import sys, traceback, IceStorm, time, os, copy
 
 # Ctrl+c handling
 import signal
@@ -77,14 +77,14 @@ class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 		try:
 			return self.handler.timeAwake()
 		except:
-			print 'Problem getting timeAwake'
+			print('Problem getting timeAwake')
 	def killYourSelf(self, current = None):
 		self.handler.killYourSelf()
 	def getAttrList(self, current = None):
 		try:
 			return self.handler.getAttrList()
 		except:
-			print 'Problem getting getAttrList'
+			print('Problem getting getAttrList')
 			traceback.print_exc()
 			status = 1
 			return
@@ -113,8 +113,8 @@ if __name__ == '__main__':
 	obj = ic.stringToProxy(proxy)
 	try:
 		topicManager = IceStorm.TopicManagerPrx.checkedCast(obj)
-	except Ice.ConnectionRefusedException, e:
-		print 'Cannot connect to IceStorm! ('+proxy+')'
+	except Ice.ConnectionRefusedException as e:
+		print('Cannot connect to IceStorm! ('+proxy+')')
 		status = 1
 
 	# Remote object connection for CameraSimple
@@ -125,12 +125,12 @@ if __name__ == '__main__':
 			camerasimple_proxy = CameraSimplePrx.checkedCast(basePrx)
 			mprx["CameraSimpleProxy"] = camerasimple_proxy
 		except Ice.Exception:
-			print 'Cannot connect to the remote object (CameraSimple)', proxyString
+			print('Cannot connect to the remote object (CameraSimple)', proxyString)
 			#traceback.print_exc()
 			status = 1
-	except Ice.Exception, e:
-		print e
-		print 'Cannot get CameraSimpleProxy property.'
+	except Ice.Exception as e:
+		print(e)
+		print('Cannot get CameraSimpleProxy property.')
 		status = 1
 
 
@@ -142,12 +142,12 @@ if __name__ == '__main__':
 			getapriltags_proxy = GetAprilTagsPrx.checkedCast(basePrx)
 			mprx["GetAprilTagsProxy"] = getapriltags_proxy
 		except Ice.Exception:
-			print 'Cannot connect to the remote object (GetAprilTags)', proxyString
+			print('Cannot connect to the remote object (GetAprilTags)', proxyString)
 			#traceback.print_exc()
 			status = 1
-	except Ice.Exception, e:
-		print e
-		print 'Cannot get GetAprilTagsProxy property.'
+	except Ice.Exception as e:
+		print(e)
+		print('Cannot get GetAprilTagsProxy property.')
 		status = 1
 
 
@@ -159,12 +159,12 @@ if __name__ == '__main__':
 			handdetection_proxy = HandDetectionPrx.checkedCast(basePrx)
 			mprx["HandDetectionProxy"] = handdetection_proxy
 		except Ice.Exception:
-			print 'Cannot connect to the remote object (HandDetection)', proxyString
+			print('Cannot connect to the remote object (HandDetection)', proxyString)
 			#traceback.print_exc()
 			status = 1
-	except Ice.Exception, e:
-		print e
-		print 'Cannot get HandDetectionProxy property.'
+	except Ice.Exception as e:
+		print(e)
+		print('Cannot get HandDetectionProxy property.')
 		status = 1
 
 
@@ -176,12 +176,12 @@ if __name__ == '__main__':
 			rgbd_proxy = RGBDPrx.checkedCast(basePrx)
 			mprx["RGBDProxy"] = rgbd_proxy
 		except Ice.Exception:
-			print 'Cannot connect to the remote object (RGBD)', proxyString
+			print('Cannot connect to the remote object (RGBD)', proxyString)
 			#traceback.print_exc()
 			status = 1
-	except Ice.Exception, e:
-		print e
-		print 'Cannot get RGBDProxy property.'
+	except Ice.Exception as e:
+		print(e)
+		print('Cannot get RGBDProxy property.')
 		status = 1
 
 
@@ -198,7 +198,7 @@ if __name__ == '__main__':
 			try:
 				topic = topicManager.create("GameMetrics")
 			except:
-				print 'Another client created the GameMetrics topic? ...'
+				print('Another client created the GameMetrics topic? ...')
 	pub = topic.getPublisher().ice_oneway()
 	gamemetricsTopic = GameMetricsPrx.uncheckedCast(pub)
 	mprx["GameMetricsPub"] = gamemetricsTopic
@@ -217,7 +217,7 @@ if __name__ == '__main__':
 			try:
 				topic = topicManager.create("TouchPoints")
 			except:
-				print 'Another client created the TouchPoints topic? ...'
+				print('Another client created the TouchPoints topic? ...')
 	pub = topic.getPublisher().ice_oneway()
 	touchpointsTopic = TouchPointsPrx.uncheckedCast(pub)
 	mprx["TouchPointsPub"] = touchpointsTopic
@@ -226,7 +226,7 @@ if __name__ == '__main__':
 		worker = SpecificWorker(mprx)
 		worker.setParams(parameters)
 	else:
-		print "Error getting required connections, check config file"
+		print("Error getting required connections, check config file")
 		sys.exit(-1)
 
 	adapter = ic.createObjectAdapter('AdminGame')

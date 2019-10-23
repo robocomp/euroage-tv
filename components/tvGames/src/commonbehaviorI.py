@@ -172,19 +172,19 @@ class CommonBehaviorI(CommonBehavior):
 	def __init__(self, worker):
 		self.worker = worker
 
-	def reloadConfig(self, c):
-		return self.worker.reloadConfig()
-	def setPeriod(self, period, c):
-		return self.worker.setPeriod(period)
-	def getState(self, c):
-		return self.worker.getState()
-	def setParameterList(self, l, c):
-		return self.worker.setParameterList(l)
-	def timeAwake(self, c):
-		return self.worker.timeAwake()
 	def getParameterList(self, c):
 		return self.worker.getParameterList()
-	def killYourSelf(self, c):
-		return self.worker.killYourSelf()
 	def getPeriod(self, c):
 		return self.worker.getPeriod()
+	def getState(self, c):
+		return self.worker.getState()
+	def killYourSelf(self, c):
+		return self.worker.killYourSelf()
+	def reloadConfig(self, c):
+		return self.worker.reloadConfig()
+	def setParameterList(self, l, c):
+		return self.worker.setParameterList(l)
+	def setPeriod(self, period, c):
+		return self.worker.setPeriod(period)
+	def timeAwake(self, c):
+		return self.worker.timeAwake()

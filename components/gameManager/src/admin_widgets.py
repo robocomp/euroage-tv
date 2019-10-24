@@ -7,11 +7,11 @@ from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication
 
 CURRENT_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
-UIS_FOLDER = os.path.join(CURRENT_FILE_PATH,"uis")
+UIS_FOLDER = os.path.join(CURRENT_FILE_PATH, "uis")
 
-class LoginWindow(QWidget): # crea widget vacio
-    def __init__(self,parent = None):
-
+# TODO:  try to unifiy the repeated code.
+class LoginWindow(QWidget):  # crea widget vacio
+    def __init__(self, parent=None):
         super(LoginWindow, self).__init__(parent)
         self.mylayout = QVBoxLayout()
         self.setLayout(self.mylayout)
@@ -21,12 +21,12 @@ class LoginWindow(QWidget): # crea widget vacio
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0,0,0,0)
+        self.mylayout.setContentsMargins(0, 0, 0, 0)
         file.close()
 
 
-class RegisterWindow(QWidget): # crea widget vacio
-    def __init__(self,parent = None):
+class RegisterWindow(QWidget):  # crea widget vacio
+    def __init__(self, parent=None):
         super(RegisterWindow, self).__init__(parent)
         self.mylayout = QVBoxLayout()
         self.setLayout(self.mylayout)
@@ -36,11 +36,12 @@ class RegisterWindow(QWidget): # crea widget vacio
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0,0,0,0)
+        self.mylayout.setContentsMargins(0, 0, 0, 0)
         file.close()
 
-class UsersWindow(QWidget): # crea widget vacio
-    def __init__(self,parent = None):
+
+class UsersWindow(QWidget):  # crea widget vacio
+    def __init__(self, parent=None):
         super(UsersWindow, self).__init__(parent)
         self.mylayout = QVBoxLayout()
         self.setLayout(self.mylayout)
@@ -50,11 +51,12 @@ class UsersWindow(QWidget): # crea widget vacio
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0,0,0,0)
+        self.mylayout.setContentsMargins(0, 0, 0, 0)
         file.close()
 
-class PlayersWindow(QWidget): # crea widget vacio
-    def __init__(self,parent = None):
+
+class PlayersWindow(QWidget):  # crea widget vacio
+    def __init__(self, parent=None):
         super(PlayersWindow, self).__init__(parent)
         self.mylayout = QVBoxLayout()
         self.setLayout(self.mylayout)
@@ -64,11 +66,15 @@ class PlayersWindow(QWidget): # crea widget vacio
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0,0,0,0)
+        self.mylayout.setContentsMargins(0, 0, 0, 0)
         file.close()
 
-class GameWindow(QWidget): # crea widget vacio
-    def __init__(self,parent = None):
+
+class GameWindow(QWidget):
+    """
+    This is the widget for the GameWindow.
+    """
+    def __init__(self, parent=None):
         super(GameWindow, self).__init__(parent)
         self.mylayout = QVBoxLayout()
         self.setLayout(self.mylayout)
@@ -78,11 +84,8 @@ class GameWindow(QWidget): # crea widget vacio
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0,0,0,0)
+        self.mylayout.setContentsMargins(0, 0, 0, 0)
         file.close()
-
-
-
 
 
 if __name__ == '__main__':

@@ -39,20 +39,26 @@ class BBDD(object):
             self.session.add(patient)
             self.session.commit()
             return True, patient
-        except:
+        except Exception as e:
             self.session.rollback()
+            traceback.print_stack()
+            traceback.print_exc(e)
             return False, Patient()
 
     def get_patient_by_name(self, name):
         try:
             return True, self.session.query(Patient).filter_by(name=name).first()
-        except:
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
             return False, Patient()
 
     def get_patient_by_username(self, username):
         try:
             return True, self.session.query(Patient).filter_by(username=username).first()
-        except:
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
             return False, Patient()
 
     def get_all_patients(self):
@@ -77,14 +83,18 @@ class BBDD(object):
             self.session.add(therapist)
             self.session.commit()
             return True, therapist
-        except:
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
             self.session.rollback()
             return False, Therapist()
 
     def get_therapist_by_name(self, name):
         try:
             return True, self.session.query(Therapist).filter_by(name=name).first()
-        except:
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
             return False, Therapist()
 
     def get_all_therapist(self):
@@ -106,14 +116,21 @@ class BBDD(object):
             self.session.add(game)
             self.session.commit()
             return True, game
-        except:
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
             return False, Game()
     
     def get_game_by_name(self, name):
         try:
             return True, self.session.query(Game).filter_by(name=name).first()
-        except:
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
             return False, Game()
+
+    def get_all_games(self):
+        return self.session.query(Game).all()
 
     #GAME_STATE
     def new_game_state(self, time, nmoved_tiles, ncorrect_tiles):
@@ -122,7 +139,9 @@ class BBDD(object):
             self.session.add(game_state)
             self.session.commit()
             return True, game_state
-        except:
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
             return False, Game_state()
 
     # SESSION
@@ -134,7 +153,8 @@ class BBDD(object):
             self.session.flush()
             # self.session.refresh()
             return True, session
-        except:
+        except Exception as e:
+            traceback.print_stack()
             traceback.print_exc()
             return False, Session()
 
@@ -155,7 +175,9 @@ class BBDD(object):
             self.session.add(hand)
             self.session.commit()
             return True, hand
-        except:
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
             return False, Hand()
 
     #STOP
@@ -166,8 +188,10 @@ class BBDD(object):
             self.session.add(stop)
             self.session.commit()
             return True, stop
-        except:
-             return False, Stop()
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
+            return False, Stop()
 
     #ROUND
     def new_round(self, name, stime, etime, nwins, nhelps, ntouch, result, game_id, hand_id, session_id):

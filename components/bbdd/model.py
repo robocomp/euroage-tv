@@ -68,9 +68,11 @@ class Round(Base):
     n_helps = Column(Integer)
     n_screen_touch = Column(Integer)
     result = Column(Boolean)
+    session_id = Column(Integer, ForeignKey('session.id'))
     game_id = Column(Integer, ForeignKey('game.id'))
     hand_id = Column(Integer, ForeignKey('hand.id'))
     stop_id = Column(Integer, ForeignKey('stop.id'))
+
 
     game = relationship("Game", back_populates="rounds", cascade="all, delete")
     hand = relationship("Hand", back_populates="rounds", cascade="all, delete")
@@ -135,4 +137,7 @@ class Session(Base):
     therapist = relationship("Therapist", back_populates="session", cascade="all, delete")
 
     def __repr__(self):
-        return "<Session(id='%d')>" % self.id
+        if self.id is not None:
+            return "<Session(id='%d')>" % self.id
+        else:
+            return "<Session(id = None)>"

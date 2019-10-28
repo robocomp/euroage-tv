@@ -3,6 +3,7 @@ from __future__ import print_function
 import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import traceback
 
 from model import *
 
@@ -31,7 +32,9 @@ class BBDD(object):
     def new_patient(self, username, nombre, sexo="", edad=0, datosRegistro="", nivelCognitivo=0, nivelFisico=0, nivelJuego=0, centro="", profesional="", observaciones="", fechaAlta=None):
         if fechaAlta is None:
             fechaAlta = datetime.date.today().strftime("%Y %m %d")
-        patient = Patient(username=username, nombre=nombre, sexo=sexo, edad=edad, datosRegistro=datosRegistro, nivelCognitivo=nivelCognitivo, nivelFisico=nivelFisico, nivelJuego=nivelJuego, centro=centro, profesional=profesional, observaciones=observaciones, fechaAlta=fechaAlta)
+        patient = Patient(username= username, nombre=nombre, sexo=sexo, edad=edad, datosRegistro=datosRegistro,
+                          nivelCognitivo=nivelCognitivo, nivelFisico=nivelFisico, nivelJuego=nivelJuego, centro=centro,
+                          profesional=profesional, observaciones=observaciones, fechaAlta=fechaAlta)
         try:
             self.session.add(patient)
             self.session.commit()
@@ -68,7 +71,8 @@ class BBDD(object):
     def new_therapist(self, nombre, username, hash, salt, centro, telefono="", profesion="", observaciones="", fechaAlta=None):
         if fechaAlta is None:
             fechaAlta = datetime.date.today().strftime("%Y %m %d")
-        therapist = Therapist( nombre=nombre, username=username, hash=hash, salt=salt, centro=centro, telefono=telefono, profesion=profesion, observaciones=observaciones, fechaAlta=fechaAlta)
+        therapist = Therapist( nombre=nombre, username=username, hash=hash, salt=salt, centro=centro, telefono=telefono,
+                               profesion=profesion, observaciones=observaciones, fechaAlta=fechaAlta)
         try:
             self.session.add(therapist)
             self.session.commit()
@@ -104,6 +108,12 @@ class BBDD(object):
             return True, game
         except:
             return False, Game()
+    
+    def get_game_by_name(self, name):
+        try:
+            return True, self.session.query(Game).filter_by(name=name).first()
+        except:
+            return False, Game()
 
     #GAME_STATE
     def new_game_state(self, time, nmoved_tiles, ncorrect_tiles):
@@ -117,12 +127,15 @@ class BBDD(object):
 
     # SESSION
     def new_session(self, start, end, patient, therapist):
-        session = Session(start_time=start, end_time=end, patient_id=patient.id, therapist_id=therapist.id)
+        session = Session(start_time=start, end_time=end, patient_id=patient, therapist_id=therapist)
         try:
             self.session.add(session)
             self.session.commit()
+            self.session.flush()
+            # self.session.refresh()
             return True, session
         except:
+            traceback.print_exc()
             return False, Session()
 
     def get_all_session_by_therapist_username(self, username):
@@ -157,13 +170,16 @@ class BBDD(object):
              return False, Stop()
 
     #ROUND
-    def new_round(self, stime, etime, nwins, nhelps, ntouch, result, game_id, hand_id, session_id):
-        round = Round(start_time=stime, end_time=etime, nwins=nwins, nhelps=nhelps, ntouchscreen=ntouch, result=result,
-                      game_id=game_id, hand_id=hand_id, session_id=session_id)
+    def new_round(self, name, stime, etime, nwins, nhelps, ntouch, result, game_id, hand_id, session_id):
+        round = Round(name=name,start_time=stime,end_time=etime, n_wins=nwins, n_helps=nhelps, n_screen_touch=ntouch,
+                      result=result,game_id=game_id, hand_id=hand_id, session_id=session_id)
+        
         try:
             self.session.add(round)
             self.session.commit()
             return True, round
-        except:
-             return False, Round()
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
+            return False, Round()
 

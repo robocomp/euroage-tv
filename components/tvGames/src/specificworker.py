@@ -251,7 +251,6 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_game_machine(self):
 		print("Entered state game_machine")
-		pass
 
 	#
 	# sm_app_end
@@ -260,7 +259,7 @@ class SpecificWorker(GenericWorker):
 	def sm_app_end(self):
 		print("Entered state app_end")
 		QApplication.quit()
-		pass
+
 
 	#
 	# sm_session_start_wait
@@ -341,7 +340,6 @@ class SpecificWorker(GenericWorker):
 		self._game.hide()
 		self.send_status_change(StatusType.resetedGame)
 		self.t_game_reset_to_game_start_wait.emit()
-		pass
 
 	#
 	# sm_game_resume

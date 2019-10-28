@@ -147,6 +147,7 @@ class GameScreen(QWidget):
         return self._game_frame
 
     def show_help(self):
+        # TODO: add some feedback to the user when there's no video to play.
         if self._video_player.current_status() != QMediaPlayer.State.PlayingState:
             pieces = self._game_frame.already_set_pieces()
             self._video_player.clear()
@@ -159,8 +160,7 @@ class GameScreen(QWidget):
 
 
     def game_timeout(self):
-        # self.end_game()
-        pass
+        self.end_game()
 
     def end_game(self):
         result = False

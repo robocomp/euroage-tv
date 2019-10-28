@@ -809,7 +809,7 @@ class SpecificWorker(GenericWorker):
 		touched = False
 		for qt_t_point in qt_touch_points:
 			aux_point = qt_t_point.lastPos()
-			if qt_t_point.state() == Qt.ToucTouchPointPressed or qt_t_point.state() == Qt.ToucTouchPointPressed:
+			if qt_t_point.state() == Qt.TouchPointPressed or qt_t_point.state() == Qt.TouchPointMoved:
 				touched = True
 			tp = TouchPoint(id=qt_t_point.id(),
 											state=state_mapping[qt_t_point.state()],
@@ -818,8 +818,11 @@ class SpecificWorker(GenericWorker):
 			touch_points.append(tp)
 
 		# Send update of metrics throught gamemetrics component interface
-		self._game_metrics.set_screen_touched(touched)
-		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
+		if touched:
+			self._game_metrics.numScreenTouched += 1
+			self._game_metrics.pos.x = qt_touch_points[-1].lastPos().x()
+			self._game_metrics.pos.y = qt_touch_points[-1].lastPos().y()
+			self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 
 		# Send the touched position through touchpoints component interface
 		print "TouchPoint Detected:"+str(tp)

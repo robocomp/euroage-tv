@@ -53,7 +53,7 @@ SHADOWS_FILE_PATH = "src/shadows.json"
 # print os.getcwd()
 
 list_of_users = []
-list_of_games = ["Calentar leche en microondas", "Prepara la tortilla", "El rey leon"]
+# list_of_games = ["Calentar leche en microondas", "Prepara la tortilla", "El rey leon"]
 
 
 class DDBBStatus:
@@ -742,9 +742,9 @@ class SpecificWorker(GenericWorker):
             self.ui.selplayer_combobox.lineEdit().setCompleter(completer2)
             self.ui.selplayer_combobox.lineEdit().setPlaceholderText("Selecciona jugador...")
 
-            completer3 = QCompleter(list_of_games)
+            completer3 = QCompleter(self.get_all_games())
 
-            self.ui.selgame_combobox.addItems(list_of_games)
+            self.ui.selgame_combobox.addItems(self.get_all_games())
             self.ui.selgame_combobox.lineEdit().setCompleter(completer3)
             self.ui.selgame_combobox.lineEdit().setPlaceholderText("Selecciona juego...")
 
@@ -753,6 +753,13 @@ class SpecificWorker(GenericWorker):
 
         self.mainMenu.setEnabled(True)
         self.aux_savedGames = False
+
+    def get_all_games(self):
+        all_ddbb_games = self.ddbb.get_all_games()
+        list_of_games = []
+        for p in all_ddbb_games:
+            list_of_games.append(p.name)
+        return list_of_games
 
     #
     # sm_admin_games

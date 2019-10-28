@@ -239,11 +239,15 @@ class ActionsVideoPlayer(ListVideoPlayer):
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
         desktop_widget = QApplication.desktop()
         if desktop_widget.screenCount() > 1:
-            second_screen_size = desktop_widget.screenGeometry(1)
-            newx = second_screen_size.left() + (second_screen_size.width() - self.width()) / 2
-            newy = second_screen_size.top() + (second_screen_size.height() - self.height()) / 2
-            self.move(newx, newy)
-            self.show()
+            screen_size = desktop_widget.screenGeometry(1)
+        else:
+            screen_size = desktop_widget.screenGeometry(0)
+
+        newx = screen_size.left() + (screen_size.width() - self.width()) / 2
+        newy = screen_size.top() + (screen_size.height() - self.height()) / 2
+        self.move(newx, newy)
+        self.show()
+
 
     def clear(self):
         self._actions_list = OrderedDict()

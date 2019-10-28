@@ -912,8 +912,6 @@ class SpecificWorker(GenericWorker):
         self.aux_currentStatus = state_name
         self.aux_currentDate = datetime.strptime(s.date, "%Y-%m-%dT%H:%M:%S.%f")
 
-        self.updateUISig.emit()
-
         if state_name == "initializingSession":
             self.t_session_init_to_wait_ready.emit()
 
@@ -926,6 +924,7 @@ class SpecificWorker(GenericWorker):
         if state_name == "playingGame":
             self.t_wait_play_to_playing.emit()
             self.t_paused_to_playing.emit()
+            self.updateUISig.emit()
 
         if state_name == "pausedGame":
             self.t_playing_to_paused.emit()

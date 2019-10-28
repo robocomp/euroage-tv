@@ -72,19 +72,22 @@ class Singleton(type(QObject), type):
         return cls.instance
 
 
-class Session():
-    def __init__(self):
-        self.date = None
-        self.patient = None
-        self.totaltime = 0
+class Session:
+    def __init__(self, patient, therapist):
+        self.date = datetime.now()
+        self.patient = patient
+        self.therapist = therapist
+        self.total_time = 0
         self.games = []
-        self.numGames = 0
-        self.totalHelps = 0
-        self.totalChecks = 0
-        self.wonGames = 0
-        self.lostGames = 0
+        self.num_games = 0
+        self.total_helps = 0
+        self.total_checks = 0
+        self.won_games = 0
+        self.lost_games = 0
+        self.current_game = None
 
     def save_session(self):
+
         saving_dir = os.path.join(CURRENT_PATH, "../savedSessions")
         print ("Saving session in ", saving_dir)
 
@@ -111,7 +114,7 @@ class Session():
 
             rows = [
                 ['tiempo total', 'num juegos', 'num ayudas', 'num comprobaciones', 'juegos ganados', 'juegos perdidos'],
-                [self.totaltime, len(self.games), self.totalHelps, self.totalChecks, self.wonGames, self.lostGames]]
+                [self.total_time, len(self.games), self.total_helps, self.total_checks, self.won_games, self.lost_games]]
 
             filename = os.path.join(date_dir, "resumeSession" + ".csv")
 
@@ -120,8 +123,19 @@ class Session():
                 writer.writerows(rows)
             csvFile.close()
 
+    def save_session_to_ddbb(self, ddbb):
 
-class Metrics():
+        print ("Saving session in ")
+
+        date = datetime.strftime(self.date, "%Y%m%d %H%M%S")
+        result, session = ddbb.new_session(start=self.date, end=datetime.now(), patient=self.patient, therapist=self.therapist)
+        if result:
+            for game in self.games:
+                game.session_id = session.id
+                game.save_game_to_ddbb(ddbb=ddbb)
+
+
+class Metrics:
     def __init__(self):
         self.time = None
         self.distance = 0
@@ -133,31 +147,52 @@ class Metrics():
         self.fails = 0
 
 
-class Game():
+class Game:
     def __init__(self):
-        self.nameGame = None
-        self.date = None
-        self.timePlayed = 0
-        self.timePaused = 0
+        self.game_id = None
+        self.game_name = ""
+        self.start_time = datetime.now()
+        self.end_time = None
+        self.time_played = 0
+        self.time_paused = 0
         self.metrics = []
-        self.gameWon = False
+        self.game_won = False
+        self.session_id = None
+
+
 
     def save_game(self, output_dir):
-        name = self.nameGame
+        name = self.game_name
         filename = os.path.join(output_dir, name.replace(" ", "").strip().lower() + ".csv")
-        date = datetime.strftime(self.date, "%H:%M:%S")
+        date = datetime.strftime(self.start_time, "%H:%M:%S")
 
         rows = [['hora comienzo', 'tiempo total', 'tiempo pausado', 'distancia recorrida', 'num pantalla pulsada',
                  'num mano cerrada', 'num ayudas', 'num comprobaciones', 'aciertos', 'fallos', 'juego ganado']]
 
         for m in self.metrics:
-            rows.append([date, self.timePlayed, self.timePaused, m.distance, m.touched, m.handClosed, m.helps,
-                         m.checks, m.hits, m.fails, self.gameWon])
+            rows.append([date, self.time_played, self.time_paused, m.distance, m.touched, m.handClosed, m.helps,
+                         m.checks, m.hits, m.fails, self.game_won])
 
         with open(filename, 'w') as csvFile:
             writer = csv.writer(csvFile)
             writer.writerows(rows)
         csvFile.close()
+
+    def save_game_to_ddbb(self, ddbb):
+
+        ddbb.new_round(name= self.game_name,
+                       stime=self.start_time,
+                       etime= self.end_time,
+                       nwins=self.metrics[-1].checks,
+                       nhelps=self.metrics[-1].helps,
+                       ntouch=self.metrics[-1].touched,
+                       result=self.game_won,
+                       game_id=self.game_id,
+                       hand_id="-1",
+                       session_id=self.session_id)
+
+    def end(self):
+        self.end_time =  datetime.now()
 
 
 class QUserManager(QObject):
@@ -234,18 +269,16 @@ class SpecificWorker(GenericWorker):
         self.Period = 2000
         self.timer.start(self.Period)
 
-        self.user_ddbb_connector = QUserManager()
-        self.user_ddbb_connector.status_changed.connect(self.ddbb_status_changed)
-        self.user_ddbb_connector.load_users()
+        self.user_login_manager = QUserManager()
+        self.user_login_manager.status_changed.connect(self.ddbb_status_changed)
+        self.user_login_manager.load_users()
 
         self.init_ui()
         self.setCentralWidget(self.ui)
 
-        self.sessions = []
-        self.currentSession = Session()
 
-        self.currentGame = Game()
-        self.game_metrics = []
+        self.sessions = []
+        self.current_session = None
 
         self.aux_sessionInit = False
         self.aux_datePaused = None
@@ -266,6 +299,18 @@ class SpecificWorker(GenericWorker):
         self.updateUISig.connect(self.updateUI)
 
         self.manager_machine.start()
+
+    @property
+    def current_game(self):
+        if self.current_session is not None:
+            return self.current_session.current_game
+        else:
+            return None
+
+    @current_game.setter
+    def current_game(self, the_game):
+        if self.current_session is not None:
+            self.current_session.current_game = the_game
 
     def init_ui(self):
         loader = QUiLoader()
@@ -340,7 +385,8 @@ class SpecificWorker(GenericWorker):
         # username = username.strip().lower() ##The username is stored and checked in lower case
         password = unicode(self.ui.password_lineedit.text())
 
-        if self.user_ddbb_connector.check_user_password(username, password):
+        if self.user_login_manager.check_user_password(username, password):
+            self._current_therapist = username
             self.loginShortcut.activated.disconnect(self.check_login)
             self.login_executed.emit(True)
             self.t_user_login_to_session_init.emit()
@@ -393,18 +439,18 @@ class SpecificWorker(GenericWorker):
             # username = username.strip().lower()
             password = unicode(self.ui.password_lineedit_reg.text())
 
-            if (self.user_ddbb_connector.check_user(username) == True):  # The user already exist
+            if (self.user_login_manager.check_user(username) == True):  # The user already exist
                 QMessageBox().information(self.focusWidget(), 'Error',
                                           'El nombre de usuario ya existe',
                                           QMessageBox.Ok)
                 return False
             else:
-                self.user_ddbb_connector.set_username_password(username, password)
+                self.user_login_manager.set_username_password(username, password)
                 QMessageBox().information(self.focusWidget(), '',
                                           'Usuario creado correctamente',
                                           QMessageBox.Ok)
 
-                self.user_ddbb_connector.load_users()  ##Reload the users
+                self.user_login_manager.load_users()  ##Reload the users
 
                 completer = QCompleter(list_of_users)
                 self.ui.username_lineedit.setCompleter(completer)
@@ -484,8 +530,8 @@ class SpecificWorker(GenericWorker):
         sexo = unicode(self.ui.sexo_player_lineedit.text())
         edad = float(self.ui.edad_player_lineedit.text())
 
-        self.bbdd.new_patient(username=username, nombre=nombre, sexo=sexo, edad=edad)
-        patients = self.bbdd.get_all_patients()
+        self.ddbb.new_patient(username=username, nombre=nombre, sexo=sexo, edad=edad)
+        patients = self.ddbb.get_all_patients()
         patients_list = []
         for p in patients:
             patients_list.append(p.username)
@@ -497,7 +543,7 @@ class SpecificWorker(GenericWorker):
 
     # Game window functions
     def start_clicked(self):
-        self.admingame_proxy.adminStartGame(self.currentGame.nameGame)
+        self.admingame_proxy.adminStartGame(self.current_game.game_name)
 
     def pause_clicked(self):
         self.admingame_proxy.adminPauseGame()
@@ -534,8 +580,7 @@ class SpecificWorker(GenericWorker):
                                       'No se ha seleccionado ningún juego',
                                       QMessageBox.Ok)
         else:
-
-            self.currentSession.patient = str(player)
+            self.current_session = Session(therapist=self._current_therapist, patient=str(player))
             self.admingame_proxy.adminStartSession(player)
 
     def end_session_clicked(self):
@@ -615,21 +660,22 @@ class SpecificWorker(GenericWorker):
         reply = QMessageBox.question(self.focusWidget(), 'Juego terminado',
                                      ' ¿Desea guardar los datos del juego?', QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.Yes:
-            self.currentGame.gameWon = self.aux_wonGame
+            self.current_game.end()
+            self.current_game.game_won = self.aux_wonGame
             self.aux_savedGames = True
-            timeplayed = self.aux_currentDate - self.currentGame.date
-            self.currentGame.timePlayed = timeplayed.total_seconds() * 1000
-            print "Time played =  ", self.currentGame.timePlayed, "milliseconds"
+            timeplayed = self.aux_currentDate - self.current_game.start_time
+            self.current_game.time_played = timeplayed.total_seconds() * 1000
+            print "Time played =  ", self.current_game.time_played, "milliseconds"
 
-            self.currentSession.games.append(self.currentGame)
+            self.current_session.games.append(self.current_game)
 
         self.aux_datePaused = None
         self.aux_wonGame = False
         self.aux_prevPos = Position()
         self.aux_firstMetricReceived = True
 
-        self.currentGame = Game()
-        self.game_metrics = []
+        self.current_game = None
+
 
         self.t_game_end_to_admin_games.emit()
 
@@ -659,16 +705,16 @@ class SpecificWorker(GenericWorker):
         self.ui.end_session_button.setEnabled(False);  # No se puede finalizar la sesion si hay un juego en marcha
         self.ui.end_session_button.setToolTip("Debe finalizar el juego para poder terminar la sesión")
 
-        if self.currentGame.date is None:
-            self.currentGame.date = self.aux_currentDate
+        if self.current_session.current_game.start_time is None:
+            self.current_session.current_game.start_time = self.aux_currentDate
 
         if self.aux_datePaused is not None:
             self.ui.continue_game_button.setEnabled(False);
             self.ui.pause_game_button.setEnabled(True);
             time = self.aux_currentDate - self.aux_datePaused
-            self.currentGame.timePaused += time.total_seconds() * 1000
+            self.current_session.current_game.time_paused += time.total_seconds() * 1000
             self.aux_datePaused = None
-            print "Time paused =  ", self.currentGame.timePaused, "milliseconds"
+            print "Time paused =  ", self.current_session.current_game.time_paused, "milliseconds"
 
     #
     # sm_session_init
@@ -676,17 +722,16 @@ class SpecificWorker(GenericWorker):
     @QtCore.Slot()
     def sm_session_init(self):
         print("Entered state session_init")
-        self.currentSession = Session()
         self.ui.stackedWidget.setCurrentIndex(2)
 
         self.ui.selplayer_combobox.setCurrentIndex(0)
         self.ui.selgame_combobox.setCurrentIndex(0)
 
         if self.aux_sessionInit == False:
-            self.bbdd = BBDD()
-            self.bbdd.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba3.db")
+            self.ddbb = BBDD()
+            self.ddbb.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba4.db")
 
-            patients = self.bbdd.get_all_patients()
+            patients = self.ddbb.get_all_patients()
             patients_list = []
             for p in patients:
                 patients_list.append(p.username)
@@ -718,12 +763,12 @@ class SpecificWorker(GenericWorker):
 
         if self.aux_firtsGameInSession or self.aux_reseted:
 
-            game = self.list_games_toplay[0]
-            self.currentGame = Game()
-            self.game_metrics = []
-
-            self.currentGame.nameGame = game
-            self.ui.info_game_label.setText(game)
+            game_name = self.list_games_toplay[0]
+            self.current_game = Game()
+            result, ddbb_game = self.ddbb.get_game_by_name(game_name)
+            if result:
+                self.current_game.id = ddbb_game.id
+            self.ui.info_game_label.setText(game_name)
 
             self.aux_firtsGameInSession = False
             self.aux_reseted = False
@@ -736,17 +781,18 @@ class SpecificWorker(GenericWorker):
                 self.admingame_proxy.adminEndSession()
 
             else:
-                game = self.list_games_toplay[0]
-                self.currentGame = Game()
-                self.game_metrics = []
+                game_name = self.list_games_toplay[0]
+                self.current_game = Game()
+                result, ddbb_game = self.ddbb.get_game_by_name(game_name)
+                if result:
+                    self.current_game.id = ddbb_game.id
+                self.current_game.game_name = game_name
+                self.ui.info_game_label.setText(game_name)
 
-                self.currentGame.nameGame = game
-                self.ui.info_game_label.setText(game)
-
-        self.ui.pause_game_button.setEnabled(False);
-        self.ui.continue_game_button.setEnabled(False);
-        self.ui.finish_game_button.setEnabled(False);
-        self.ui.reset_game_button.setEnabled(False);
+        self.ui.pause_game_button.setEnabled(False)
+        self.ui.continue_game_button.setEnabled(False)
+        self.ui.finish_game_button.setEnabled(False)
+        self.ui.reset_game_button.setEnabled(False)
 
     #
     # sm_wait_play
@@ -754,8 +800,8 @@ class SpecificWorker(GenericWorker):
     @QtCore.Slot()
     def sm_wait_play(self):
         print("Entered state wait_play")
-        self.ui.start_game_button.setEnabled(True);
-        self.ui.end_session_button.setEnabled(True);
+        self.ui.start_game_button.setEnabled(True)
+        self.ui.end_session_button.setEnabled(True)
 
         self.ui.status_label.setText(self.aux_currentStatus)
         self.ui.num_screentouched_label.setText("-")
@@ -776,12 +822,12 @@ class SpecificWorker(GenericWorker):
         print("Entered state wait_ready")
         self.ui.stackedWidget.setCurrentIndex(4)
 
-        self.ui.start_game_button.setEnabled(False);
-        self.ui.pause_game_button.setEnabled(False);
-        self.ui.continue_game_button.setEnabled(False);
-        self.ui.finish_game_button.setEnabled(False);
-        self.ui.reset_game_button.setEnabled(False);
-        self.ui.end_session_button.setEnabled(False);
+        self.ui.start_game_button.setEnabled(False)
+        self.ui.pause_game_button.setEnabled(False)
+        self.ui.continue_game_button.setEnabled(False)
+        self.ui.finish_game_button.setEnabled(False)
+        self.ui.reset_game_button.setEnabled(False)
+        self.ui.end_session_button.setEnabled(False)
 
         self.aux_firtsGameInSession = True
 
@@ -789,7 +835,7 @@ class SpecificWorker(GenericWorker):
                                   'Coloque la mano del paciente sobre la mesa. Cuando se haya detectado correctamente podrá empezar el juego',
                                   QMessageBox.Ok)
 
-        self.currentSession.date = self.aux_currentDate
+        self.current_session.date = self.aux_currentDate
 
     #
     # sm_session_end
@@ -803,13 +849,13 @@ class SpecificWorker(GenericWorker):
                                          ' Desea guardar los datos de la sesion actual?', QMessageBox.Yes,
                                          QMessageBox.No)
             if reply == QMessageBox.Yes:
-                time = self.aux_currentDate - self.currentSession.date
-                self.currentSession.totaltime = time.total_seconds() * 1000
-                print "Session time =  ", self.currentSession.totaltime, "milliseconds"
+                time = self.aux_currentDate - self.current_session.date
+                self.current_session.total_time = time.total_seconds() * 1000
+                print "Session time =  ", self.current_session.total_time, "milliseconds"
 
                 self.compute_session_metrics()
-                self.currentSession.save_session()
-                self.sessions.append(self.currentSession)
+                self.current_session.save_session_to_ddbb(self.ddbb)
+                self.sessions.append(self.current_session)
 
         QMessageBox().information(self.focusWidget(), 'Adios',
                                   'Se ha finalizado la sesion',
@@ -829,8 +875,8 @@ class SpecificWorker(GenericWorker):
         current_metrics = Metrics()
         current_metrics.time = self.aux_currentDate
 
-        if self.currentGame.date is not None:
-            self.currentGame.timePlayed = (self.aux_currentDate - self.currentGame.date).total_seconds() * 1000
+        if self.current_game.start_time is not None:
+            self.current_game.time_played = (self.aux_currentDate - self.current_game.start_time).total_seconds() * 1000
             current_metrics.touched = m.numScreenTouched
             current_metrics.handClosed = m.numHandClosed
             current_metrics.helps = m.numHelps
@@ -844,7 +890,7 @@ class SpecificWorker(GenericWorker):
             else:
                 current_metrics.distance += self.compute_distance_travelled(m.pos.x, m.pos.y)
 
-            self.currentGame.metrics.append(current_metrics)
+            self.current_game.metrics.append(current_metrics)
             self.aux_prevPos = m.pos
             self.updateUISig.emit()
         else:
@@ -900,26 +946,27 @@ class SpecificWorker(GenericWorker):
         return math.sqrt(((x - prev_x) ** 2) + ((y - prev_y) ** 2))
 
     def compute_session_metrics(self):
-        for game in self.currentSession.games:
+        for game in self.current_session.games:
 
-            if game.gameWon:
-                self.currentSession.wonGames += 1
+            if game.game_won:
+                self.current_session.won_games += 1
             else:
-                self.currentSession.lostGames += 1
+                self.current_session.lost_games += 1
 
-            self.currentSession.totalHelps += game.metrics[-1].helps
-            self.currentSession.totalChecks += game.metrics[-1].checks
+            self.current_session.total_helps += game.metrics[-1].helps
+            self.current_session.total_checks += game.metrics[-1].checks
 
     def updateUI(self):
-        if self.currentGame.date is not None:
-            self.ui.date_label.setText(self.currentGame.date.strftime("%c"))
+        if self.current_game is not None and self.current_game.start_time is not None:
+            self.ui.date_label.setText(self.current_game.start_time.strftime("%c"))
 
             self.ui.status_label.setText(self.aux_currentStatus)
-            self.ui.num_screentouched_label.setText(str(self.currentGame.metrics[-1].touched))
-            self.ui.num_closedhand_label.setText(str(self.currentGame.metrics[-1].handClosed))
-            self.ui.num_helps_label.setText(str(self.currentGame.metrics[-1].helps))
-            self.ui.num_checks_label.setText(str(self.currentGame.metrics[-1].checks))
-            self.ui.timeplayed_label.setText(str("{:.3f}".format(self.currentGame.timePlayed / 1000)) + " s")
-            self.ui.distance_label.setText(str("{:.3f}".format(self.currentGame.metrics[-1].distance)) + " mm")
-            self.ui.num_hits_label.setText(str(self.currentGame.metrics[-1].hits))
-            self.ui.num_fails_label.setText(str(self.currentGame.metrics[-1].fails))
+            self.ui.timeplayed_label.setText(str("{:.3f}".format(self.current_game.time_played / 1000)) + " s")
+            if len(self.current_game.metrics) > 0:
+                self.ui.num_screentouched_label.setText(str(self.current_game.metrics[-1].touched))
+                self.ui.num_closedhand_label.setText(str(self.current_game.metrics[-1].handClosed))
+                self.ui.num_helps_label.setText(str(self.current_game.metrics[-1].helps))
+                self.ui.num_checks_label.setText(str(self.current_game.metrics[-1].checks))
+                self.ui.distance_label.setText(str("{:.3f}".format(self.current_game.metrics[-1].distance)) + " mm")
+                self.ui.num_hits_label.setText(str(self.current_game.metrics[-1].hits))
+                self.ui.num_fails_label.setText(str(self.current_game.metrics[-1].fails))

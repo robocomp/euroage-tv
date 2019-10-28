@@ -149,8 +149,8 @@ class Metrics:
 
 class Game:
     def __init__(self):
-        self.game_id = None
-        self.game_name = ""
+        self.id = None
+        self.name = ""
         self.start_time = datetime.now()
         self.end_time = None
         self.time_played = 0
@@ -162,7 +162,7 @@ class Game:
 
 
     def save_game(self, output_dir):
-        name = self.game_name
+        name = self.name
         filename = os.path.join(output_dir, name.replace(" ", "").strip().lower() + ".csv")
         date = datetime.strftime(self.start_time, "%H:%M:%S")
 
@@ -180,14 +180,14 @@ class Game:
 
     def save_game_to_ddbb(self, ddbb):
 
-        ddbb.new_round(name= self.game_name,
+        ddbb.new_round(name= self.name,
                        stime=self.start_time,
                        etime= self.end_time,
                        nwins=self.metrics[-1].checks,
                        nhelps=self.metrics[-1].helps,
                        ntouch=self.metrics[-1].touched,
                        result=self.game_won,
-                       game_id=self.game_id,
+                       game_id=self.id,
                        hand_id="-1",
                        session_id=self.session_id)
 
@@ -543,7 +543,7 @@ class SpecificWorker(GenericWorker):
 
     # Game window functions
     def start_clicked(self):
-        self.admingame_proxy.adminStartGame(self.current_game.game_name)
+        self.admingame_proxy.adminStartGame(self.current_game.name)
 
     def pause_clicked(self):
         self.admingame_proxy.adminPauseGame()
@@ -775,6 +775,7 @@ class SpecificWorker(GenericWorker):
             result, ddbb_game = self.ddbb.get_game_by_name(game_name)
             if result:
                 self.current_game.id = ddbb_game.id
+            self.current_game.name = game_name
             self.ui.info_game_label.setText(game_name)
 
             self.aux_firtsGameInSession = False
@@ -793,7 +794,7 @@ class SpecificWorker(GenericWorker):
                 result, ddbb_game = self.ddbb.get_game_by_name(game_name)
                 if result:
                     self.current_game.id = ddbb_game.id
-                self.current_game.game_name = game_name
+                self.current_game.name = game_name
                 self.ui.info_game_label.setText(game_name)
 
         self.ui.pause_game_button.setEnabled(False)

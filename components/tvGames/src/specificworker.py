@@ -215,6 +215,7 @@ class SpecificWorker(GenericWorker):
 
 	def reset_game(self):
 		config_path = self._available_games[unicode(self._current_game_name)]
+		self._game_metrics = GameMetrics()
 		self._game.init_game(config_path)
 
 	def mouse_pressed_on_tv(self, point):
@@ -291,7 +292,6 @@ class SpecificWorker(GenericWorker):
 	@QtCore.Slot()
 	def sm_game_init(self):
 		print("Entered state game_init")
-
 		self._game = None
 		self.update_game_selection()
 		self._game.show_on_second_screen()

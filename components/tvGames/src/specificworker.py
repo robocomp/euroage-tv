@@ -51,24 +51,22 @@ class Player:
 		self.name = name
 		self.tracked = False
 
-    #  struct Position
-    #  {
-    #     float x;
-    #     float y;
-    #  };
-    #
-    # struct Metrics
-    # {
-    #     string	currentDate;
-    #     Position pos;
-    #     bool	screenTouched;
-    #     bool	handClosed;
-    #     int	numHelps;
-    #     int	numChecked;
-    #     int	numHits;
-    #     int	numFails;
-    #
-    # };
+#  	struct Position
+# 	{
+# 		 float x;
+# 		 float y;
+# 	};
+# 	struct Metrics
+# 	{
+# 		 string currentDate;
+# 		 Position pos;
+# 		 int numScreenTouched;
+# 		 int numHandClosed;
+# 		 int numHelps;
+# 		 int numChecked;
+# 		 int numHits;
+# 		 int numFails;
+# 	};
 class GameMetrics(Metrics):
 	def __init__(self):
 		super(GameMetrics, self).__init__()
@@ -77,8 +75,8 @@ class GameMetrics(Metrics):
 		self.numChecked = 0
 		self.numHits = 0
 		self.numFails = 0
-		self.handClosed = False
-		self.screenTouched = False
+		self.numHandClosed = 0
+		self.numScreenTouched = 0
 		self.pos = Position()
 
 	def increment_helps(self, quantity=1):

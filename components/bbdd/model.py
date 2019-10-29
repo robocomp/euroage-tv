@@ -133,8 +133,8 @@ class Session(Base):
     id = Column(Integer, Sequence('session_id_seq'), primary_key=True)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
-    patient_id = Column(Integer, ForeignKey('patient.id'))
-    therapist_id = Column(Integer, ForeignKey('therapist.id'))
+    patient_id = Column(Integer, ForeignKey('patient.username'))
+    therapist_id = Column(Integer, ForeignKey('therapist.username'))
 
     patient = relationship("Patient", back_populates="session", cascade="all, delete")
     therapist = relationship("Therapist", back_populates="session", cascade="all, delete")

@@ -67,7 +67,7 @@ class Round(Base):
     name = Column(String(50))
     start_time = Column(DateTime)
     end_time = Column(DateTime)
-    n_wins = Column(Integer)
+    n_checks = Column(Integer)
     n_helps = Column(Integer)
     n_screen_touch = Column(Integer)
     result = Column(Boolean)

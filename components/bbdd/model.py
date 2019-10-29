@@ -43,7 +43,10 @@ class Therapist(Base):
     session = relationship("Session", back_populates="therapist", cascade="all, delete")
 
     def __repr__(self):
-        return "<Therapist(name='%s %s')>" % (self.nombre, self.username)
+        if self.nombre is not None and self.username is not None:
+            return "<Therapist(name='%s %s')>" % (self.nombre, self.username)
+        else:
+            return "<Therapist(name='None None')>"
 
 
 class Game(Base):

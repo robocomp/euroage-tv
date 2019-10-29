@@ -27,7 +27,7 @@ class HandGame(QMainWindow):
         self.main_layout.addWidget(self.add_player_button)
         self.image_widget = QImageWidget()
         self.image_widget.show()
-        # self.capture = cv2.VideoCapture('/home/robolab/PycharmProjects/TVGames/libs/Hand_Detection/resources/testing_hand_video.mp4')
+        # self.capture = cv2.VideoCapture('/home/robocomp/PycharmProjects/TVGames/libs/Hand_Detection/resources/testing_hand_video.mp4')
         self.capture = cv2.VideoCapture(0)
         self.last_frame = None
         self.current_state = "main"

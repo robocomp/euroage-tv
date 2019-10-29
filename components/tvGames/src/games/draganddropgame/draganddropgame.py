@@ -29,8 +29,8 @@ from numpy.random.mtrand import randint
 
 
 try:
-    from games.genericDragGame.gamewidgets import GameTopBarWidget, GameScores, CoolButton
-    from games.genericDragGame.videoplayers import ActionsVideoPlayer
+    from games.draganddropgame.gamewidgets import GameTopBarWidget, GameScores, CoolButton
+    from games.draganddropgame.videoplayers import ActionsVideoPlayer
 except:
     from gamewidgets import GameTopBarWidget, CoolButton, GameScores
     from videoplayers import ActionsVideoPlayer
@@ -188,7 +188,7 @@ class GameScreen(QWidget):
 
 
     def init_game(self, full_path):
-        if isinstance(full_path, basestring):
+        if isinstance(full_path, str):
             full_path = os.path.join(CURRENT_PATH, full_path)
             if os.path.isfile(full_path):
                 with open(full_path) as file_path:
@@ -768,7 +768,7 @@ class TakeDragGame(QWidget):
 
         #TODO: generalize for the game
         #TODO: do on the game initialization
-        # mypath = "//home//robolab//robocomp//components//euroage-tv//components//tvGames//src//games//draganddropgame//resources//videos"
+        # mypath = "//home//robocomp//robocomp//components//euroage-tv//components//tvGames//src//games//draganddropgame//resources//videos"
         # onlyfiles = [os.path.join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
 
@@ -835,7 +835,7 @@ class TakeDragGame(QWidget):
     def event(self, event):
         # print "QWidget event "+str(event.type)
         if event.type() == QEvent.TouchBegin or event.type() == QEvent.TouchUpdate or event.type() == QEvent.TouchEnd:
-            print "TakeDragGame.event: TouchEvent Detected"
+            print ("TakeDragGame.event: TouchEvent Detected")
             qt_touch_points = event.touchPoints()
             self.touch_signal.emit(qt_touch_points)
         return super(TakeDragGame, self).event(event)
@@ -870,13 +870,13 @@ class TakeDragGame(QWidget):
             if pointer in self._pointers:
                 the_pointer = self._pointers[pointer]
             else:
-                print "TakeDragGame.remove_pointer() : WARNING unknown id " + str(pointer)
+                print ("TakeDragGame.remove_pointer() : WARNING unknown id " + str(pointer))
                 return
         #
         elif isinstance(pointer, Pointer):
             the_pointer = pointer
         else:
-            print "TakeDragGame.remove_pointer() : ERROR unexpected type "+str(type(pointer))
+            print ("TakeDragGame.remove_pointer() : ERROR unexpected type "+str(type(pointer)))
             return
         if the_pointer.id in self._pointers:
             # print("Removing pointer id %d"%(the_pointer.id))
@@ -1013,7 +1013,7 @@ class TakeDragGame(QWidget):
 
 
     def adjust_to_nearest_destination(self, pointer_id):
-        lowest_distance = sys.maxint
+        lowest_distance = sys.maxsize
         nearest_dest = None
         taken_widget = self._pointers[pointer_id].taken
         for dest in self._destinations.values():
@@ -1253,9 +1253,9 @@ def main():
     # almost every app you write
     app = QApplication(sys.argv)
     game = GameScreen(None, 1920, 1080)
-    # game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/LionKingGame/game.json")
-    # game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
-    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/final_game1.json")
+    # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/LionKingGame/game.json")
+    # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
+    game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/final_game1.json")
     game.show_on_second_screen()
 
     # main_widget = GameWidget()

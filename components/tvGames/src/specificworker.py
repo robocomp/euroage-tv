@@ -180,7 +180,7 @@ class SpecificWorker(GenericWorker):
 		self.application_machine.start()
 
 	def __del__(self):
-		print 'SpecificWorker destructor'
+		print ('SpecificWorker destructor')
 
 	def quit_app(self):
 		self._current_state = "quitting"
@@ -214,7 +214,7 @@ class SpecificWorker(GenericWorker):
 
 
 	def reset_game(self):
-		config_path = self._available_games[unicode(self._current_game_name)]
+		config_path = self._available_games[str(self._current_game_name)]
 		self._game_metrics = GameMetrics()
 		self._game.init_game(config_path)
 
@@ -414,7 +414,9 @@ class SpecificWorker(GenericWorker):
 		for player in self._current_players:
 			if player.tracked is False:
 				acquired = False
-				self.obtain_player_id(player)
+				#TODO: NOASTRA => uncomment obtain_player and remove
+				#self.obtain_player_id(player)
+				self.current_state = "game_tracking"
 		#TODO: testing only. Remove on production
 		acquired=True
 
@@ -453,7 +455,7 @@ class SpecificWorker(GenericWorker):
 						if "title" in game_config:
 							self._available_games[game_config["title"]] = full_file_path
 
-
+#TODO: NOASTRA => not used on no handDetecion requirement
 	def obtain_player_id(self, player):
 		if len(self._current_players) > 0:
 			if self.debug:
@@ -483,18 +485,18 @@ class SpecificWorker(GenericWorker):
 						# self.expected_hands = self.handdetection_proxy.addNewHand(self.expected_hands,
 						# 														  search_roi_class)
 						# self.handdetection_proxy.addNewHand(self.expected_hands, search_roi_class)
-					except Ice.Exception, e:
+					except Ice.Exception as e:
 						traceback.print_exc()
-						print e
+						print (e)
 
 				elif current_hand_count == self.expected_hands and self.expected_hands > 0:
 					self.current_state = "game_tracking"
 					self.reset_game()
 					self._game.show()
 					self.tv_image.hide()
-			except Ice.Exception, e:
+			except Ice.Exception as e:
 				traceback.print_exc()
-				print e
+				print (e)
 		else:
 			image = self.tv_image.get_raw_image()
 			image[:] = (255, 255, 255)
@@ -825,7 +827,7 @@ class SpecificWorker(GenericWorker):
 			self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 
 		# Send the touched position through touchpoints component interface
-		print "TouchPoint Detected:"+str(tp)
+		print ("TouchPoint Detected:"+str(tp))
 		self.touchpoints_proxy.detectedTouchPoints(touch_points)
 
 

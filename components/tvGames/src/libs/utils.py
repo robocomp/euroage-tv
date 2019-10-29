@@ -69,4 +69,4 @@ def init_touchscreen_device():
 
 
 if __name__ == '__main__':
-    print init_touchscreen_device()
+    print (init_touchscreen_device())

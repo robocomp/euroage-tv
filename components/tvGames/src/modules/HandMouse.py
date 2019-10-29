@@ -117,11 +117,11 @@ class MeanFilter(MouseStateFilter):
 
 
 if __name__ == '__main__':
-	a = HandMouse()
+	a = HandMouse(0)
 	for i in range(2):
 		a.add_state((i, i + 1), "open")
 
 		for i in range(2):
 			a.add_state((i, i + 1), "fist")
 
-	print a.is_open()
+	print (a.is_open())

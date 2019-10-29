@@ -17,7 +17,7 @@ class PieceWindow(QDialog):
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(PieceWindow)
-        file = QFile("/home/robolab/robocomp/components/euroage-tv/components/tvGames/tools/piece.ui")
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/tools/piece.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -48,7 +48,7 @@ class EditorWindow(QWidget):  # crea widget vacio
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(EditorWindow)
-        file = QFile("/home/robolab/robocomp/components/euroage-tv/components/tvGames/tools/game_editor_test.ui")
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/tools/game_editor_test.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -84,9 +84,9 @@ class EditorWindow(QWidget):  # crea widget vacio
         key = "una bonita pieza"
         self.current_piece.ui.name_lineEdit.setText(key)
         self.current_piece.ui.image_path_lineEdit.setText(
-            "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/photos/action_1.jpg")
+            "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/photos/action_1.jpg")
         self.current_piece.ui.video_path_lineEdit.setText(
-            "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/videos/action_1.MP4")
+            "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/videos/action_1.MP4")
         # ############### TESTING #########3
         self.current_piece.show()
 

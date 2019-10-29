@@ -27,8 +27,8 @@
                 980, 
                 510
             ], 
-            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_04.jpg", 
-            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_04.MP4",
+            "image_path": "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_04.jpg",
+            "video_path": "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_04.MP4",
             "name": "action_4", 
             "category": "piece"
         }, 
@@ -47,8 +47,8 @@
                 655, 
                 510
             ], 
-            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_03.jpg", 
-            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_04.MP4",
+            "image_path": "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_03.jpg",
+            "video_path": "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_04.MP4",
             "name": "action_3", 
             "category": "piece"
         }, 
@@ -67,8 +67,8 @@
                 330, 
                 510
             ], 
-            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_02.jpg", 
-            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_02.MP4",
+            "image_path": "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_02.jpg",
+            "video_path": "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_02.MP4",
             "name": "action_2", 
             "category": "piece"
         }, 
@@ -87,8 +87,8 @@
                 5, 
                 510
             ], 
-            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_01.jpg", 
-            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_01.MP4",
+            "image_path": "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_01.jpg",
+            "video_path": "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/CALENTAR_LECHE_01.MP4",
             "name": "action_1", 
             "category": "piece"
         },

@@ -358,17 +358,17 @@ class QGraphicsActionsVideoItemPlayer(QGraphicsListVideoPlayer):
     def play_one_action(self, action_key):
         play_list_index = self._index_to_playlist[action_key]
         if [play_list_index] != self._currently_playing or self._media_player.state() != QMediaPlayer.PlayingState:
-            print "To play"
+            print ("To play")
             self.play_indexes_list([play_list_index])
             self._currently_playing = [play_list_index]
 
     def stop(self):
-        print "To stop"
+        print ("To stop")
         self._media_player.stop()
         self._current_play_list.clear()
 
     def clear(self):
-        print "To clear"
+        print ("To clear")
         self._actions_list = OrderedDict()
         # index from index number of actions to action keys (names)
         self._index_to_key = {}

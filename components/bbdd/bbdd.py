@@ -96,6 +96,14 @@ class BBDD(object):
             traceback.print_stack()
             traceback.print_exc(e)
             return False, Therapist()
+        
+    def get_therapist_by_username(self, username):
+        try:
+            return True, self.session.query(Therapist).filter_by(username=username).first()
+        except Exception as e:
+            traceback.print_stack()
+            traceback.print_exc(e)
+            return False, Therapist()
 
     def get_all_therapist(self):
         return self.session.query(Therapist).all()
@@ -195,7 +203,7 @@ class BBDD(object):
 
     #ROUND
     def new_round(self, name, stime, etime, nwins, nhelps, ntouch, result, game_id, hand_id, session_id):
-        round = Round(name=name,start_time=stime,end_time=etime, n_wins=nwins, n_helps=nhelps, n_screen_touch=ntouch,
+        round = Round(name=name,start_time=stime, end_time=etime, n_checks=nwins, n_helps=nhelps, n_screen_touch=ntouch,
                       result=result,game_id=game_id, hand_id=hand_id, session_id=session_id)
         
         try:

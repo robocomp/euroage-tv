@@ -43,7 +43,10 @@ class Therapist(Base):
     session = relationship("Session", back_populates="therapist", cascade="all, delete")
 
     def __repr__(self):
-        return "<Therapist(name='%s %s')>" % (self.nombre, self.username)
+        if self.nombre is not None and self.username is not None:
+            return "<Therapist(name='%s %s')>" % (self.nombre, self.username)
+        else:
+            return "<Therapist(name='None None')>"
 
 
 class Game(Base):
@@ -64,7 +67,7 @@ class Round(Base):
     name = Column(String(50))
     start_time = Column(DateTime)
     end_time = Column(DateTime)
-    n_wins = Column(Integer)
+    n_checks = Column(Integer)
     n_helps = Column(Integer)
     n_screen_touch = Column(Integer)
     result = Column(Boolean)
@@ -130,8 +133,8 @@ class Session(Base):
     id = Column(Integer, Sequence('session_id_seq'), primary_key=True)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
-    patient_id = Column(Integer, ForeignKey('patient.id'))
-    therapist_id = Column(Integer, ForeignKey('therapist.id'))
+    patient_id = Column(Integer, ForeignKey('patient.username'))
+    therapist_id = Column(Integer, ForeignKey('therapist.username'))
 
     patient = relationship("Patient", back_populates="session", cascade="all, delete")
     therapist = relationship("Therapist", back_populates="session", cascade="all, delete")

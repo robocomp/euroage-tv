@@ -25,8 +25,8 @@ import math
 import os
 from datetime import datetime
 
+import bcrypt
 from PySide2.QtGui import QKeySequence
-from passlib.hash import pbkdf2_sha256
 from pprint import pprint
 
 import passwordmeter
@@ -45,15 +45,7 @@ except:
 FILE_PATH = os.path.abspath(__file__)
 CURRENT_PATH = os.path.dirname(__file__)
 
-print(FILE_PATH)
-# DATABASE_PATH = "resources/users_db.sqlite"
-USERS_FILE_PATH = "src/passwords.json"
-SHADOWS_FILE_PATH = "src/shadows.json"
-# print FILE_PATH
-# print os.getcwd()
-
 list_of_users = []
-# list_of_games = ["Calentar leche en microondas", "Prepara la tortilla", "El rey leon"]
 
 
 class DDBBStatus:
@@ -195,67 +187,35 @@ class Game:
         self.end_time =  datetime.now()
 
 
-class QUserManager(QObject):
-    __metaclass__ = Singleton
+class QUserManager:
 
-    status_changed = Signal(str)
+    def __init__(self, parent=None, ddbb=None, **kwargs):
+        if ddbb is None:
+            raise ValueError("You need to provide a DDBB instance for the QUserManager")
+        else:
+            self.ddbb = ddbb
 
-    def __init__(self, parent=None, **kwargs):
-        super(QUserManager, self).__init__(parent, **kwargs)
-        # self.users_db = QSqlDatabase.addDatabase("QSQLITE")
-        # self.users_db.setDatabaseName(DATABASE_PATH)
-        # self.status = DDBBStatus.disconneted
-        self.users_data = {}
-
-    def load_users(self):
-        with open(USERS_FILE_PATH) as f:
-            print ("[INFO] Loading users ...")
-            self.users_data = json.load(f)
-            for user, algo in self.users_data.items():
-                list_of_users.append(user)
-        pprint(self.users_data)
 
     def check_user_password(self, username, password_to_check):
-        print ("[INFO] Checking password ...")
-        if len(self.users_data) > 0:
-            with open(SHADOWS_FILE_PATH) as f:
-                stored_passwords = json.load(f)
-                if username in stored_passwords:
-                    if username in self.users_data:
-                        if self.users_data[username][2] == '_':
-                            hash = stored_passwords[username]
-                            if pbkdf2_sha256.verify(password_to_check, hash):
-
-                                return True
-                            else:
-                                print ("WARNING: check_user_password: password mismatch")
-                                return False
-                        else:
-                            print ("ERROR: check_user_password: Password should be shadowed")
-                    else:
-                        print ("ERROR: check_user_password: username does't exist")
-                else:
-                    print ("ERROR: check_user_password: username does't exist")
+        result, user = self.ddbb.get_therapist_by_username(username)
+        if result and user is not None:
+            return bcrypt.checkpw(password_to_check.encode('utf8'), user.hash.encode('utf8'))
         else:
-            print ("ERROR: check_user_password: No user load.")
             return False
 
     def set_username_password(self, username, plain_password, role='admin'):
-        with open(SHADOWS_FILE_PATH, "r") as f:
-            stored_passwords = json.load(f)
-        with open(SHADOWS_FILE_PATH, "w") as f:
-            stored_passwords[username] = pbkdf2_sha256.hash(plain_password)
-            json.dump(stored_passwords, f)
-        self.users_data[username] = [username, role, '_']
-        with open(USERS_FILE_PATH, "w") as f:
-            json.dump(self.users_data, f)
+        result, user = self.ddbb.get_therapist_by_username(username)
+        if not result or user is None:
+            salt = bcrypt.gensalt()
+            hash = bcrypt.hashpw(plain_password.encode('utf-8'), salt.encode('utf-8'))
+            self.ddbb.new_therapist(nombre="", username=username, hash=hash, salt=salt, centro="", telefono="", profesion="", observaciones="", fechaAlta=datetime.now())
+        else:
+            raise ValueError("The provided username exists.")
 
     def check_user(self, username):  # Return true when the user is found
-        if len(self.users_data) > 0:
-            if username in self.users_data:
-                return True
-            else:
-                return False
+        result, user = self.ddbb.get_therapist_by_username(username)
+        if result and user is not None:
+            return True
         else:
             return False
 
@@ -268,10 +228,6 @@ class SpecificWorker(GenericWorker):
         super(SpecificWorker, self).__init__(proxy_map)
         self.Period = 2000
         self.timer.start(self.Period)
-
-        self.user_login_manager = QUserManager()
-        self.user_login_manager.status_changed.connect(self.ddbb_status_changed)
-        self.user_login_manager.load_users()
 
         self.init_ui()
         self.setCentralWidget(self.ui)
@@ -295,6 +251,11 @@ class SpecificWorker(GenericWorker):
         self.selected_game_inlist = ""
         self.selected_game_incombo = ""
         self.list_games_toplay = []
+
+        self.ddbb = BBDD()
+        self.ddbb.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba1.db")
+        self.user_login_manager = QUserManager(ddbb=self.ddbb)
+
 
         self.updateUISig.connect(self.updateUI)
 
@@ -395,7 +356,6 @@ class SpecificWorker(GenericWorker):
             QMessageBox().information(self.focusWidget(), 'Error',
                                       'El usuario o la contraseña son incorrectos',
                                       QMessageBox.Ok)
-            self.login_executed.emit(False)
 
     def update_login_status(self, status):
         if not status:
@@ -450,7 +410,6 @@ class SpecificWorker(GenericWorker):
                                           'Usuario creado correctamente',
                                           QMessageBox.Ok)
 
-                self.user_login_manager.load_users()  ##Reload the users
 
                 completer = QCompleter(list_of_users)
                 self.ui.username_lineedit.setCompleter(completer)
@@ -728,8 +687,6 @@ class SpecificWorker(GenericWorker):
         self.ui.selgame_combobox.setCurrentIndex(0)
 
         if self.aux_sessionInit == False:
-            self.ddbb = BBDD()
-            self.ddbb.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba4.db")
 
             patients = self.ddbb.get_all_patients()
             patients_list = []
@@ -880,25 +837,26 @@ class SpecificWorker(GenericWorker):
     #
     def metricsObtained(self, m):
         self.aux_currentDate = datetime.strptime(m.currentDate, "%Y-%m-%dT%H:%M:%S.%f")
-        current_metrics = Metrics()
-        current_metrics.time = self.aux_currentDate
+        new_metrics = Metrics()
+        new_metrics.time = self.aux_currentDate
 
         if self.current_game.start_time is not None:
             self.current_game.time_played = (self.aux_currentDate - self.current_game.start_time).total_seconds() * 1000
-            current_metrics.touched = m.numScreenTouched
-            current_metrics.handClosed = m.numHandClosed
-            current_metrics.helps = m.numHelps
-            current_metrics.checks = m.numChecked
-            current_metrics.hits = m.numHits
-            current_metrics.fails = m.numFails
+            new_metrics.touched = m.numScreenTouched
+            new_metrics.handClosed = m.numHandClosed
+            new_metrics.helps = m.numHelps
+            new_metrics.checks = m.numChecked
+            new_metrics.hits = m.numHits
+            new_metrics.fails = m.numFails
 
             if self.aux_firstMetricReceived:
-                current_metrics.distance = 0
+                new_metrics.distance = 0
                 self.aux_firstMetricReceived = False
             else:
-                current_metrics.distance += self.compute_distance_travelled(m.pos.x, m.pos.y)
+                if len(self.current_game.metrics)>0:
+                    new_metrics.distance = (self.current_game.metrics[-1].distance + self.compute_distance_travelled(m.pos.x, m.pos.y))
 
-            self.current_game.metrics.append(current_metrics)
+            self.current_game.metrics.append(new_metrics)
             self.aux_prevPos = m.pos
             self.updateUISig.emit()
         else:
@@ -950,7 +908,8 @@ class SpecificWorker(GenericWorker):
     def compute_distance_travelled(self, x, y):
         prev_x = self.aux_prevPos.x
         prev_y = self.aux_prevPos.y
-        return math.sqrt(((x - prev_x) ** 2) + ((y - prev_y) ** 2))
+        result = math.sqrt(((x - prev_x) ** 2) + ((y - prev_y) ** 2))
+        return result
 
     def compute_session_metrics(self):
         for game in self.current_session.games:
@@ -974,6 +933,6 @@ class SpecificWorker(GenericWorker):
                 self.ui.num_closedhand_label.setText(str(self.current_game.metrics[-1].handClosed))
                 self.ui.num_helps_label.setText(str(self.current_game.metrics[-1].helps))
                 self.ui.num_checks_label.setText(str(self.current_game.metrics[-1].checks))
-                self.ui.distance_label.setText(str("{:.3f}".format(self.current_game.metrics[-1].distance)) + " mm")
+                self.ui.distance_label.setText(str("{:.3f}".format(self.current_game.metrics[-1].distance)) + " px")
                 self.ui.num_hits_label.setText(str(self.current_game.metrics[-1].hits))
                 self.ui.num_fails_label.setText(str(self.current_game.metrics[-1].fails))

@@ -9,7 +9,7 @@ if __name__ == '__main__':
     bbdd = BBDD()
 
     # create database
-    bbdd.create_database("prueba4.db")
+    bbdd.create_database("prueba1.db")
     #or open an existing one
 #    bbdd.open_database("prueba.db")
 
@@ -54,4 +54,5 @@ if __name__ == '__main__':
     print("All session from Luis")
     for s in session_list:
         print(s)
+
 

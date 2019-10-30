@@ -282,7 +282,7 @@ class SpecificWorker(GenericWorker):
         self.aux_wonGame = False
         self.aux_firtsGameInSession = True
         self.aux_reseted = False
-        self.aux_prevPos = Position()
+        self.aux_prevPos = None
         self.aux_firstMetricReceived = True
         self.aux_savedGames = False
 
@@ -950,8 +950,15 @@ class SpecificWorker(GenericWorker):
                 new_metrics.distance = 0
                 self.aux_firstMetricReceived = False
             else:
-                if len(self.current_game.metrics)>0:
-                    new_metrics.distance = (self.current_game.metrics[-1].distance + self.compute_distance_travelled(m.pos.x, m.pos.y))
+                if len(self.current_game.metrics) > 0:
+                    # TODO: Review for a better checking of the initial position.
+                    print("Received metrics %s" % str((m.pos.x, m.pos.y, self.current_game.metrics[-1].distance)))
+                    if m.pos.x != -1 and m.pos.y != -1 and self.aux_prevPos is None and self.current_game.metrics[-1].distance == 0:
+                        print("Initial pos set")
+                        self.aux_prevPos = m.pos
+                    elif self.aux_prevPos is not None:
+                        new_metrics.distance = (self.current_game.metrics[-1].distance + self.compute_distance_travelled(m.pos.x,m.pos.y))
+                        self.aux_prevPos = m.pos
 
             self.current_game.metrics.append(new_metrics)
             self.aux_prevPos = m.pos
@@ -1005,7 +1012,12 @@ class SpecificWorker(GenericWorker):
     def compute_distance_travelled(self, x, y):
         prev_x = self.aux_prevPos.x
         prev_y = self.aux_prevPos.y
-        result = math.sqrt(((x - prev_x) ** 2) + ((y - prev_y) ** 2))
+        travelled_pixels = math.sqrt(((x - prev_x) ** 2) + ((y - prev_y) ** 2))
+        # Translating pixels to mm
+        # TODO: move this to configuration file. It will depends on tv resolution and size
+        screen_width_resolution = 1920
+        screen_width_mm = 1100
+        result = travelled_pixels * screen_width_mm / screen_width_resolution
         return result
 
     def compute_session_metrics(self):

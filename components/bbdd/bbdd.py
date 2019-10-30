@@ -173,6 +173,9 @@ class BBDD(object):
     def get_all_session_by_patient_id(self, id):
         return self.session.query(Session).join(Patient).filter(Patient.id == id).all()
 
+    def get_all_session_by_patient_username(self, username):
+        return self.session.query(Session).join(Patient).filter(Patient.username == username).all()
+
     def get_session_by_id(self, id):
         return self.session.query(Session).filter_by(id=id).first()
 
@@ -215,3 +218,5 @@ class BBDD(object):
             traceback.print_exc(e)
             return False, Round()
 
+    def get_all_round_by_session_id(self, id):
+        return self.session.query(Round).join(Session).filter(Session.id == id).all()

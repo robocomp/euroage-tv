@@ -78,6 +78,8 @@ class GameMetrics(Metrics):
 		self.numHandClosed = 0
 		self.numScreenTouched = 0
 		self.pos = Position()
+		self.pos.x = -1
+		self.pos.y = -1
 
 	def increment_helps(self, quantity=1):
 		self.numHelps+=quantity
@@ -801,34 +803,24 @@ class SpecificWorker(GenericWorker):
 # ===================================================================
 # ===================================================================
 
-	def detectedTouchPoints(self, qt_touch_points):
+	def detectedTouchPoints(self, touch_points):
+		print("tvGames detected %d"%len(touch_points))
+		if len(touch_points) > 0:
+			state_mapping = {Qt.TouchPointPressed: StateEnum.TouchPointPressed,
+							 Qt.TouchPointMoved: StateEnum.TouchPointMoved,
+							 Qt.TouchPointStationary: StateEnum.TouchPointPressed,
+							 Qt.TouchPointReleased: StateEnum.TouchPointReleased}
+			for tpoint in touch_points:
+				tpoint.state = state_mapping[tpoint.state]
 
-		touch_points = []
-		state_mapping = {Qt.TouchPointPressed: StateEnum.TouchPointPressed,
-						 Qt.TouchPointMoved: StateEnum.TouchPointMoved,
-						 Qt.TouchPointStationary: StateEnum.TouchPointPressed,
-						 Qt.TouchPointReleased: StateEnum.TouchPointReleased}
-		touched = False
-		for qt_t_point in qt_touch_points:
-			aux_point = qt_t_point.lastPos()
-			if qt_t_point.state() == Qt.TouchPointPressed or qt_t_point.state() == Qt.TouchPointMoved:
-				touched = True
-			tp = TouchPoint(id=qt_t_point.id(),
-											state=state_mapping[qt_t_point.state()],
-											fingertip=[qt_t_point.screenPos().x(), qt_t_point.screenPos().y()],
-											lastPos=[aux_point.x(), aux_point.y()])
-			touch_points.append(tp)
-
-		# Send update of metrics throught gamemetrics component interface
-		if touched:
-			self._game_metrics.numScreenTouched += 1
-			self._game_metrics.pos.x = qt_touch_points[-1].lastPos().x()
-			self._game_metrics.pos.y = qt_touch_points[-1].lastPos().y()
+			# Send update of metrics throught gamemetrics component interface
+			if touch_points[-1].state == StateEnum.TouchPointPressed:
+				self._game_metrics.numScreenTouched += 1
+			self._game_metrics.pos.x = touch_points[-1].fingertip[0]
+			self._game_metrics.pos.y = touch_points[-1].fingertip[1]
 			self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 
-		# Send the touched position through touchpoints component interface
-		print ("TouchPoint Detected:"+str(tp))
-		self.touchpoints_proxy.detectedTouchPoints(touch_points)
+			# self.touchpoints_proxy.detectedTouchPoints(touch_points)
 
 
 	def send_status_change(self, status_type):

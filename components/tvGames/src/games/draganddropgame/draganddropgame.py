@@ -732,7 +732,48 @@ class Pointer(QObject):
     def stop(self):
         self._lost_timer.stop()
 
+class MyTouchPoint:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
+class MyQGraphicsView(QGraphicsView):
+    touch_signal = Signal(list)
+    state_mapping = { QEvent.MouseButtonPress: Qt.TouchPointPressed,
+                      QEvent.MouseMove: Qt.TouchPointMoved,
+                      QEvent.MouseButtonRelease: Qt.TouchPointReleased}
+
+
+    def __init__(self, parent = None):
+        super(MyQGraphicsView, self).__init__(parent)
+        self.setAttribute(Qt.WA_AcceptTouchEvents)
+
+
+    def viewportEvent(self, event):
+        # print "QWidget event "+str(event.type)
+        touchs_to_detect = [QEvent.TouchBegin, QEvent.TouchUpdate, QEvent.TouchEnd]
+        # WARN: Single finger t
+        mouses_to_detect = [QEvent.MouseButtonRelease, QEvent.MouseMove]
+        touched = False
+        touch_points = []
+        if event.type() in touchs_to_detect:
+            qt_touch_points = event.touchPoints()
+            for qt_t_point in qt_touch_points:
+                if qt_t_point.state() == Qt.TouchPointPressed or qt_t_point.state() == Qt.TouchPointMoved or Qt.TouchPointReleased:
+                    touched = True
+                    tp = MyTouchPoint(id=qt_t_point.id(),
+                                    state=qt_t_point.state(),
+                                    fingertip=[qt_t_point.screenPos().x(), qt_t_point.screenPos().y()],
+                                    lastPos=[])
+                    touch_points.append(tp)
+            # print ("TakeDragGame.event: TouchEvent Detected %s" % (str(event.type())))
+        elif event.type() in mouses_to_detect and event.source() == Qt.MouseEventSynthesizedByQt:
+            # print ("TakeDragGame.event: Mouse/Touch Detected %s" % (str(event.type())))
+            my_touch_point = MyTouchPoint(id=0, state=self.state_mapping[event.type()], fingertip=[event.screenPos().x(), event.screenPos().y()], lastPos=[])
+            touch_points.append(my_touch_point)
+            touched = True
+        if touched:
+            self.touch_signal.emit(touch_points)
+        return super(MyQGraphicsView, self).viewportEvent(event)
 
 class TakeDragGame(QWidget):
     touch_signal = Signal(list)
@@ -750,7 +791,8 @@ class TakeDragGame(QWidget):
         # DISCONNECT MOUSE
         self._scene.moved.connect(self.update_pointer)
         self.setCursor(Qt.BlankCursor)
-        self._view = QGraphicsView()
+        self._view = MyQGraphicsView()
+        self._view.touch_signal.connect(self.touch_signal)
         self._view.setMouseTracking(True)
         self._view.setScene(self._scene)
         self._view.setAlignment(Qt.AlignTop | Qt.AlignLeft)
@@ -784,9 +826,9 @@ class TakeDragGame(QWidget):
         # self.init_game(os.path.join(CURRENT_PATH, 'resources/game1.json'))
         # print("mplayer " + "\"" + os.path.join(CURRENT_PATH, WINNING_SOUNDS[0]) + "\"")
         # subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, WINNING_SOUNDS[0]) + "\"", stdout=DEVNULL, shell=True)
-        self._view.setAttribute(Qt.WA_AcceptTouchEvents)
-        self._view.viewport().setAttribute(Qt.WA_AcceptTouchEvents)
-        self.setAttribute(Qt.WA_AcceptTouchEvents)
+        # self._view.setAttribute(Qt.WA_AcceptTouchEvents)
+        # self._view.viewport().setAttribute(Qt.WA_AcceptTouchEvents)
+
 
 
     def init_game(self, config_file_path='resources/game1.json'):
@@ -831,14 +873,6 @@ class TakeDragGame(QWidget):
         self._invisible_last_item = QGraphicsRectItem(far_right_piece_pos[0]+10, far_right_piece_pos[1]+20, 0, 0)
         self._scene.addItem(self._invisible_last_item)
 
-    # Detecting touch events on multitouch screen
-    def event(self, event):
-        # print "QWidget event "+str(event.type)
-        if event.type() == QEvent.TouchBegin or event.type() == QEvent.TouchUpdate or event.type() == QEvent.TouchEnd:
-            print ("TakeDragGame.event: TouchEvent Detected")
-            qt_touch_points = event.touchPoints()
-            self.touch_signal.emit(qt_touch_points)
-        return super(TakeDragGame, self).event(event)
 
     def clear_scene(self):
         print("Removing %d destinies"%len(self._destinations))

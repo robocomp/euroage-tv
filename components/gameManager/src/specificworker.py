@@ -286,9 +286,9 @@ class SpecificWorker(GenericWorker):
         self.aux_prevPos = None
         self.aux_firstMetricReceived = True
         self.aux_savedGames = False
+        self.__ready_session_received = False
 
         self.selected_player_incombo = ""
-        self.selected_game_inlist = ""
         self.selected_game_incombo = ""
         # TODO: Move to the session. Should have a list of games to play and played games.
         self.list_games_toplay = []
@@ -899,6 +899,11 @@ class SpecificWorker(GenericWorker):
 
         self.current_session.date = self.aux_currentDate
 
+        # TODO: this is to fix a desincronization problem, need to be fixed with a better communication protocol between the State machines.
+        if self.__ready_session_received:
+            self.t_wait_ready_to_admin_games.emit()
+            self.__ready_session_received = False
+
     #
     # sm_session_end
     #
@@ -961,7 +966,6 @@ class SpecificWorker(GenericWorker):
                         self.aux_prevPos = m.pos
 
             self.current_game.metrics.append(new_metrics)
-            self.aux_prevPos = m.pos
             self.updateUISig.emit()
         else:
             print ("NO se ha iniciado el juego")
@@ -978,6 +982,8 @@ class SpecificWorker(GenericWorker):
             self.t_session_init_to_wait_ready.emit()
 
         if state_name == "readySession":
+            # TODO: Patch to resolve a problem of desincronization if this arrives before this SM is in the wait_ready state
+            self.__ready_session_received = True
             self.t_wait_ready_to_admin_games.emit()
 
         if state_name == "waitingGame":

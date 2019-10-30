@@ -203,6 +203,7 @@ class Game:
         Store the time of the end of the game.
         :return: --
         """
+        self.end_time = datetime.now()
 
 
 class QUserManager:
@@ -289,6 +290,7 @@ class SpecificWorker(GenericWorker):
         self.selected_player_incombo = ""
         self.selected_game_inlist = ""
         self.selected_game_incombo = ""
+        # TODO: Move to the session. Should have a list of games to play and played games.
         self.list_games_toplay = []
 
         self.ddbb = BBDD()
@@ -371,7 +373,6 @@ class SpecificWorker(GenericWorker):
         self.ui.deletegame_button.clicked.connect(self.delete_game_from_list)
         self.ui.up_button.clicked.connect(self.move_list_up)
         self.ui.down_button.clicked.connect(self.move_list_down)
-        self.ui.down_button.clicked.connect(self.movelist_down)
 
         self.ui.startsession_button.clicked.connect(self.start_session)
 
@@ -460,7 +461,7 @@ class SpecificWorker(GenericWorker):
             # username = username.strip().lower()
             password = unicode(self.ui.password_lineedit_reg.text())
 
-            if (self.user_login_manager.check_user(username) == True):  # The user already exist
+            if self.user_login_manager.check_user(username) == True:  # The user already exist
                 QMessageBox().information(self.focusWidget(), 'Error',
                                           'El nombre de usuario ya existe',
                                           QMessageBox.Ok)
@@ -562,17 +563,16 @@ class SpecificWorker(GenericWorker):
         """
         Create a new user on the DDBB from the information introduced on the UI.
         """
-        sexo = unicode(self.ui.sexo_player_lineedit.text())
+        username = str(self.ui.username_player_lineedit.text())
+        nombre = str(self.ui.nombre_player_lineedit.text())
+        sexo = str(self.ui.sexo_player_lineedit.text())
         edad = float(self.ui.edad_player_lineedit.text())
 
-        self.ddbb.new_patient(username=username, nombre=nombre, sexo=sexo, edad=edad)
+        patient = self.ddbb.new_patient(username=username, nombre=nombre, sexo=sexo, edad=edad)
+        # update the players show on the ui
         patients = self.ddbb.get_all_patients()
-        patients_list = []
-        for p in patients:
-            patients_list.append(p.username)
-
-        completer = QCompleter(patients_list)
-        self.ui.selplayer_combobox.addItem(patients_list[-1])
+        completer = QCompleter([patient.username for patient in patients])
+        self.ui.selplayer_combobox.addItem(patient.username)
         self.ui.selplayer_combobox.setCompleter(completer)
         self.t_create_player_to_session_init.emit()
 
@@ -727,7 +727,7 @@ class SpecificWorker(GenericWorker):
 
         self.aux_datePaused = None
         self.aux_wonGame = False
-        self.aux_prevPos = Position()
+        self.aux_prevPos = None
         self.aux_firstMetricReceived = True
 
         self.current_game = None
@@ -969,7 +969,7 @@ class SpecificWorker(GenericWorker):
     #
     # statusChanged
     #
-    def statusChanged(self, s):  ##Seguir desde aqui-
+    def statusChanged(self, s):
         state_name = str(s.currentStatus.name)
         self.aux_currentStatus = state_name
         self.aux_currentDate = datetime.strptime(s.date, "%Y-%m-%dT%H:%M:%S.%f")
@@ -1042,6 +1042,6 @@ class SpecificWorker(GenericWorker):
                 self.ui.num_closedhand_label.setText(str(self.current_game.metrics[-1].handClosed))
                 self.ui.num_helps_label.setText(str(self.current_game.metrics[-1].helps))
                 self.ui.num_checks_label.setText(str(self.current_game.metrics[-1].checks))
-                self.ui.distance_label.setText(str("{:.3f}".format(self.current_game.metrics[-1].distance)) + " px")
+                self.ui.distance_label.setText(str("{:.3f}".format(self.current_game.metrics[-1].distance)) + " mm")
                 self.ui.num_hits_label.setText(str(self.current_game.metrics[-1].hits))
                 self.ui.num_fails_label.setText(str(self.current_game.metrics[-1].fails))

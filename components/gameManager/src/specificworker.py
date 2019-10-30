@@ -128,6 +128,9 @@ class Session:
 
 
 class Metrics:
+    """
+    Class to encapsulate the information of a metrics of a played game
+    """
     def __init__(self):
         self.time = None
         self.distance = 0
@@ -140,6 +143,9 @@ class Metrics:
 
 
 class Game:
+    """
+    Class to encapsulate the information of a Game
+    """
     def __init__(self):
         self.id = None
         self.name = ""
@@ -154,6 +160,11 @@ class Game:
 
 
     def save_game(self, output_dir):
+        """
+        Save the information of a game to a dir/file
+        :param output_dir: dir to save th information of a game
+        :return: --
+        """
         name = self.name
         filename = os.path.join(output_dir, name.replace(" ", "").strip().lower() + ".csv")
         date = datetime.strftime(self.start_time, "%H:%M:%S")
@@ -171,7 +182,11 @@ class Game:
         csvFile.close()
 
     def save_game_to_ddbb(self, ddbb):
-
+        """
+        Save the information of a game to a ddbb
+        :param output_dir: ddbb object to save the information to
+        :return: --
+        """
         ddbb.new_round(name= self.name,
                        stime=self.start_time,
                        etime= self.end_time,
@@ -184,10 +199,16 @@ class Game:
                        session_id=self.session_id)
 
     def end(self):
-        self.end_time =  datetime.now()
+        """
+        Store the time of the end of the game.
+        :return: --
+        """
 
 
 class QUserManager:
+    """
+    This class encapsulate the needed methods to get the user and checks for login from the ddbb
+    """
 
     def __init__(self, parent=None, ddbb=None, **kwargs):
         if ddbb is None:
@@ -197,13 +218,26 @@ class QUserManager:
 
 
     def check_user_password(self, username, password_to_check):
+        """
+        Ckecks the password for a given user.
+        :param username: username to check the passsword for
+        :param password_to_check: password to check
+        :return: True if exists and password match , False
+        """
+
         result, user = self.ddbb.get_therapist_by_username(username)
         if result and user is not None:
             return bcrypt.checkpw(password_to_check.encode('utf8'), user.hash.encode('utf8'))
         else:
             return False
 
-    def set_username_password(self, username, plain_password, role='admin'):
+    def set_username_password(self, username, plain_password):
+        """
+        Stores a new user with it password on the DDBB.
+        :param username: username for the new user
+        :param plain_password: password for the new user.
+        :return: --
+        """
         result, user = self.ddbb.get_therapist_by_username(username)
         if not result or user is None:
             salt = bcrypt.gensalt()
@@ -212,7 +246,12 @@ class QUserManager:
         else:
             raise ValueError("The provided username exists.")
 
-    def check_user(self, username):  # Return true when the user is found
+    def check_user(self, username):
+        """
+        Check if a username exists on the DDBB
+        :param username: username to check existence of
+        :return: True if exists, False if not.
+        """
         result, user = self.ddbb.get_therapist_by_username(username)
         if result and user is not None:
             return True
@@ -263,6 +302,10 @@ class SpecificWorker(GenericWorker):
 
     @property
     def current_game(self):
+        """
+        Getter for the current game of the current session
+        :return: game of the current session
+        """
         if self.current_session is not None:
             return self.current_session.current_game
         else:
@@ -270,10 +313,20 @@ class SpecificWorker(GenericWorker):
 
     @current_game.setter
     def current_game(self, the_game):
+        """
+        Setter for the current game of the current session
+        :return: game of the current session
+        """
         if self.current_session is not None:
             self.current_session.current_game = the_game
 
     def init_ui(self):
+        """
+        Registers the custom widgets of the UI
+        Load the main UI from .ui file
+        Configure the actions of the menu, shortcuts and connect the signals
+        :return:
+        """
         loader = QUiLoader()
         loader.registerCustomWidget(LoginWindow)
         loader.registerCustomWidget(RegisterWindow)
@@ -313,11 +366,11 @@ class SpecificWorker(GenericWorker):
         self.ui.back_button_reg.clicked.connect(self.t_create_user_to_user_login.emit)
 
         ## User window
-        self.ui.games_list.currentItemChanged.connect(self.selectediteminlist_changed)
-        self.ui.selplayer_combobox.currentIndexChanged.connect(self.selectedplayer_changed)
-        self.ui.addgame_button.clicked.connect(self.addgametolist)
-        self.ui.deletegame_button.clicked.connect(self.deletegamefromlist)
-        self.ui.up_button.clicked.connect(self.movelist_up)
+        self.ui.selplayer_combobox.currentIndexChanged.connect(self.selected_player_changed)
+        self.ui.addgame_button.clicked.connect(self.add_game_to_list)
+        self.ui.deletegame_button.clicked.connect(self.delete_game_from_list)
+        self.ui.up_button.clicked.connect(self.move_list_up)
+        self.ui.down_button.clicked.connect(self.move_list_down)
         self.ui.down_button.clicked.connect(self.movelist_down)
 
         self.ui.startsession_button.clicked.connect(self.start_session)
@@ -335,11 +388,18 @@ class SpecificWorker(GenericWorker):
         self.ui.end_session_button.clicked.connect(self.end_session_clicked)
 
     def ddbb_status_changed(self, string):
+        """
+        Slot to show status changes on the UI.
+        :param string:
+        :return:
+        """
         self.ui.login_status.setText(string)
 
     # Login window functions
-
     def check_login(self):
+        """
+        Checks login from DDBB and update the state and UI.
+        """
         print ("[INFO] Checking login ...")
 
         username = unicode(self.ui.username_lineedit.text())
@@ -358,21 +418,18 @@ class SpecificWorker(GenericWorker):
                                       QMessageBox.Ok)
 
     def update_login_status(self, status):
+        "Slot to update the state on the login window"
         if not status:
             self.ui.login_status.setText("[!]Login failed")
         else:
             self.ui.login_status.setText("[+]Login OK")
 
-    # def close_thsession_clicked(self):
-    #     reply = QMessageBox.question(self.focusWidget(), '',
-    #                                  ' Desea cerrar sesión?', QMessageBox.Yes, QMessageBox.No)
-    #     if reply == QMessageBox.Yes:
-    #         self.mainMenu.setEnabled(False)
-    #         self.ui.stackedWidget.setCurrentIndex(0)
-    #         self.ui.password_lineedit.clear()
 
     # Register window functions
     def password_strength_check(self):
+        """
+        Checks the strength of the password inserted on the user registration ui and update the information
+        """
         password = unicode(self.ui.password_lineedit_reg.text())
         repeated_password = unicode(self.ui.password_2_lineedit_reg.text())
         strength, improvements = passwordmeter.test(password)
@@ -392,6 +449,10 @@ class SpecificWorker(GenericWorker):
         return True
 
     def create_new_user(self):
+        """
+        Checks password strength, check if user already exists, create the new user and change the corresponding state
+        :return: False if failed, True if user is created.
+        """
         print ("[INFO] Trying to create new user ...")
 
         if self.password_strength_check():
@@ -420,15 +481,24 @@ class SpecificWorker(GenericWorker):
             print ("[ERROR] The user couldn't be created ")
             return False
 
-    def deletegamefromlist(self):
+
+    def delete_game_from_list(self):
+        """
+        Delete the current selected game from the list of games to play.
+        :return:
+        """
         item_to_delete = self.ui.games_list.currentRow()
         self.ui.games_list.takeItem(item_to_delete)
 
-    def selectedplayer_changed(self):
+    def selected_player_changed(self):
+        """
+        Slot to manage creation of new users/patients
+        :return:
+        """
         self.selected_player_incombo = self.ui.selplayer_combobox.currentText()
         if (self.ui.selplayer_combobox.currentIndex() == 1):  # New player selected
             reply = QMessageBox.question(self.focusWidget(), '',
-                                         ' Quiere añadir a un nuevo jugador?', QMessageBox.Yes, QMessageBox.No)
+                                         'Quiere añadir a un nuevo jugador?', QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.No:
                 self.ui.selplayer_combobox.setCurrentIndex(0)
                 return False
@@ -437,11 +507,11 @@ class SpecificWorker(GenericWorker):
                 self.t_session_init_to_create_player.emit()
                 return True
 
-    def selectediteminlist_changed(self):
-        self.selected_game_inlist = self.ui.games_list.currentItem().text()
-        print (self.ui.games_list.currentRow())
-
-    def addgametolist(self):
+    def add_game_to_list(self):
+        """
+        Slot to add a game to the list of games to play in the session
+        :return:
+        """
         self.selected_game_incombo = self.ui.selgame_combobox.currentText()
         if self.selected_game_incombo != "":
             self.ui.games_list.addItem(self.selected_game_incombo)
@@ -449,11 +519,14 @@ class SpecificWorker(GenericWorker):
             return True
         else:
             QMessageBox().information(self.focusWidget(), 'Error',
-                                      'No se han seleccionado ningún juego',
+                                      'No se ha seleccionado ningún juego',
                                       QMessageBox.Ok)
             return False
 
-    def movelist_up(self):
+    def move_list_up(self):
+        """
+        Move an item of the list of games to play up in the list
+        """
         current_text = self.ui.games_list.currentItem().text()
         current_index = self.ui.games_list.currentRow()
 
@@ -467,7 +540,10 @@ class SpecificWorker(GenericWorker):
         self.ui.games_list.item(new_index).setText(current_text)
         self.ui.games_list.setCurrentRow(new_index)
 
-    def movelist_down(self):
+    def move_list_down(self):
+        """
+        Move an item of the list of games to play down in the list
+        """
         current_text = self.ui.games_list.currentItem().text()
         current_index = self.ui.games_list.currentRow()
 
@@ -483,9 +559,9 @@ class SpecificWorker(GenericWorker):
 
     # New player
     def create_player(self):
-
-        username = unicode(self.ui.username_player_lineedit.text())
-        nombre = unicode(self.ui.nombre_player_lineedit.text())
+        """
+        Create a new user on the DDBB from the information introduced on the UI.
+        """
         sexo = unicode(self.ui.sexo_player_lineedit.text())
         edad = float(self.ui.edad_player_lineedit.text())
 
@@ -502,21 +578,36 @@ class SpecificWorker(GenericWorker):
 
     # Game window functions
     def start_clicked(self):
+        """
+        Slot to send the adminStartGame command to the game
+        """
         self.admingame_proxy.adminStartGame(self.current_game.name)
 
     def pause_clicked(self):
+        """
+        Slot to send the adminPauseGame command to the game
+        """
         self.admingame_proxy.adminPauseGame()
 
     def continue_clicked(self):
+        """
+        Slot to send the adminContinueGame command to the game
+        """
         self.admingame_proxy.adminContinueGame()
 
     def finish_clicked(self):
+        """
+        Slot to send the adminStopGame command to the game
+        """
         reply = QMessageBox.question(self.focusWidget(), '',
                                      '¿Desea finalizar juego?', QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.admingame_proxy.adminStopGame()
 
     def reset_clicked(self):
+        """
+        Slot to send the adminResetGame command to the game
+        """
         reply = QMessageBox.question(self.focusWidget(), '',
                                      '¿Desea volver a empezar? Los datos del juego no se guardarán', QMessageBox.Yes,
                                      QMessageBox.No)
@@ -524,6 +615,10 @@ class SpecificWorker(GenericWorker):
             self.admingame_proxy.adminResetGame()
 
     def start_session(self):
+        """
+        Slot to create the Session, send the adminStartSession command with the selected player/patient and configure
+        the list of games to play.
+        """
         player = self.selected_player_incombo
         self.list_games_toplay = []
 
@@ -543,7 +638,9 @@ class SpecificWorker(GenericWorker):
             self.admingame_proxy.adminStartSession(player)
 
     def end_session_clicked(self):
-
+        """
+        Slot to finish the current session and send the adminEndSession command to the game.
+        """
         reply = QMessageBox.question(self.focusWidget(), '',
                                      ' ¿Desea finalizar la sesión?', QMessageBox.Yes, QMessageBox.No)
 

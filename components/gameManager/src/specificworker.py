@@ -147,7 +147,7 @@ class Game:
     Class to encapsulate the information of a Game
     """
     def __init__(self):
-        self.id = None
+        self.game_id = None
         self.name = ""
         self.start_time = datetime.now()
         self.end_time = None
@@ -193,8 +193,9 @@ class Game:
                        nwins=self.metrics[-1].checks,
                        nhelps=self.metrics[-1].helps,
                        ntouch=self.metrics[-1].touched,
+                       distance=self.metrics[-1].distance,
                        result=self.game_won,
-                       game_id=self.id,
+                       game_id=self.game_id,
                        hand_id="-1",
                        session_id=self.session_id)
 
@@ -741,9 +742,9 @@ class SpecificWorker(GenericWorker):
     @QtCore.Slot()
     def sm_paused(self):
         print("Entered state paused")
-        self.ui.continue_game_button.setEnabled(True);
-        self.ui.reset_game_button.setEnabled(True);
-        self.ui.pause_game_button.setEnabled(False);
+        self.ui.continue_game_button.setEnabled(True)
+        self.ui.reset_game_button.setEnabled(True)
+        self.ui.pause_game_button.setEnabled(False)
 
         self.aux_datePaused = self.aux_currentDate
 
@@ -753,12 +754,12 @@ class SpecificWorker(GenericWorker):
     @QtCore.Slot()
     def sm_playing(self):
         print("Entered state playing")
-        self.ui.start_game_button.setEnabled(False);
-        self.ui.pause_game_button.setEnabled(True);
-        self.ui.finish_game_button.setEnabled(True);
-        self.ui.reset_game_button.setEnabled(False);
+        self.ui.start_game_button.setEnabled(False)
+        self.ui.pause_game_button.setEnabled(True)
+        self.ui.finish_game_button.setEnabled(True)
+        self.ui.reset_game_button.setEnabled(False)
         self.ui.reset_game_button.setToolTip("Debe pausar el juego para poder reiniciarlo")
-        self.ui.end_session_button.setEnabled(False);  # No se puede finalizar la sesion si hay un juego en marcha
+        self.ui.end_session_button.setEnabled(False)  # No se puede finalizar la sesion si hay un juego en marcha
         self.ui.end_session_button.setToolTip("Debe finalizar el juego para poder terminar la sesión")
 
         if self.current_session.current_game.start_time is None:
@@ -828,7 +829,7 @@ class SpecificWorker(GenericWorker):
             self.current_game = Game()
             result, ddbb_game = self.ddbb.get_game_by_name(game_name)
             if result:
-                self.current_game.id = ddbb_game.id
+                self.current_game.game_id = ddbb_game.id
             self.current_game.name = game_name
             self.ui.info_game_label.setText(game_name)
 
@@ -1023,7 +1024,7 @@ class SpecificWorker(GenericWorker):
         # TODO: move this to configuration file. It will depends on tv resolution and size
         screen_width_resolution = 1920
         screen_width_mm = 1100
-        result = travelled_pixels * screen_width_mm / screen_width_resolution
+        result = int(travelled_pixels * screen_width_mm / screen_width_resolution)
         return result
 
     def compute_session_metrics(self):

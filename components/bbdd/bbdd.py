@@ -205,9 +205,9 @@ class BBDD(object):
             return False, Stop()
 
     #ROUND
-    def new_round(self, name, stime, etime, nwins, nhelps, ntouch, result, game_id, hand_id, session_id):
+    def new_round(self, name, stime, etime, nwins, nhelps, ntouch, distance, result, game_id, hand_id, session_id):
         round = Round(name=name,start_time=stime, end_time=etime, n_checks=nwins, n_helps=nhelps, n_screen_touch=ntouch,
-                      result=result,game_id=game_id, hand_id=hand_id, session_id=session_id)
+                      distance=distance, result=result,game_id=game_id, hand_id=hand_id, session_id=session_id)
         
         try:
             self.session.add(round)

@@ -38,26 +38,29 @@ def get_HDMI_devices_id():
 
 
 def init_touchscreen_device():
+    print("Initiating Touch device")
     hdmi_devides, result = get_HDMI_devices_id()
     if result and len(hdmi_devides)>0:
         hdmi_device = hdmi_devides[0]
         touch_devices, result = get_touchscreen_devide_id()
         if result and len(touch_devices):
             touch_device = touch_devices[0]
+            print("Located HDMI: %s and TouchDevice %d" % (hdmi_device, touch_device))
+            command = "xinput --map-to-output %d %s" % (touch_device, hdmi_device)
             try:
-                command = "xinput --map-to-output %d %s"%(touch_device,hdmi_device)
                 command_output = subprocess.Popen(command,
                                                   stdout=subprocess.PIPE,
                                                   stderr=subprocess.STDOUT, shell=True)
                 stdout, stderr = command_output.communicate()
+            except:
+                printerr("Problem found while executing command %s"%(command) )
+                return False
+            else:
                 if stderr == None and "not found" not in stdout:
                     return True
                 else:
                     printerr("Problem found while executing command %s" % (command))
                     return False
-            except:
-                printerr("Problem found while executing command %s"%(command) )
-                return False
         else:
             printerr("No touch device found. Can't initialice it")
             return False

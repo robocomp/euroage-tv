@@ -301,6 +301,7 @@ class SpecificWorker(GenericWorker):
         self.updateUISig.connect(self.updateUI)
 
         self.manager_machine.start()
+        self.showFullScreen()
 
     @property
     def current_game(self):
@@ -335,7 +336,7 @@ class SpecificWorker(GenericWorker):
         loader.registerCustomWidget(UsersWindow)
         loader.registerCustomWidget(PlayersWindow)
         loader.registerCustomWidget(GameWindow)
-        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/gameManager/src/stackedUI.ui")
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/gameManager/src/uis/big/stackedUI.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         file.close()

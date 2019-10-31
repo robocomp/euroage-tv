@@ -79,7 +79,7 @@ class GameScreen(QWidget):
         self._game_layout.addWidget(self._game_frame, 1, 1, 1, 18)
         self._help_button = CoolButton(text="AYUDA", size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","common","button","justQuestion.png"))
         self._help_button.set_color(QColor("Green"))
-        self._check_button = CoolButton(text="TERMINAR", size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","common","button","checked.png"))
+        self._check_button = CoolButton(text="REVISAR", size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","common","button","checked.png"))
         self._help_button.set_color(QColor("Orange"))
         self._game_layout.addWidget(self._help_button, 2, 1, 1, 2, Qt.AlignRight)
         self._game_layout.addWidget(self._check_button, 2, 3, 1, 2)
@@ -214,7 +214,7 @@ class GameScreen(QWidget):
             second_screen_size = desktop_widget.screenGeometry(1)
             self.move(second_screen_size.left(), second_screen_size.top())
             # self.resize(second_screen_size.width(), second_screen_size.height())
-            self.showFullScreen()
+        self.showFullScreen()
 
     def paintEvent(self, event):
         opt = QStyleOption()
@@ -1072,6 +1072,7 @@ class TakeDragGame(QWidget):
                 #If added set pos to center
                 taken_widget.setPos(new_xpos, new_ypos)
                 self._scene.update()
+                # TODO: remove If we only want to check win whn Comprobar button is clicked
                 if self.check_win():
                     self.game_win.emit()
             else:
@@ -1279,7 +1280,7 @@ class TakeDragGame(QWidget):
             second_screen_size = desktop_widget.screenGeometry(1)
             self.move(second_screen_size.left(), second_screen_size.top())
             # self.resize(second_screen_size.width(), second_screen_size.height())
-            self.showFullScreen()
+        self.showFullScreen()
 
 
 def main():

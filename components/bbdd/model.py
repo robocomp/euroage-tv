@@ -70,6 +70,7 @@ class Round(Base):
     n_checks = Column(Integer)
     n_helps = Column(Integer)
     n_screen_touch = Column(Integer)
+    distance = Column(Integer)
     result = Column(Boolean)
     session_id = Column(Integer, ForeignKey('session.id'))
     game_id = Column(Integer, ForeignKey('game.id'))

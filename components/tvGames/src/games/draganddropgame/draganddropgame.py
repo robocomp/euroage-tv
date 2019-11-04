@@ -933,7 +933,10 @@ class TakeDragGame(QWidget):
         self.end_game()
 
     def check_scores(self):
-        self._update_scores()
+        if self.check_win():
+            self.game_win.emit()
+        else:
+            self._update_scores()
 
     def _update_scores(self):
         right, wrong = self.right_wrong_pieces()
@@ -1073,8 +1076,8 @@ class TakeDragGame(QWidget):
                 taken_widget.setPos(new_xpos, new_ypos)
                 self._scene.update()
                 # TODO: remove If we only want to check win whn Comprobar button is clicked
-                if self.check_win():
-                    self.game_win.emit()
+                # if self.check_win():
+                #    self.game_win.emit()
             else:
                 print("Piece %s NOT added to destination %s becuase occupied by %s" % (taken_widget.id, nearest_dest.index, nearest_dest.contained_piece.id))
                 #If already occupied, set to center but displaced

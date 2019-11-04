@@ -22,6 +22,7 @@ class Patient(Base):
     fechaAlta = Column(String(20))
 
     session = relationship("Session", back_populates="patient", cascade="all, delete")
+    therapist = relationship("Therapist", back_populates="patient", cascade="all, delete")
 
     def __repr__(self):
         return "<Patient(username='%s' nombre=%s')>" % (self.username, self.nombre)
@@ -41,7 +42,7 @@ class Therapist(Base):
     fechaAlta = Column(String(20))
 
     session = relationship("Session", back_populates="therapist", cascade="all, delete")
-    patients = relationship("Patient", back_populates="therapist", cascade="all, delete")
+    patient = relationship("Patient", back_populates="therapist", cascade="all, delete")
 
     def __repr__(self):
         if self.nombre is not None and self.username is not None:

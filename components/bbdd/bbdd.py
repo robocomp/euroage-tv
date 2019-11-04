@@ -65,7 +65,7 @@ class BBDD(object):
         return self.session.query(Patient).all()
 
     def get_all_patients_by_therapist(self, therapist):
-        return self.session.query(Patient).filter(profesional=therapist).all()
+        return self.session.query(Patient).filter_by(profesional=therapist).all()
 
 
 

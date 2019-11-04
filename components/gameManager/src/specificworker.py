@@ -446,7 +446,10 @@ class SpecificWorker(GenericWorker):
                                       QMessageBox.Ok)
 
     def update_login_status(self, status):
-        "Slot to update the state on the login window"
+        """
+        Slot to update the state on the login window"
+        :param status: True if logged in ok.
+        """""
         if not status:
             self.ui.login_status.setText("[!]Login failed")
         else:
@@ -986,7 +989,6 @@ class SpecificWorker(GenericWorker):
             else:
                 if len(self.current_game.metrics) > 0:
                     # TODO: Review for a better checking of the initial position.
-                    print("Received metrics %s" % str((m.pos.x, m.pos.y, self.current_game.metrics[-1].distance)))
                     if m.pos.x != -1 and m.pos.y != -1 and self.aux_prevPos is None and self.current_game.metrics[-1].distance == 0:
                         print("Initial pos set")
                         self.aux_prevPos = m.pos
@@ -1045,6 +1047,12 @@ class SpecificWorker(GenericWorker):
             self.t_wait_play_to_session_end.emit()
 
     def compute_distance_travelled(self, x, y):
+        """
+        Calculate the mm
+        :param x: New position x coord
+        :param y: New position y coord
+        :return: Distance from last point to the new point calculated as mm
+        """
         prev_x = self.aux_prevPos.x
         prev_y = self.aux_prevPos.y
         travelled_pixels = math.sqrt(((x - prev_x) ** 2) + ((y - prev_y) ** 2))

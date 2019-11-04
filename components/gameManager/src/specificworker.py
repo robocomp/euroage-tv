@@ -275,6 +275,7 @@ class SpecificWorker(GenericWorker):
 
 
         self.sessions = []
+        self.__current_therapist = None
         self.current_session = None
 
         self.aux_sessionInit = False
@@ -325,12 +326,13 @@ class SpecificWorker(GenericWorker):
     def current_therapist(self):
         """
         Getter for the current therapis of the current session
+        Current Therapist can exists without a current session while this is being created.
         :return: therapist of the current session
         """
         if self.current_session is not None:
             return self.current_session.therapist
         else:
-            return None
+            return self.__current_therapist
 
 
     @current_therapist.setter
@@ -341,6 +343,8 @@ class SpecificWorker(GenericWorker):
         """
         if self.current_session is not None:
             self.current_session.therapist = therapist
+        else:
+            self.__current_therapist = therapist
 
     def init_ui(self):
         """
@@ -587,7 +591,7 @@ class SpecificWorker(GenericWorker):
         sexo = str(self.ui.sexo_player_lineedit.text())
         edad = float(self.ui.edad_player_lineedit.text())
 
-        patient = self.ddbb.new_patient(username=username, nombre=nombre, sexo=sexo, edad=edad)
+        patient = self.ddbb.new_patient(username=username, nombre=nombre, sexo=sexo, edad=edad, profesional=self.current_therapist)
         # update the players show on the ui
         patients = self.ddbb.get_all_patients_by_therapist(self.current_therapist)
         completer = QCompleter([patient.username for patient in patients])
@@ -804,7 +808,7 @@ class SpecificWorker(GenericWorker):
 
         if self.aux_sessionInit == False:
 
-            patients = self.ddbb.get_all_patients()
+            patients = self.ddbb.get_all_patients_by_therapist(self.current_therapist)
             patients_list = []
             for p in patients:
                 patients_list.append(p.username)

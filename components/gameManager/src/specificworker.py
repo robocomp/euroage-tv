@@ -370,7 +370,8 @@ class SpecificWorker(GenericWorker):
         self.ui.back_button_reg.clicked.connect(self.t_create_user_to_user_login.emit)
 
         ## User window
-        self.ui.selplayer_combobox.currentIndexChanged.connect(self.selected_player_changed)
+        # TODO: Commented for DEMO uncomment on production
+        # self.ui.selplayer_combobox.currentIndexChanged.connect(self.selected_player_changed)
         self.ui.addgame_button.clicked.connect(self.add_game_to_list)
         self.ui.deletegame_button.clicked.connect(self.delete_game_from_list)
         self.ui.up_button.clicked.connect(self.move_list_up)
@@ -405,11 +406,12 @@ class SpecificWorker(GenericWorker):
         """
         print ("[INFO] Checking login ...")
 
-        username = unicode(self.ui.username_lineedit.text())
+        username = str(self.ui.username_lineedit.currentText())
         # username = username.strip().lower() ##The username is stored and checked in lower case
-        password = unicode(self.ui.password_lineedit.text())
+        password = str(self.ui.password_lineedit.text())
 
-        if self.user_login_manager.check_user_password(username, password):
+        # TODO: Only for DEMO restore on production
+        if True: # self.user_login_manager.check_user_password(username, password):
             self._current_therapist = username
             self.loginShortcut.activated.disconnect(self.check_login)
             self.login_executed.emit(True)
@@ -684,8 +686,11 @@ class SpecificWorker(GenericWorker):
         print("Entered state user_login")
 
         self.ui.stackedWidget.setCurrentIndex(0)
-        completer = QCompleter(list_of_users)
-        self.ui.username_lineedit.setCompleter(completer)
+        therapists = self.ddbb.get_all_therapist()
+        list_of_users  = [therapist.username for therapist in therapists]
+        # completer = QCompleter(list_of_users)
+        # self.ui.username_lineedit.setCompleter(completer)
+        self.ui.username_lineedit.addItems(list_of_users)
         self.login_executed.connect(self.update_login_status)
 
     #
@@ -792,17 +797,17 @@ class SpecificWorker(GenericWorker):
             for p in patients:
                 patients_list.append(p.username)
 
-            completer2 = QCompleter(patients_list)
+            # completer2 = QCompleter(patients_list)
 
             self.ui.selplayer_combobox.addItems(patients_list)
-            self.ui.selplayer_combobox.lineEdit().setCompleter(completer2)
-            self.ui.selplayer_combobox.lineEdit().setPlaceholderText("Selecciona jugador...")
+            # self.ui.selplayer_combobox.lineEdit().setCompleter(completer2)
+            # self.ui.selplayer_combobox.lineEdit().setPlaceholderText("Selecciona jugador...")
 
             completer3 = QCompleter(self.get_all_games())
 
             self.ui.selgame_combobox.addItems(self.get_all_games())
-            self.ui.selgame_combobox.lineEdit().setCompleter(completer3)
-            self.ui.selgame_combobox.lineEdit().setPlaceholderText("Selecciona juego...")
+            # self.ui.selgame_combobox.lineEdit().setCompleter(completer3)
+            # self.ui.selgame_combobox.lineEdit().setPlaceholderText("Selecciona juego...")
 
             self.aux_sessionInit = True
         self.ui.games_list.clear()

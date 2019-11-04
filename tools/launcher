@@ -1,0 +1,50 @@
+#!/bin/bash
+pkill -f icebox&
+pkill -f rcremoteserver&
+
+tabs_to_close="rcnode rcmanager rcremoteserver"
+
+tabs_to_open="rcnode rcremoteserver"
+
+echo "removing"
+#Remove previous tabs if exist, avoiding to create multiple instances of these
+for specific_tab in $tabs_to_close
+do
+	found=0
+
+	#loop over all open tabs
+	for sessid in $(qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.sessionIdList | tr ',' '\n')
+	do
+		# get the name of the tab
+		name=$(qdbus org.kde.yakuake /yakuake/tabs org.kde.yakuake.tabTitle $sessid)		
+		if [ "$name" = $specific_tab ] 
+		then
+			found=1
+			qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.removeSession $sessid
+		fi	
+	done 		
+done
+
+echo "creating"
+#loop to open specific tabs
+for specific_tab in $tabs_to_open
+do
+	#create new session
+	qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.addSession
+	#get id of open session
+	sess0=`qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.activeSessionId`
+	#run command on active session
+	qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand $specific_tab
+	#change the name of session
+	qdbus org.kde.yakuake /yakuake/tabs org.kde.yakuake.setTabTitle $sess0 $specific_tab
+done
+
+#create new session
+qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.addSession
+#get id of open session
+sess0=`qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.activeSessionId`
+#run command on active session
+qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand "rcmanagersimple ~/robocomp/components/euroage-tv/etc/rcmanager/tvgames.xml -u gameManager --hide"
+#change the name of session
+qdbus org.kde.yakuake /yakuake/tabs org.kde.yakuake.setTabTitle $sess0 "rcmanager"
+

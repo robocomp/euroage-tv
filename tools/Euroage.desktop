@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=EuroAge
+Terminal=true
+Comment=Auroage project games
+Exec=/home/robocomp/robocomp/components/euroage-tv/tools/launcher
+Icon=/home/robocomp/robocomp/components/euroage-tv/etc/rcmanager/icon.png
+Type=Application
+Categories=Game;
+Name[en_US]=Euroage

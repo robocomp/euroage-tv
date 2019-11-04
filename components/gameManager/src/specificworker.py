@@ -289,8 +289,6 @@ class SpecificWorker(GenericWorker):
         self.aux_savedGames = False
         self.__ready_session_received = False
 
-        self.selected_player_incombo = ""
-        self.selected_game_incombo = ""
         # TODO: Move to the session. Should have a list of games to play and played games.
         self.list_games_toplay = []
 
@@ -497,8 +495,7 @@ class SpecificWorker(GenericWorker):
         Slot to manage creation of new users/patients
         :return:
         """
-        self.selected_player_incombo = self.ui.selplayer_combobox.currentText()
-        if (self.ui.selplayer_combobox.currentIndex() == 1):  # New player selected
+        if self.ui.selplayer_combobox.currentIndex() == 1:  # New player selected
             reply = QMessageBox.question(self.focusWidget(), '',
                                          'Quiere añadir a un nuevo jugador?', QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.No:
@@ -514,9 +511,9 @@ class SpecificWorker(GenericWorker):
         Slot to add a game to the list of games to play in the session
         :return:
         """
-        self.selected_game_incombo = self.ui.selgame_combobox.currentText()
-        if self.selected_game_incombo != "":
-            self.ui.games_list.addItem(self.selected_game_incombo)
+        selected_game_incombo = self.ui.selgame_combobox.currentText()
+        if selected_game_incombo != "":
+            self.ui.games_list.addItem(selected_game_incombo)
             self.ui.selgame_combobox.setCurrentIndex(0)
             return True
         else:
@@ -620,7 +617,7 @@ class SpecificWorker(GenericWorker):
         Slot to create the Session, send the adminStartSession command with the selected player/patient and configure
         the list of games to play.
         """
-        player = self.selected_player_incombo
+        player = self.ui.selplayer_combobox.currentText()
         self.list_games_toplay = []
 
         for index in xrange(self.ui.games_list.count()):

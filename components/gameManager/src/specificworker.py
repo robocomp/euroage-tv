@@ -336,7 +336,7 @@ class SpecificWorker(GenericWorker):
         loader.registerCustomWidget(UsersWindow)
         loader.registerCustomWidget(PlayersWindow)
         loader.registerCustomWidget(GameWindow)
-        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/gameManager/src/stackedUI.ui")
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/gameManager/src/uis/stackedUI.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         file.close()

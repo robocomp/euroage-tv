@@ -56,3 +56,9 @@ components/integratedHand/Makefile
 \.idea/
 
 venv/
+
+*.db
+
+*.sql
+
+*.db_

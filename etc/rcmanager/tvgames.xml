@@ -24,10 +24,12 @@
  </node>
 
  <node alias="tvGames" endpoint="commonbehavior:tcp -h localhost -p 10006">
+     <!--
   <dependence alias="handDetection" />
   <dependence alias="cameraSimple" />
   <dependence alias="RGBD" />
   <dependence alias="AprilTags" />
+  -->
   <workingDir path="/home/robolab/robocomp/components/euroage-tv/components/tvGames/" />
   <upCommand command="rcremote localhost tvGames /home/robolab/robocomp/components/euroage-tv/components/tvGames/ python src/tvgames.py /home/robolab/robocomp/components/euroage-tv/components/tvGames/etc/config" />
   <downCommand command="pkill -9 -f tvgames.py" />
@@ -37,7 +39,7 @@
   <radius value="10.0" />
   <color value="#AAAAAA" />
  </node>
-
+<!--
  <node alias="AprilTags" endpoint="getapriltags:tcp -h localhost -p 14310">
   <dependence alias="RGBD" />
   <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/detection/" />
@@ -97,5 +99,5 @@
   <radius value="10.0" />
   <color value="#FF3333" />
  </node>
-
+-->
 </rcmanager>

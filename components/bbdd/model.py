@@ -17,7 +17,7 @@ class Patient(Base):
     nivelFisico = Column(Integer)
     nivelJuego = Column(Integer)
     centro = Column(Integer)
-    profesional = Column(String(20))
+    profesional = Column(String(20),  ForeignKey('therapist.username'))
     observaciones = Column(Text())
     fechaAlta = Column(String(20))
 
@@ -41,6 +41,7 @@ class Therapist(Base):
     fechaAlta = Column(String(20))
 
     session = relationship("Session", back_populates="therapist", cascade="all, delete")
+    patients = relationship("Patient", back_populates="therapist", cascade="all, delete")
 
     def __repr__(self):
         if self.nombre is not None and self.username is not None:

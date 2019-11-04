@@ -321,6 +321,27 @@ class SpecificWorker(GenericWorker):
         if self.current_session is not None:
             self.current_session.current_game = the_game
 
+    @property
+    def current_therapist(self):
+        """
+        Getter for the current therapis of the current session
+        :return: therapist of the current session
+        """
+        if self.current_session is not None:
+            return self.current_session.therapist
+        else:
+            return None
+
+
+    @current_therapist.setter
+    def current_therapist(self, therapist):
+        """
+        Setter for the current therapist of the current session
+        :return: game of the current session
+        """
+        if self.current_session is not None:
+            self.current_session.therapist = therapist
+
     def init_ui(self):
         """
         Registers the custom widgets of the UI
@@ -407,7 +428,7 @@ class SpecificWorker(GenericWorker):
         password = unicode(self.ui.password_lineedit.text())
 
         if self.user_login_manager.check_user_password(username, password):
-            self._current_therapist = username
+            self.current_therapist = username
             self.loginShortcut.activated.disconnect(self.check_login)
             self.login_executed.emit(True)
             self.t_user_login_to_session_init.emit()
@@ -568,7 +589,7 @@ class SpecificWorker(GenericWorker):
 
         patient = self.ddbb.new_patient(username=username, nombre=nombre, sexo=sexo, edad=edad)
         # update the players show on the ui
-        patients = self.ddbb.get_all_patients()
+        patients = self.ddbb.get_all_patients_by_therapist(self.current_therapist)
         completer = QCompleter([patient.username for patient in patients])
         self.ui.selplayer_combobox.addItem(patient.username)
         self.ui.selplayer_combobox.setCompleter(completer)
@@ -632,7 +653,7 @@ class SpecificWorker(GenericWorker):
                                       'No se ha seleccionado ningún juego',
                                       QMessageBox.Ok)
         else:
-            self.current_session = Session(therapist=self._current_therapist, patient=str(player))
+            self.current_session = Session(therapist=self.current_therapist, patient=str(player))
             self.admingame_proxy.adminStartSession(player)
 
     def end_session_clicked(self):

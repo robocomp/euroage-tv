@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 ADD_DEFINITIONS(-O3  -std=c++17 -std=gnu++17)
 set(CMAKE_CXX_STANDARD 17)
 cmake_policy(SET CMP0048 OLD)
-project(RoboComp)
+project(EuroageTv)
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS 1)
 
@@ -19,6 +19,14 @@ add_subdirectory(components/tvGames)
 add_subdirectory(components/gameManager)
 
 
+if(NOT EXISTS ${EuroageTv_SOURCE_DIR}/components/bbdd/prueba1.db)
+    message("Downloading ddbb file ${EuroageTv_SOURCE_DIR}/components/bbdd/prueba1.db")
+    file(DOWNLOAD "https://robocloud.unex.es/index.php/s/ruKpLWSxCpVasZA" ${EuroageTv_SOURCE_DIR}/components/bbdd/prueba1.db SHOW_PROGRESS)
+    message("File downloaded")
+endif()
+
+
 install(DIRECTORY "interfaces" DESTINATION /opt/robocomp/ )
 install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/Desktop/ PERMISSIONS WORLD_EXECUTE WORLD_READ WORLD_WRITE)
 install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/.config/autostart/ PERMISSIONS WORLD_EXECUTE WORLD_READ WORLD_WRITE)
+

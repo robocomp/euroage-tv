@@ -62,3 +62,5 @@ venv/
 *.sql
 
 *.db_
+
+components/gameManager/src/ui_mainUI.py

@@ -84,9 +84,9 @@ class EditorWindow(QWidget):  # crea widget vacio
         key = "una bonita pieza"
         self.current_piece.ui.name_lineEdit.setText(key)
         self.current_piece.ui.image_path_lineEdit.setText(
-            "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/photos/action_1.jpg")
+            "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TORTILLA/photos/action_1.jpg")
         self.current_piece.ui.video_path_lineEdit.setText(
-            "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/videos/action_1.MP4")
+            "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TORTILLA/videos/action_1.MP4")
         # ############### TESTING #########3
         self.current_piece.show()
 

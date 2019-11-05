@@ -1290,7 +1290,7 @@ def main():
     game = GameScreen(None, 1920, 1080)
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/LionKingGame/game.json")
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
-    game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/final_game1/final_game1.json")
+    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER CAMA/hacer_la_cama.json")
     game.show_on_second_screen()
 
     # main_widget = GameWidget()

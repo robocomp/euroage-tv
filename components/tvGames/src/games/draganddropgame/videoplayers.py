@@ -383,7 +383,7 @@ class QGraphicsActionsVideoItemPlayer(QGraphicsListVideoPlayer):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    path = "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/draganddropgame/resources/final_game1/videos/"
+    path = "/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/draganddropgame/resources/HACER TORTILLA/videos/"
     window = ActionsVideoPlayer(0.55, 0.71)
     window.set_video_list(path)
     window.play_all_actions()

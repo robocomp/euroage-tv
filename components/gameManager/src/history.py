@@ -1,37 +1,42 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import os
 import sys
+
+from PySide2.QtCore import Qt, QFile
+from PySide2.QtUiTools import QUiLoader
+from PySide2.QtWidgets import QApplication, QListWidgetItem, QVBoxLayout, QWidget, QDialog
 from bbdd import *
-from datetime import datetime
-import dateutil.relativedelta
+
+CURRENT_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
+UIS_FOLDER = os.path.join(CURRENT_FILE_PATH, "uis" )
 
 
-from PySide2.QtWidgets import QApplication, QTableWidgetItem, QListWidgetItem
-from PySide2.QtCore import QDate, Qt
-
-
-try:
-    from ui_history import *
-except:
-    print ("Can't import UI file. Did you run 'make'?")
-    sys.exit(-1)
-
-
-class History(QtWidgets.QWidget):
+class History(QDialog):
     bbdd = None
     patients = {}
 
     def __init__(self, bbdd, parent=None):
         super(History, self).__init__(parent)
+        self.mylayout = QVBoxLayout()
+        self.setLayout(self.mylayout)
         self.bbdd = bbdd
-        self.ui = Ui_Form()
-        self.ui.setupUi(self)
+        loader = QUiLoader()
+        file = QFile(os.path.join(UIS_FOLDER, "history.ui"))
+        file.open(QFile.ReadOnly)
+        self.ui = loader.load(file, self.parent())
+        self.mylayout.addWidget(self.ui)
+        self.mylayout.setContentsMargins(0, 0, 0, 0)
+        file.close()
         self.initialize()
-        self.show()
+        self.ui.paciente_lw.setCurrentRow(0)
 
     def initialize(self):
         # GUI connections
         self.ui.paciente_lw.itemClicked.connect(self.load_patient_info)
         self.ui.sesion_lw.itemClicked.connect(self.load_session_info)
         self.ui.juego_lw.itemClicked.connect(self.load_game_info)
+        self.ui.close_btn.clicked.connect(self.close)
         # load data
         self.load_patients()
 
@@ -128,7 +133,7 @@ class History(QtWidgets.QWidget):
         self.ui.j_fecha_le.setText(game.start_time.strftime("%d/%m/%Y"))
         self.ui.j_ganado_le.setText("Sí" if game.result else "No")
         self.ui.j_tjugado_le.setText(str(play_time))
-        self.ui.j_tpausado_le.setText("")
+        self.ui.j_distancia_le.setText(str(game.distance))
         self.ui.j_ayudas_le.setText(str(game.n_helps))
         self.ui.j_comprobaciones_le.setText(str(game.n_checks))
 
@@ -137,15 +142,23 @@ class History(QtWidgets.QWidget):
         self.ui.j_fecha_le.clear()
         self.ui.j_ganado_le.clear()
         self.ui.j_tjugado_le.clear()
-        self.ui.j_tpausado_le.clear()
+        self.ui.j_distancia_le.clear()
         self.ui.j_ayudas_le.clear()
         self.ui.j_comprobaciones_le.clear()
+
+    def set_selected_patient(self, patient):
+        found_patients = self.ui.paciente_lw.findItems(patient, Qt.MatchExactly)
+        if len(found_patients)>0:
+            self.ui.paciente_lw.setCurrentItem(found_patients[0])
+            self.load_patient_info(found_patients[0])
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     bbdd = BBDD()
-    bbdd.open_database("prueba1.db")
+    bbdd.open_database("/home/robolab/robocomp/components/euroage-tv/components/bbdd/prueba1.db")
 
     history = History(bbdd)
+    history.show()
 
     sys.exit(app.exec_())

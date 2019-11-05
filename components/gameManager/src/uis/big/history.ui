@@ -6,43 +6,87 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>936</width>
-    <height>603</height>
+    <width>1272</width>
+    <height>698</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Visualización de histórico</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_7" stretch="99,1">
+  <layout class="QVBoxLayout" name="verticalLayout_7">
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
    <item>
     <widget class="QSplitter" name="splitter">
+     <property name="font">
+      <font>
+       <pointsize>24</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QWidget" name="layoutWidget">
+      <property name="font">
+       <font>
+        <pointsize>24</pointsize>
+       </font>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout_4" stretch="90,10">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
           <widget class="QLabel" name="label">
+           <property name="font">
+            <font>
+             <pointsize>24</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>Pacientes</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="paciente_lw"/>
+          <widget class="QListWidget" name="paciente_lw">
+           <property name="font">
+            <font>
+             <pointsize>24</pointsize>
+            </font>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
        <item>
         <widget class="QGroupBox" name="paciente_gb">
+         <property name="font">
+          <font>
+           <pointsize>24</pointsize>
+          </font>
+         </property>
          <property name="title">
           <string>[Paciente]</string>
          </property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="label_4">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Sexo</string>
             </property>
@@ -50,6 +94,11 @@
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_17">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Edad</string>
             </property>
@@ -57,6 +106,11 @@
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_18">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Nivel Cognitivo</string>
             </property>
@@ -64,6 +118,11 @@
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_19">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Nivel Fisico</string>
             </property>
@@ -71,6 +130,11 @@
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_20">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Centro</string>
             </property>
@@ -78,6 +142,11 @@
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_21">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Nivel Juego</string>
             </property>
@@ -85,6 +154,11 @@
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="p_sexo_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -95,6 +169,11 @@
           </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="p_edad_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -105,6 +184,11 @@
           </item>
           <item row="2" column="1">
            <widget class="QLineEdit" name="p_ncog_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -115,6 +199,11 @@
           </item>
           <item row="3" column="1">
            <widget class="QLineEdit" name="p_nfisico_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -125,6 +214,11 @@
           </item>
           <item row="4" column="1">
            <widget class="QLineEdit" name="p_njuego_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -135,6 +229,11 @@
           </item>
           <item row="5" column="1">
            <widget class="QLineEdit" name="p_centro_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -149,29 +248,55 @@
       </layout>
      </widget>
      <widget class="QWidget" name="layoutWidget">
+      <property name="font">
+       <font>
+        <pointsize>24</pointsize>
+       </font>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout_5" stretch="90,10">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <widget class="QLabel" name="label_2">
+           <property name="font">
+            <font>
+             <pointsize>24</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>Sesiones</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="sesion_lw"/>
+          <widget class="QListWidget" name="sesion_lw">
+           <property name="font">
+            <font>
+             <pointsize>24</pointsize>
+            </font>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
        <item>
         <widget class="QGroupBox" name="sesion_gb">
+         <property name="font">
+          <font>
+           <pointsize>24</pointsize>
+          </font>
+         </property>
          <property name="title">
           <string>[Sesión]</string>
          </property>
          <layout class="QFormLayout" name="formLayout_2">
           <item row="0" column="0">
            <widget class="QLabel" name="label_5">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Juegos realizados</string>
             </property>
@@ -179,6 +304,11 @@
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_6">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Juegos Ganados</string>
             </property>
@@ -186,6 +316,11 @@
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_10">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Juegos Perdido</string>
             </property>
@@ -193,6 +328,11 @@
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_7">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Tiempo total</string>
             </property>
@@ -200,6 +340,11 @@
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_8">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Total ayudas</string>
             </property>
@@ -207,6 +352,11 @@
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_9">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Total comprobaciones</string>
             </property>
@@ -214,6 +364,11 @@
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="s_ngames_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -224,6 +379,11 @@
           </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="s_win_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -234,6 +394,11 @@
           </item>
           <item row="2" column="1">
            <widget class="QLineEdit" name="s_lost_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -244,6 +409,11 @@
           </item>
           <item row="3" column="1">
            <widget class="QLineEdit" name="s_time_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -254,6 +424,11 @@
           </item>
           <item row="4" column="1">
            <widget class="QLineEdit" name="s_help_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -264,6 +439,11 @@
           </item>
           <item row="5" column="1">
            <widget class="QLineEdit" name="s_check_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -278,29 +458,55 @@
       </layout>
      </widget>
      <widget class="QWidget" name="layoutWidget">
+      <property name="font">
+       <font>
+        <pointsize>24</pointsize>
+       </font>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout_6" stretch="90,10">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <widget class="QLabel" name="label_3">
+           <property name="font">
+            <font>
+             <pointsize>24</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>Juegos</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="juego_lw"/>
+          <widget class="QListWidget" name="juego_lw">
+           <property name="font">
+            <font>
+             <pointsize>24</pointsize>
+            </font>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
        <item>
         <widget class="QGroupBox" name="juego_gb">
+         <property name="font">
+          <font>
+           <pointsize>24</pointsize>
+          </font>
+         </property>
          <property name="title">
           <string>[Juego]</string>
          </property>
          <layout class="QFormLayout" name="formLayout_3">
           <item row="0" column="0">
            <widget class="QLabel" name="label_11">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Fecha y hora</string>
             </property>
@@ -308,6 +514,11 @@
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_12">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Tiempo jugado</string>
             </property>
@@ -315,6 +526,11 @@
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_13">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Distancia</string>
             </property>
@@ -322,6 +538,11 @@
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_14">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Juego ganado</string>
             </property>
@@ -329,6 +550,11 @@
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_15">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Ayudas</string>
             </property>
@@ -336,6 +562,11 @@
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_16">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="text">
              <string>Comprobaciones</string>
             </property>
@@ -343,6 +574,11 @@
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="j_fecha_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -353,6 +589,11 @@
           </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="j_tjugado_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -363,6 +604,11 @@
           </item>
           <item row="2" column="1">
            <widget class="QLineEdit" name="j_distancia_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -373,6 +619,11 @@
           </item>
           <item row="3" column="1">
            <widget class="QLineEdit" name="j_ganado_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -383,6 +634,11 @@
           </item>
           <item row="4" column="1">
            <widget class="QLineEdit" name="j_ayudas_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -393,6 +649,11 @@
           </item>
           <item row="5" column="1">
            <widget class="QLineEdit" name="j_comprobaciones_le">
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+             </font>
+            </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
@@ -427,7 +688,7 @@
       <widget class="QPushButton" name="close_btn">
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <pointsize>24</pointsize>
         </font>
        </property>
        <property name="text">
@@ -436,6 +697,19 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

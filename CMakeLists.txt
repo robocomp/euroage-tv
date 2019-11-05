@@ -21,10 +21,9 @@ add_subdirectory(components/gameManager)
 
 if(NOT EXISTS ${EuroageTv_SOURCE_DIR}/components/bbdd/prueba1.db)
     message("Downloading ddbb file ${EuroageTv_SOURCE_DIR}/components/bbdd/prueba1.db")
-    file(DOWNLOAD "https://robocloud.unex.es/index.php/s/ruKpLWSxCpVasZA" ${EuroageTv_SOURCE_DIR}/components/bbdd/prueba1.db SHOW_PROGRESS)
+    file(DOWNLOAD "https://robocloud.unex.es/index.php/s/ruKpLWSxCpVasZA/download" ${EuroageTv_SOURCE_DIR}/components/bbdd/prueba1.db SHOW_PROGRESS)
     message("File downloaded")
 endif()
-
 
 install(DIRECTORY "interfaces" DESTINATION /opt/robocomp/ )
 install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/Desktop/ PERMISSIONS WORLD_EXECUTE WORLD_READ WORLD_WRITE)

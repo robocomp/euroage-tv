@@ -35,6 +35,7 @@ from PySide2.QtWidgets import QMessageBox, QCompleter, QAction, qApp, QApplicati
 
 from admin_widgets import *
 from genericworker import *
+from history import History
 
 try:
     from bbdd import BBDD
@@ -296,6 +297,7 @@ class SpecificWorker(GenericWorker):
         self.ddbb = BBDD()
         self.ddbb.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba1.db")
         self.user_login_manager = QUserManager(ddbb=self.ddbb)
+        self.history = History(self.ddbb, self)
 
 
         self.updateUISig.connect(self.updateUI)
@@ -393,11 +395,11 @@ class SpecificWorker(GenericWorker):
 
         ## User window
         self.ui.selplayer_combobox.currentIndexChanged.connect(self.selected_player_changed)
+        self.ui.history_button.clicked.connect(self.view_history_clicked)
         self.ui.addgame_button.clicked.connect(self.add_game_to_list)
         self.ui.deletegame_button.clicked.connect(self.delete_game_from_list)
         self.ui.up_button.clicked.connect(self.move_list_up)
         self.ui.down_button.clicked.connect(self.move_list_down)
-
         self.ui.startsession_button.clicked.connect(self.start_session)
 
         ##new Player window
@@ -533,6 +535,11 @@ class SpecificWorker(GenericWorker):
             else:
                 self.t_session_init_to_create_player.emit()
                 return True
+
+    def view_history_clicked(self):
+        patient_username = self.ui.selplayer_combobox.currentText()
+        if patient_username != "":
+            self.history.set_selected_patient(patient_username)
 
     def add_game_to_list(self):
         """

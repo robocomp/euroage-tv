@@ -224,4 +224,4 @@ class BBDD(object):
             return False, Round()
 
     def get_all_round_by_session_id(self, id):
-        return self.session.query(Round).join(Session).filter(Session.id == id).all()
+        return self.session.query(Round).filter(Round.session_id == id).all()

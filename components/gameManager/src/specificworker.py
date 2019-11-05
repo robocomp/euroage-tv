@@ -853,7 +853,7 @@ class SpecificWorker(GenericWorker):
     @QtCore.Slot()
     def sm_admin_games(self):
         print("Entered state admin_games")
-
+        # TODO: review this code. It's a mess and can be simplified for sure.
         if self.aux_firtsGameInSession or self.aux_reseted:
 
             game_name = self.list_games_toplay[0]
@@ -879,7 +879,7 @@ class SpecificWorker(GenericWorker):
                 self.current_game = Game()
                 result, ddbb_game = self.ddbb.get_game_by_name(game_name)
                 if result:
-                    self.current_game.id = ddbb_game.id
+                    self.current_game.game_id = ddbb_game.id
                 self.current_game.name = game_name
                 self.ui.info_game_label.setText(game_name)
 

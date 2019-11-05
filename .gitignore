@@ -63,4 +63,4 @@ venv/
 
 *.db_
 
-components/gameManager/src/ui_mainUI.py
+*ui_mainUI.py

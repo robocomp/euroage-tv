@@ -19,7 +19,6 @@
 #    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
 #
 import json
-import subprocess
 import traceback
 from datetime import datetime
 
@@ -30,24 +29,22 @@ from PySide2.QtWidgets import QApplication
 
 from games.draganddropgame.draganddropgame import GameScreen
 from genericworker import *
+from libs.utils import init_touchscreen_device
 # from modules.AdminInterface import AdminInterface
 from modules.CalibrationStateMachine import ManualCalibrationStateMachine
 from modules.HandMouse import MultiHandMouses
 from modules.QImageWidget import QImageWidget
-from libs.utils import init_touchscreen_device
 
-# If RoboComp was compiled with Python bindings you can use InnerModel in Python
-# sys.path.append('/opt/robocomp/lib')
-# import librobocomp_qmat
-# import librobocomp_osgviewer
-# import librobocomp_innermodel
 
 FILE_PATH = os.path.dirname(__file__)
 
 
 class Player:
-	def __init__(self, id=-1, name=""):
-		self.id = id
+	"""
+	Class containing the needed information of the Player of the Game.
+	"""
+	def __init__(self, player_id=-1, name=""):
+		self.player_id = player_id
 		self.name = name
 		self.tracked = False
 
@@ -67,7 +64,13 @@ class Player:
 # 		 int numHits;
 # 		 int numFails;
 # 	};
+
+
 class GameMetrics(Metrics):
+	"""
+	Class and method to take control of the tracked metrics of the game played.
+	This class directly inherit from the Metrics provided by ice interface GameMetrics.ice
+	"""
 	def __init__(self):
 		super(GameMetrics, self).__init__()
 		self.currentDate = datetime.now().isoformat()
@@ -82,24 +85,56 @@ class GameMetrics(Metrics):
 		self.pos.y = -1
 
 	def increment_helps(self, quantity=1):
+		"""
+		Increments the value of helps requested by the player during the game
+		:param quantity: by default it's an increment of 1, but other values can be specified.
+		:return: None
+		"""
 		self.numHelps+=quantity
 
 	def increment_checked(self, quantity=1):
+		"""
+		Increments the value of checks requested by the player during the game
+		:param quantity: by default it's an increment of 1, but other values can be specified.
+		:return: None
+		"""
 		self.numChecked+=quantity
 
 	def increment_hits(self, quantity=1):
+		"""
+		Increments the value of hits got by the player during the game
+		:param quantity: by default it's an increment of 1, but other values can be specified.
+		:return: None
+		"""
 		self.numHits+=quantity
 
 	def increment_fails(self, quantity=1):
+		"""
+		Increments the value of fails got by the player during the game
+		:param quantity: by default it's an increment of 1, but other values can be specified.
+		:return: None
+		"""
 		self.numFails+=quantity
 
 	def set_screen_touched(self, touched=True, pos=None):
+		"""
+		Method to keep track of the state of the touchs on the screen and its positions.
+		:param touched: True or False to set if the screen have been touched
+		:param pos: Position class to be stored.
+		:return:
+		"""
 		self.screenTouched = touched
 		if pos:
 			self.pos.x = pos.x
 			self.pos.y = pos.y
 
 	def set_hand_closed(self, closed=True, pos=None):
+		"""
+		Method to keep track of the state of the hand and its positions.
+		:param closed: True or False to set if the hand have been closed
+		:param pos: Position class to be stored.
+		:return:
+		"""
 		self.handClosed = closed
 		if pos:
 			self.pos.x = pos.x
@@ -110,27 +145,27 @@ class GameMetrics(Metrics):
 
 
 class SpecificWorker(GenericWorker):
+	"""
+	Main class of the tvGames component.
+	This class doesn't implement the game logic but the state machine logic to work in sync with gameManager
+	and the needed methods to keep track of the metrics of the played game.
+	The current game implamantation can be found on src/games/draganddropgame/draganddropgame.py
+	The configuration for the different variations of this game can be found on src/games/resources
+	"""
 	def __init__(self, proxy_map):
 		super(SpecificWorker, self).__init__(proxy_map)
 		self._current_players = []
 		self.hands = []
 		self.font = cv2.FONT_HERSHEY_SIMPLEX
-		self._current_state = "calibrating"
-		# self.login_widget = QLoginWidget()
-		# self.login_widget.login_executed.connect(self.login_executed)
-		# self.admin_interface = AdminInterface()
-		# self.admin_interface.add_player_button.clicked.connect(self.add_new_player)
-		# self.admin_interface.remove_player_button.clicked.connect(self.remove_player)
-		# self.admin_interface.reset_game_button.clicked.connect(self.reset_game)
-		# self.admin_interface.close_main_window.connect(self.quit_app)
-		# self.admin_interface.admin_image.set_max_width(640)
-		# self.admin_interface.show()
+
 		self.hide()
 		self.debug = True
+
+		# TODO: Probably deprecated. No image should be shown on the same computer than tvGame
 		self.tv_image = QImageWidget()
 
 		self.mouse_grab = False
-		# Used to put the apriltag marks more and more inside the screen
+
 
 		# Size of second screen
 		rec = QApplication.desktop().screenGeometry(1)
@@ -174,9 +209,9 @@ class SpecificWorker(GenericWorker):
 
 		self._game_metrics = GameMetrics()
 
-		# TODO: Testing only. Remove
+		# TODO: Testing only. Remove on production.
 		# self.adminStartSession("Juan Lopez")
-
+		# TODO: Probably deprecated. No image should be shown on the same computer than tvGame
 		self.tv_image.show_on_second_screen()
 
 		self.application_machine.start()
@@ -184,10 +219,12 @@ class SpecificWorker(GenericWorker):
 	def __del__(self):
 		print ('SpecificWorker destructor')
 
-	def quit_app(self):
-		self._current_state = "quitting"
-
-	def update_game_selection(self, index=None):
+	def update_game_selection(self):
+		"""
+		This method use the self._current_game_name (it's set by the gameManager) through the adminStartGame method
+		to create, connect signal an start the selected game.
+		:return:
+		"""
 		if self._current_game_name is not None:
 			self._game = GameScreen(None, self._game_screen_width, self._game_screen_height)
 			self._game.game_frame.touch_signal.connect(self.detectedTouchPoints)
@@ -199,16 +236,29 @@ class SpecificWorker(GenericWorker):
 
 
 	def game_help_clicked(self):
+		"""
+		Slot to update help Metrics and send it to gameManager
+		:return:
+		"""
 		self._game_metrics.currentDate = datetime.now().isoformat()
 		self._game_metrics.numHelps += 1
 		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 
 	def game_check_clicked(self):
+		"""
+		Slot to update check Metrics and send it to gameManager
+		:return:
+		"""
 		self._game_metrics.currentDate = datetime.now().isoformat()
 		self._game_metrics.numChecked += 1
 		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 
 	def game_score_update(self, win, fail):
+		"""
+		Slot to update win/fails Metrics por the pieces of the game and send it to gameManager
+		:param win: Pieces on the right position
+		:param fail: Pieces on the wrong position
+		"""
 		self._game_metrics.currentDate = datetime.now().isoformat()
 		self._game_metrics.numFails = fail
 		self._game_metrics.numHits = win
@@ -216,31 +266,40 @@ class SpecificWorker(GenericWorker):
 
 
 	def reset_game(self):
+		"""
+		Method to reset and reconfigure teh current game.
+		The configuration file is stored at the self._available_games attribute amd this is filled in by
+		the load_available_games in this same file
+		:return:
+		"""
 		config_path = self._available_games[str(self._current_game_name)]
 		self._game_metrics = GameMetrics()
 		self._game.init_game(config_path)
 
 	def mouse_pressed_on_tv(self, point):
+		"""
+		TODO: Probably deprecated method.
+		"""
 		self.mouse_grab = True
 		print("Mouse pressed")
 
 	def mouse_released_on_tv(self, point):
+		"""
+		TODO: Probably deprecated method.
+		"""
 		self.mouse_grab = False
 		self._mouse_release_point = point
 		print("Mouse released")
 
 	def setParams(self, params):
+		"""
+		Set the params loaded from the config file.
+		The path where the games are expected to be found can be changed on config file.
+		:param params:
+		:return:
+		"""
 		if "games_path" in params:
 			self.load_available_games(params["games_path"])
-
-
-
-
-		# try:
-		#	self.innermodel = InnerModel(params["InnerModelPath"])
-		# except:
-		#	traceback.print_exc()
-		#	self.admin_interface.statusBar().showMessage("Error reading config params")
 		return True
 
 
@@ -445,6 +504,12 @@ class SpecificWorker(GenericWorker):
 
 
 	def load_available_games(self, path):
+		"""
+		Given a path this method look for .json files that contains a valid game.
+		TODO: It's only checked that the title key exists. More checks could be done. Like the paths to the needed images/videos
+		:param path:
+		:return:
+		"""
 		self._available_games = {}
 		full_path = os.path.join(FILE_PATH, path)
 		# r=root, d=directories, f = files
@@ -457,8 +522,14 @@ class SpecificWorker(GenericWorker):
 						if "title" in game_config:
 							self._available_games[game_config["title"]] = full_file_path
 
-#TODO: NOASTRA => not used on no handDetecion requirement
+	#TODO: NOASTRA => not used on no handDetecion requirement
 	def obtain_player_id(self, player):
+		"""
+		TODO: Probably deprecated. Hand detection and tracking was moved to IntegratedHand component and is not currently in use.
+		This method is intended to look for hands of the players. It's currently not in use.
+		:param player:
+		:return:
+		"""
 		if len(self._current_players) > 0:
 			if self.debug:
 				print("Waiting to get %s players" % (len(self._current_players)))
@@ -508,6 +579,12 @@ class SpecificWorker(GenericWorker):
 			self.tv_image.set_opencv_image(image, False)
 
 	def paint_game(self):
+		"""
+		TODO: Probably deprecated. Hand detection and tracking was moved to IntegratedHand component and is not currently in use.
+		This method check for detected hands and try to paint the center of mass of the hand on the admin image (deprecated)
+		and update the pointer on the game.
+		:return:
+		"""
 		for hand in self.hands:
 			if hand.detected or hand.tracked:
 				if hand.centerMass2D:
@@ -521,25 +598,42 @@ class SpecificWorker(GenericWorker):
 												  not mouse.last_state())
 
 	def toHomogeneous(self, p):
+		"""
+		TODO: Deprecated
+		"""
 		ret = np.resize(p, (len(p) + 1, 1))
 		ret[-1][0] = 1.
 		return ret
 
 	def fromHomogeneus(self, p):
+		"""
+		TODO: Deprecated
+		"""
 		return np.true_divide(p[:-1], p[-1])
 
 	def login_executed(self, accepted):
+		"""
+		TODO: Deprecated
+		"""
 		if accepted:
 			self.current_state = "calibrating"
 			self.tv_image.show_on_second_screen()
 			self.login_widget.hide()
 
 	def add_new_player(self, name):
+		"""
+		TODO: Possibly Deprecated
+		:return:
+		"""
 		self._current_players.append(name)
 		# self.admin_interface.players_lcd.display(self.expected_hands)
 		# self.admin_interface.remove_player_button.setEnabled(True)
 
 	def remove_player(self, name):
+		"""
+		TODO: Possibly Deprecated
+		:return:
+		"""
 		if name in self._current_players:
 			del self._current_players[name]
 				# self.admin_interface.remove_player_button.setEnabled(False)
@@ -549,7 +643,13 @@ class SpecificWorker(GenericWorker):
 
 	#### FOR TESTING PORPOSE ONLY
 
+
 	def draw_initial_masked_frame(self, frame, search_roi, player_name):
+		"""
+		TODO: Possibly Deprecated
+		Draws information over the received frame
+		:return:
+		"""
 		masked_frame = np.zeros(frame.shape, dtype="uint8")
 
 		# masked_frame[::] = 0
@@ -574,6 +674,11 @@ class SpecificWorker(GenericWorker):
 		return masked_frame
 
 	def draw_hand_full_overlay(self, frame, hand):
+		"""
+		TODO: Possibly Deprecated
+		Draws information over the received frame
+		:return:
+		"""
 		if hand.detected:
 			for finger_number, fingertip in enumerate(hand.fingertips):
 				cv2.circle(frame, tuple(fingertip), 10, [255, 100, 255], 3)
@@ -613,13 +718,24 @@ class SpecificWorker(GenericWorker):
 		return frame
 
 	def draw_pointer(self, frame, point, color=[100, 0, 255]):
+		"""
+		TODO: Possibly Deprecated
+		Draws information over the received frame
+		:return:
+		"""
 		if point is not None:
 			# Draw center mass
 			cv2.circle(frame, tuple(point), 7, color, 2)
 		# cv2.putText(frame, 'Center', tuple(point), self.font, 0.5, (255, 255, 255), 1)
 		return frame
 
+
 	def draw_hand_track(self, frame):
+		"""
+		TODO: Possibly Deprecated
+		Draws information over the received frame
+		:return:
+		"""
 		if len(self.hand_track) > 2:
 			for i in np.arange(1, len(self.hand_track)):
 				p1 = self.hand_track[i]
@@ -634,6 +750,11 @@ class SpecificWorker(GenericWorker):
 	# adminPauseGame
 	#
 	def adminPauseGame(self):
+		"""
+		Implementation of the communication required for adminPauseGame.
+		This will just generate the transition to the State Machine pause state.
+		:return:
+		"""
 		print("adminPauseGame")
 		self.t_game_loop_to_game_pause.emit()
 
@@ -641,6 +762,16 @@ class SpecificWorker(GenericWorker):
 	# adminStopApp
 	#
 	def adminStopApp(self):
+		"""
+		Implementation of the communication required for adminStopApp.
+		This will just generate the transition to the State Machine pause state.
+		:return:
+		"""
+		"""
+		Implementation of the communication required for adminStopApp.
+		This will just generate the transition to the State Machine app_end state.
+		:return:
+		"""
 		print("adminStopApp")
 		self.t_game_machine_to_app_end.emit()
 
@@ -649,6 +780,11 @@ class SpecificWorker(GenericWorker):
 	# adminResetGame
 	#
 	def adminResetGame(self):
+		"""
+		Implementation of the communication required for adminResetGame.
+		This will just generate the transition to the State Machine game_reset state.
+		:return:
+		"""
 		print("adminResetGame")
 		# self.reset_game()
 		self.t_game_pause_to_game_reset.emit()
@@ -659,6 +795,11 @@ class SpecificWorker(GenericWorker):
 	# adminStartGame
 	#
 	def adminStartGame(self, game):
+		"""
+		Implementation of the communication required for adminStartGame.
+		This will just generate the transition to the State Machine game_init state.
+		:return:
+		"""
 		print("adminStartGame")
 		self._current_game_name = game
 		self.t_game_start_wait_to_game_init.emit()
@@ -668,6 +809,11 @@ class SpecificWorker(GenericWorker):
 	# adminContinueGame
 	#
 	def adminContinueGame(self):
+		"""
+		Implementation of the communication required for adminContinueGame.
+		This will just generate the transition to the State Machine game_resume state.
+		:return:
+		"""
 		print("adminContinueGame")
 		self.t_game_pause_to_game_resume.emit()
 
@@ -677,6 +823,11 @@ class SpecificWorker(GenericWorker):
 	# adminEndSession
 	#
 	def adminEndSession(self):
+		"""
+		Implementation of the communication required for adminEndSession.
+		This will just generate the transition to the State Machine session_end state.
+		:return:
+		"""
 		print("adminEndSession")
 		self.t_game_start_wait_to_session_end.emit()
 		pass
@@ -686,26 +837,32 @@ class SpecificWorker(GenericWorker):
 	# adminStartSession
 	#
 	def adminStartSession(self, player):
+		"""
+		Implementation of the communication required for adminStartSession.
+		This will create a new player with the provided name and will generate the transition to the State Machine session_init state.
+		:return:
+		"""
 		print("Received adminStartSession")
 		new_player = Player()
-		new_player.id = -1
+		new_player.player_id = -1
 		new_player.name = player
 		new_player.tracked = False
 		self._current_players.append(new_player)
-		self._current_state = "init_session"
 		self.t_session_start_wait_to_session_init.emit()
 
 	#
 	# adminStopGame
 	#
 	def adminStopGame(self):
+		"""
+		Implementation of the communication required for adminStopGame.
+		This will just generate the transition to the State Machine pause state.
+		:return:
+		"""
 		print("adminStopGame")
 		# TODO: transition to check result state (need to be created)
 		self.t_game_loop_to_game_end.emit()
 		self.t_game_pause_to_game_end.emit()
-
-
-
 
 	#
 	# reloadConfig
@@ -804,6 +961,11 @@ class SpecificWorker(GenericWorker):
 # ===================================================================
 
 	def detectedTouchPoints(self, touch_points):
+		"""
+		Slot to store the detected touchpoints on the Metrics and send to gameManager
+		:param touch_points: structure with the information of the points touched.
+		:return:
+		"""
 		print("tvGames detected %d"%len(touch_points))
 		if len(touch_points) > 0:
 			state_mapping = {Qt.TouchPointPressed: StateEnum.TouchPointPressed,
@@ -824,6 +986,12 @@ class SpecificWorker(GenericWorker):
 
 
 	def send_status_change(self, status_type):
+		"""
+		TODO: This would be replaced by a required petition from gameManager for each possible status.
+
+		:param status_type:
+		:return:
+		"""
 		initialicing_status = Status()
 		initialicing_status.currentStatus = status_type
 		initialicing_status.date = datetime.now().isoformat()

@@ -25,7 +25,17 @@ if(NOT EXISTS ${EuroageTv_SOURCE_DIR}/components/bbdd/prueba1.db)
     message("File downloaded")
 endif()
 
-install(DIRECTORY "interfaces" DESTINATION /opt/robocomp/ )
-install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/Desktop/ PERMISSIONS WORLD_EXECUTE WORLD_READ WORLD_WRITE)
-install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/.config/autostart/ PERMISSIONS WORLD_EXECUTE WORLD_READ WORLD_WRITE)
+
+
+if(EXISTS $ENV{HOME}/Desktop/)
+    install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/Desktop/ PERMISSIONS WORLD_READ WORLD_WRITE WORLD_EXECUTE)
+else()
+    install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/Escritorio/ PERMISSIONS WORLD_READ WORLD_WRITE WORLD_EXECUTE)
+endif()
+install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/.config/autostart/ )
+install(DIRECTORY "interfaces" DESTINATION /opt/robocomp/ OPTIONAL)
+
+
+
+
 

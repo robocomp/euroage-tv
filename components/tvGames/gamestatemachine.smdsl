@@ -20,8 +20,8 @@ application_machine
         session_end => session_start_wait;
         game_init => game_loop;
         game_loop => game_loop, game_pause, game_won, game_lost, game_end;
-        game_won => game_start_wait;
-        game_lost => game_start_wait;
+//        game_won => game_start_wait;
+//        game_lost => game_start_wait;
         game_pause => game_loop;
         game_pause => game_reset;
         game_pause => game_resume;

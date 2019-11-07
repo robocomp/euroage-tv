@@ -694,6 +694,10 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_admin(self):
+        """
+        admin => app_end
+        :return:
+        """
         print("Entered state admin")
         pass
 
@@ -713,6 +717,11 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_user_login(self):
+        """
+        user_login => create_user,session_init;
+        create_user => user_login;
+        :return:
+        """
         print("Entered state user_login")
 
         self.ui.stackedWidget.setCurrentIndex(0)
@@ -725,6 +734,11 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_create_player(self):
+        """
+        create_player => session_init;
+        session_init => create_player;
+        :return:
+        """
         print("Entered state create_player")
         self.ui.stackedWidget.setCurrentIndex(3)
         self.ui.username_player_lineedit.clear()
@@ -737,6 +751,11 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_create_user(self):
+        """
+        user_login => create_user;
+        create_user => user_login;
+        :return:
+        """
         print("Entered state create_user")
         self.ui.stackedWidget.setCurrentIndex(1)
 
@@ -745,6 +764,12 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_game_end(self):
+        """
+        game_end => admin_games;
+        playing => game_end;
+        paused => game_end;
+        :return:
+        """
         print("Entered state game_end")
 
         reply = QMessageBox.question(self.focusWidget(), 'Juego terminado',
@@ -774,6 +799,10 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_paused(self):
+        """
+        playing => paused;
+        paused => admin_games, playing, game_end;
+        """
         print("Entered state paused")
         self.ui.continue_game_button.setEnabled(True)
         self.ui.reset_game_button.setEnabled(True)
@@ -786,6 +815,12 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_playing(self):
+        """
+        playing => paused, game_end;
+        wait_play => playing;
+        paused => playing;
+        :return:
+        """
         print("Entered state playing")
         self.ui.start_game_button.setEnabled(False)
         self.ui.pause_game_button.setEnabled(True)
@@ -811,6 +846,13 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_session_init(self):
+        """
+        session_init => create_player, wait_ready;
+        user_login => session_init;
+        create_player => session_init;
+	    session_end => session_init;
+        :return:
+        """
         print("Entered state session_init")
         self.ui.stackedWidget.setCurrentIndex(2)
 
@@ -854,6 +896,13 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_admin_games(self):
+        """
+        admin_games => wait_play, session_end;
+        wait_ready => admin_games;
+        paused => admin_games;
+        game_end => admin_games;
+        :return:
+        """
         print("Entered state admin_games")
         # TODO: review this code. It's a mess and can be simplified for sure.
         if self.aux_firtsGameInSession or self.aux_reseted:
@@ -895,6 +944,11 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_wait_play(self):
+        """
+        wait_play => playing, session_end;
+        admin_games => wait_play;
+        :return:
+        """
         print("Entered state wait_play")
         self.ui.start_game_button.setEnabled(True)
         self.ui.end_session_button.setEnabled(True)
@@ -915,6 +969,11 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_wait_ready(self):
+        """
+        wait_ready => admin_games;
+        session_init => wait_ready;
+        :return:
+        """
         print("Entered state wait_ready")
         self.ui.stackedWidget.setCurrentIndex(4)
 
@@ -943,6 +1002,12 @@ class SpecificWorker(GenericWorker):
     #
     @QtCore.Slot()
     def sm_session_end(self):
+        """
+        session_end => session_init;
+        admin_games => session_end;
+        wait_play => session_end;
+        :return:
+        """
         print("Entered state session_end")
 
         if (self.aux_savedGames):

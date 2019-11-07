@@ -16,19 +16,6 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
      <widget class="QLabel" name="info_game_label">
       <property name="font">
        <font>
@@ -41,9 +28,6 @@
        <string/>
       </property>
      </widget>
-    </item>
-    <item>
-     <widget class="QImageWidget" name="admin_image" native="true"/>
     </item>
     <item>
      <widget class="QPushButton" name="start_game_button">
@@ -486,25 +470,15 @@
      </spacer>
     </item>
    </layout>
-   <zorder>admin_image</zorder>
    <zorder>info_game_label</zorder>
    <zorder>start_game_button</zorder>
    <zorder>groupBox</zorder>
    <zorder>end_session_button</zorder>
-   <zorder>verticalSpacer</zorder>
    <zorder>verticalSpacer_2</zorder>
    <zorder>verticalSpacer_3</zorder>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QImageWidget</class>
-   <extends>QWidget</extends>
-   <header>modules/QImageWidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

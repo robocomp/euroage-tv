@@ -55,6 +55,7 @@ GREEN_TITTLE_COLOR = "#91C69A"
 # Create a class for our main window
 class GameScreen(QWidget):
     game_win = Signal()
+    game_lost = Signal()
     help_clicked = Signal()
     check_clicked = Signal()
     score_update = Signal(int, int)
@@ -176,6 +177,8 @@ class GameScreen(QWidget):
             index = randint(0, len(LOST_SOUNDS))
             file = LOST_SOUNDS[index]
             subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
+            self._game_frame._update_scores()
+            self.game_lost.emit()
         self._game_frame.end_game()
         self._main_layout.setCurrentIndex(1)
         return result

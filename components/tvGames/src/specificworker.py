@@ -232,6 +232,7 @@ class SpecificWorker(GenericWorker):
 			self._game.check_clicked.connect(self.game_check_clicked)
 			self._game.score_update.connect(self.game_score_update)
 			self._game.game_win.connect(self.t_game_loop_to_game_won)
+			self._game.game_lost.connect(self.t_game_loop_to_game_lost)
 			self.reset_game()
 
 
@@ -901,6 +902,7 @@ class SpecificWorker(GenericWorker):
 		"""
 		print("adminStartGame")
 		self._current_game_name = game
+		self.activateWindow()
 		self.t_game_start_wait_to_game_init.emit()
 
 
@@ -914,6 +916,7 @@ class SpecificWorker(GenericWorker):
 		:return:
 		"""
 		print("adminContinueGame")
+		self.activateWindow()
 		self.t_game_pause_to_game_resume.emit()
 
 

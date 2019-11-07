@@ -310,6 +310,10 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_machine(self):
+		"""
+		game_machine => app_end;
+		:return:
+		"""
 		print("Entered state game_machine")
 
 	#
@@ -317,6 +321,10 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_app_end(self):
+		"""
+		game_machine => app_end;
+		:return:
+		"""
 		print("Entered state app_end")
 		QApplication.quit()
 
@@ -326,6 +334,11 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_session_start_wait(self):
+		"""
+		session_start_wait => session_init;
+		session_end => session_start_wait;
+		:return:
+		"""
 		print("Entered state session_start_wait")
 		init_touchscreen_device()
 		# TODO: Test only. Remove on production
@@ -338,6 +351,13 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_end(self):
+		"""
+        game_end => game_lost;
+        game_end => game_won;
+		game_loop => game_end;
+        game_pause => game_end;
+		:return:
+		"""
 		print("Entered state game_end")
 		won = self._game.end_game()
 		if won:
@@ -352,6 +372,11 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_init(self):
+		"""
+        game_init => game_loop;
+		game_start_wait => game_init;
+		:return:
+		"""
 		print("Entered state game_init")
 		self._game = None
 		self.update_game_selection()
@@ -363,6 +388,13 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_loop(self):
+		"""
+        game_loop => game_loop, game_pause, game_won, game_lost, game_end;
+		game_init => game_loop;
+        game_pause => game_loop;
+        game_resume => game_loop;
+		:return:
+		"""
 		self._game_metrics.currentDate = datetime.now().isoformat()
 		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 		print("Entered state game_loop")
@@ -374,6 +406,12 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_lost(self):
+		"""
+        game_lost => game_start_wait;
+        game_loop => game_lost;
+        game_end => game_lost;
+		:return:
+		"""
 		print("Entered state game_lost")
 		self.send_status_change(StatusType.lostGame)
 		QTimer.singleShot(200, self.t_game_lost_to_game_start_wait)
@@ -385,6 +423,14 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_pause(self):
+		"""
+		game_pause => game_loop;
+        game_pause => game_reset;
+        game_pause => game_resume;
+        game_pause => game_end;
+		game_loop => game_pause
+		:return:
+		"""
 		print("Entered state game_pause")
 		self._game.pause_game()
 		self.send_status_change(StatusType.pausedGame)
@@ -395,6 +441,11 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_reset(self):
+		"""
+		game_reset => game_start_wait;
+		game_pause => game_reset;
+		:return:
+		"""
 		print("Entered state game_reset")
 		self._game.hide()
 		self.send_status_change(StatusType.resetedGame)
@@ -405,6 +456,11 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_resume(self):
+		"""
+		game_resume => game_loop;
+		game_pause => game_resume;
+		:return:
+		"""
 		print("Entered state game_resume")
 		self._game.resume_game()
 		self.t_game_resume_to_game_loop.emit()
@@ -414,6 +470,18 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_start_wait(self):
+		"""
+		game_start_wait => game_start_wait;
+        game_start_wait => game_init;
+        game_start_wait => session_end
+		game_won => game_start_wait;
+		game_lost => game_start_wait;
+        game_lost => game_start_wait;
+        game_won => game_start_wait;
+        game_reset => game_start_wait;
+		session_init => game_start_wait;
+		:return:
+		"""
 		print("Entered state game_start_wait")
 
 		# TODO: Test only. Remove on production
@@ -428,6 +496,12 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_game_won(self):
+		"""
+		game_won => game_start_wait;
+		game_loop => game_won;
+        game_end => game_won;
+		:return:
+		"""
 		print("Entered state game_won")
 		self.send_status_change(StatusType.wonGame)
 		QTimer.singleShot(200, self.t_game_won_to_game_start_wait)
@@ -438,6 +512,11 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_session_end(self):
+		"""
+		game_start_wait => session_end;
+        session_end => session_start_wait;
+		:return:
+		"""
 		print("Entered state session_end")
 		self.send_status_change(StatusType.endSession)
 		self._game.pause_game()
@@ -451,6 +530,11 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_session_init(self):
+		"""
+		session_start_wait => session_init;
+        session_init => game_start_wait;
+		:return:
+		"""
 		print("Entered state session_init")
 		self.send_status_change(StatusType.initializingSession)
 
@@ -461,15 +545,26 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_player_acquisition_init(self):
+		"""
+		player_acquisition_init => player_acquisition_loop;
+		:return:
+		"""
 		print("Entered state player_acquisition_init")
-		self.t_player_acquisition_init_to_player_acquisition_loop.emit()
 		self.send_status_change(StatusType.initializingSession)
+		self.t_player_acquisition_init_to_player_acquisition_loop.emit()
+
 
 	#
 	# sm_player_acquisition_loop
 	#
 	@QtCore.Slot()
 	def sm_player_acquisition_loop(self):
+		"""
+		player_acquisition_init => player_acquisition_loop;
+        player_acquisition_loop => player_acquisition_loop;
+        player_acquisition_loop => player_acquisition_ended;
+		:return:
+		"""
 		print("Entered state player_acquisition_loop")
 		acquired = True
 		for player in self._current_players:
@@ -491,6 +586,10 @@ class SpecificWorker(GenericWorker):
 	#
 	@QtCore.Slot()
 	def sm_player_acquisition_ended(self):
+		"""
+		player_acquisition_loop => player_acquisition_ended;
+		:return:
+		"""
 		print("Entered state player_acquisition_ended")
 		self.tv_image.hide()
 		self.send_status_change(StatusType.readySession)

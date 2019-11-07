@@ -21,7 +21,7 @@ manager_machine{
         playing => paused, game_end;
         paused => admin_games, playing, game_end;
         game_end => admin_games;
-	session_end => session_init;
+	    session_end => session_init;
     };
 };
 

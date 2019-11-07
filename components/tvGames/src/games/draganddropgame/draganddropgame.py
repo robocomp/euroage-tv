@@ -130,14 +130,16 @@ class GameScreen(QWidget):
         aux_scores.set_score(1, value1)
         aux_scores.set_score(0, value2)
         desktop_widget = QApplication.desktop()
-        desktop_widget = QApplication.desktop()
+        aux_scores.setFixedSize(500, 280)
+        aux_scores.setMaximumSize(500, 280)
+        self._scores_dialog.setFixedSize(aux_scores.size())
         if desktop_widget.screenCount() > 1:
-            second_screen_size = desktop_widget.screenGeometry(1)
-            aux_scores.setFixedSize(400, 300)
-            aux_scores.setMaximumSize(400, 300)
-            newx = second_screen_size.left() + (second_screen_size.width() - self._scores_dialog.width()) / 2
-            newy = second_screen_size.top() + (second_screen_size.height() - self._scores_dialog.height()) / 2
-            self._scores_dialog.move(newx, newy)
+            screen_rect = desktop_widget.screenGeometry(1)
+        else:
+            screen_rect = desktop_widget.screenGeometry(0)
+        newx = screen_rect.left() + (screen_rect.width() - self._scores_dialog.width()) / 2
+        newy = screen_rect.top() + (screen_rect.height() - self._scores_dialog.height()) / 2
+        self._scores_dialog.move(newx, newy)
         self._scores_dialog.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self._scores_close_timer.timeout.connect(self._scores_dialog.close)
         self._scores_close_timer.start(2000)

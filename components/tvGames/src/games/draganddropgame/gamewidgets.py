@@ -366,6 +366,20 @@ class GameScores(QFrame):
         QWidget.paintEvent(self, event)
 
 
+class GameScreenLogo(QLabel):
+    def __init__(self, parent=None):
+        super(GameScreenLogo, self).__init__(parent)
+        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
+        self.setSizePolicy(sizePolicy)
+        self.setMaximumSize(QSize(600, 100))
+        self.setText("")
+        self.setPixmap(QPixmap("../../etc/logos_banner.jpg"))
+        self.setScaledContents(True)
+
+
 class GameScoreCircle(QLabel):
     def __init__(self, value=0, parent=None):
         super(GameScoreCircle, self).__init__(parent)

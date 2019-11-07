@@ -29,7 +29,7 @@ from numpy.random.mtrand import randint
 
 
 try:
-    from games.draganddropgame.gamewidgets import GameTopBarWidget, GameScores, CoolButton
+    from games.draganddropgame.gamewidgets import GameTopBarWidget, GameScores, CoolButton, GameScreenLogo
     from games.draganddropgame.videoplayers import ActionsVideoPlayer
 except:
     from gamewidgets import GameTopBarWidget, CoolButton, GameScores
@@ -84,6 +84,8 @@ class GameScreen(QWidget):
         self._help_button.set_color(QColor("Orange"))
         self._game_layout.addWidget(self._help_button, 2, 1, 1, 2, Qt.AlignRight)
         self._game_layout.addWidget(self._check_button, 2, 3, 1, 2)
+        self._logos = GameScreenLogo()
+        self._game_layout.addWidget(self._logos,2,13,1,6,Qt.AlignLeft )
 
         self._video_player = ActionsVideoPlayer()
 

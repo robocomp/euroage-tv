@@ -28,8 +28,10 @@ endif()
 
 
 if(EXISTS $ENV{HOME}/Desktop/)
+    message("$ENV{HOME}/Desktop/  exist")
     install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/Desktop/ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE WORLD_READ WORLD_WRITE WORLD_EXECUTE)
 else()
+    message("$ENV{HOME}/Desktop/ don't exist")
     install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/Escritorio/ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE WORLD_READ WORLD_WRITE WORLD_EXECUTE)
 endif()
 install(FILES "tools/Euroage.desktop" DESTINATION $ENV{HOME}/.config/autostart/ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE WORLD_READ WORLD_WRITE WORLD_EXECUTE)

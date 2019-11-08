@@ -416,6 +416,8 @@ class SpecificWorker(GenericWorker):
         self.ui.reset_game_button.clicked.connect(self.reset_clicked)
         self.ui.end_session_button.clicked.connect(self.end_session_clicked)
 
+        self.ui.quit_button.clicked.connect(self.t_admin_to_app_end)
+
     def ddbb_status_changed(self, string):
         """
         Slot to show status changes on the UI.

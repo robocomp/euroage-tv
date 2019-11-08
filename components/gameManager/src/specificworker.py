@@ -530,7 +530,7 @@ class SpecificWorker(GenericWorker):
         """
         if self.ui.selplayer_combobox.currentIndex() == 1:  # New player selected
             reply = MyQMessageBox.question(self.focusWidget(), '',
-                                         'Quiere añadir a un nuevo jugador?', QMessageBox.Yes, QMessageBox.No)
+                                         '¿Quiere añadir a un nuevo jugador?', QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.No:
                 self.ui.selplayer_combobox.setCurrentIndex(0)
                 return False
@@ -679,7 +679,7 @@ class SpecificWorker(GenericWorker):
         Slot to finish the current session and send the adminEndSession command to the game.
         """
         reply = MyQMessageBox.question(self.focusWidget(), '',
-                                     ' ¿Desea finalizar la sesión?', QMessageBox.Yes, QMessageBox.No)
+                                     '¿Desea finalizar la sesión?', QMessageBox.Yes, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
             self.admingame_proxy.adminEndSession()
@@ -779,7 +779,7 @@ class SpecificWorker(GenericWorker):
         print("Entered state game_end")
 
         reply = MyQMessageBox.question(self.focusWidget(), 'Juego terminado',
-                                     ' ¿Desea guardar los datos del juego?', QMessageBox.Yes, QMessageBox.No)
+                                     '¿Desea guardar los datos del juego?', QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.current_game.end()
             self.current_game.game_won = self.aux_wonGame
@@ -1018,7 +1018,7 @@ class SpecificWorker(GenericWorker):
 
         if (self.aux_savedGames):
             reply = MyQMessageBox.question(self.focusWidget(), 'Juegos finalizados',
-                                         ' Desea guardar los datos de la sesion actual?', QMessageBox.Yes,
+                                         '¿Desea guardar los datos de la sesion actual?', QMessageBox.Yes,
                                          QMessageBox.No)
             if reply == QMessageBox.Yes:
                 time = self.aux_currentDate - self.current_session.date

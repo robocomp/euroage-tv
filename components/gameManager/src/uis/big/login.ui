@@ -116,7 +116,7 @@
         <item>
          <widget class="QPushButton" name="newuser_button_2">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="minimumSize">
            <size>

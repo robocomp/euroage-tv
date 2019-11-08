@@ -443,7 +443,7 @@ class SpecificWorker(GenericWorker):
             self.t_user_login_to_session_init.emit()
 
         else:
-            QMessageBox().information(self.focusWidget(), 'Error',
+            MyQMessageBox.information(self.focusWidget(), 'Error',
                                       'El usuario o la contraseña son incorrectos',
                                       QMessageBox.Ok)
 
@@ -500,7 +500,7 @@ class SpecificWorker(GenericWorker):
                 return False
             else:
                 self.user_login_manager.set_username_password(username, password)
-                QMessageBox().information(self.focusWidget(), '',
+                MyQMessageBox.information(self.focusWidget(), '',
                                           'Usuario creado correctamente',
                                           QMessageBox.Ok)
 
@@ -529,7 +529,7 @@ class SpecificWorker(GenericWorker):
         :return:
         """
         if self.ui.selplayer_combobox.currentIndex() == 1:  # New player selected
-            reply = QMessageBox.question(self.focusWidget(), '',
+            reply = MyQMessageBox.question(self.focusWidget(), '',
                                          'Quiere añadir a un nuevo jugador?', QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.No:
                 self.ui.selplayer_combobox.setCurrentIndex(0)
@@ -556,7 +556,7 @@ class SpecificWorker(GenericWorker):
             self.ui.selgame_combobox.setCurrentIndex(0)
             return True
         else:
-            QMessageBox().information(self.focusWidget(), 'Error',
+            MyQMessageBox.information(self.focusWidget(), 'Error',
                                       'No se ha seleccionado ningún juego',
                                       QMessageBox.Ok)
             return False
@@ -636,7 +636,7 @@ class SpecificWorker(GenericWorker):
         """
         Slot to send the adminStopGame command to the game
         """
-        reply = QMessageBox.question(self.focusWidget(), '',
+        reply = MyQMessageBox.question(self.focusWidget(), '',
                                      '¿Desea finalizar juego?', QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.admingame_proxy.adminStopGame()
@@ -645,7 +645,7 @@ class SpecificWorker(GenericWorker):
         """
         Slot to send the adminResetGame command to the game
         """
-        reply = QMessageBox.question(self.focusWidget(), '',
+        reply = MyQMessageBox.question(self.focusWidget(), '',
                                      '¿Desea volver a empezar? Los datos del juego no se guardarán', QMessageBox.Yes,
                                      QMessageBox.No)
         if reply == QMessageBox.Yes:
@@ -663,11 +663,11 @@ class SpecificWorker(GenericWorker):
             self.list_games_toplay.append(self.ui.games_list.item(index).text())
 
         if player == "":
-            QMessageBox().information(self.focusWidget(), 'Error',
+            MyQMessageBox.information(self.focusWidget(), 'Error',
                                       'No se han seleccionado ningún jugador',
                                       QMessageBox.Ok)
         elif len(self.list_games_toplay) == 0:
-            QMessageBox().information(self.focusWidget(), 'Error',
+            MyQMessageBox.information(self.focusWidget(), 'Error',
                                       'No se ha seleccionado ningún juego',
                                       QMessageBox.Ok)
         else:
@@ -678,7 +678,7 @@ class SpecificWorker(GenericWorker):
         """
         Slot to finish the current session and send the adminEndSession command to the game.
         """
-        reply = QMessageBox.question(self.focusWidget(), '',
+        reply = MyQMessageBox.question(self.focusWidget(), '',
                                      ' ¿Desea finalizar la sesión?', QMessageBox.Yes, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
@@ -778,7 +778,7 @@ class SpecificWorker(GenericWorker):
         """
         print("Entered state game_end")
 
-        reply = QMessageBox.question(self.focusWidget(), 'Juego terminado',
+        reply = MyQMessageBox.question(self.focusWidget(), 'Juego terminado',
                                      ' ¿Desea guardar los datos del juego?', QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.current_game.end()
@@ -992,7 +992,7 @@ class SpecificWorker(GenericWorker):
 
         self.aux_firtsGameInSession = True
 
-        QMessageBox().information(self.focusWidget(), 'Info',
+        MyQMessageBox.information(self.focusWidget(), 'Info',
                                   'Coloque la mano del paciente sobre la mesa. Cuando se haya detectado correctamente podrá empezar el juego',
                                   QMessageBox.Ok)
 
@@ -1017,7 +1017,7 @@ class SpecificWorker(GenericWorker):
         print("Entered state session_end")
 
         if (self.aux_savedGames):
-            reply = QMessageBox.question(self.focusWidget(), 'Juegos finalizados',
+            reply = MyQMessageBox.question(self.focusWidget(), 'Juegos finalizados',
                                          ' Desea guardar los datos de la sesion actual?', QMessageBox.Yes,
                                          QMessageBox.No)
             if reply == QMessageBox.Yes:
@@ -1029,7 +1029,7 @@ class SpecificWorker(GenericWorker):
                 self.current_session.save_session_to_ddbb(self.ddbb)
                 self.sessions.append(self.current_session)
 
-        QMessageBox().information(self.focusWidget(), 'Adios',
+        MyQMessageBox.information(self.focusWidget(), 'Adios',
                                   'Se ha finalizado la sesion',
                                   QMessageBox.Ok)
 

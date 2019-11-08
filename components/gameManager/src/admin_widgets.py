@@ -31,7 +31,9 @@ class MyQMessageBox(QMessageBox):
             "font: 30px;"
             "}"
         )
-        message_box.addButton(button_text, button_role)
+        message_box.setStandardButtons(QMessageBox.Ok)
+        button_accept = message_box.button(QMessageBox.Ok)
+        button_accept.setText('Vale')
         return message_box.exec_()
 
     @staticmethod
@@ -51,9 +53,14 @@ class MyQMessageBox(QMessageBox):
             "font: 30px;"
             "}"
         )
-        message_box.addButton("Si", QMessageBox.YesRole)
-        message_box.addButton("No", QMessageBox.NoRole)
+        message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        buttonY = message_box.button(QMessageBox.Yes)
+        buttonY.setText('Si')
+        buttonN = message_box.button(QMessageBox.No)
+        buttonN.setText('No')
+        message_box.setDefaultButton(QMessageBox.Yes)
         return message_box.exec_()
+
 
     @staticmethod
     def information(parent, title, text, button0=None, button1=None):
@@ -62,6 +69,8 @@ class MyQMessageBox(QMessageBox):
     @staticmethod
     def question(parent, title, text, button0=None, button1=None):
         return MyQMessageBox.show_question(parent=parent, title=title, message=text)
+
+
 
 
 # TODO:  try to unifiy the repeated code.

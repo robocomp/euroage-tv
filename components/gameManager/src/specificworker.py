@@ -733,6 +733,7 @@ class SpecificWorker(GenericWorker):
         # completer = QCompleter(list_of_users)
         # self.ui.username_lineedit.setCompleter(completer)
         self.ui.username_lineedit.addItems(list_of_users)
+        self.ui.username_lineedit.setCurrentIndex(1)
         self.login_executed.connect(self.update_login_status)
 
     #

@@ -122,7 +122,8 @@ class History(QDialog):
         session = item.data(Qt.UserRole)
         self.ui.sesion_gb.setTitle("[" + session.start_time.strftime("%d/%m/%Y") + "]")
         total_time = (session.end_time - session.start_time)
-        self.ui.s_time_le.setText(str(total_time))
+        # TODO: look for a better way to format text than spliting
+        self.ui.s_time_le.setText(str(total_time).split('.')[0])
         self.reload_rounds(session.id)
 
     def load_game_info(self, item):
@@ -132,7 +133,8 @@ class History(QDialog):
         play_time = (game.end_time - game.start_time)
         self.ui.j_fecha_le.setText(game.start_time.strftime("%d/%m/%Y"))
         self.ui.j_ganado_le.setText("Sí" if game.result else "No")
-        self.ui.j_tjugado_le.setText(str(play_time))
+        # TODO: look for a better way to format text than spliting
+        self.ui.j_tjugado_le.setText(str(play_time).split('.')[0])
         self.ui.j_distancia_le.setText(str(game.distance))
         self.ui.j_ayudas_le.setText(str(game.n_helps))
         self.ui.j_comprobaciones_le.setText(str(game.n_checks))

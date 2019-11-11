@@ -46,8 +46,8 @@ CURRENT_PATH = os.path.dirname(__file__)
 
 CONGRAT_STRING = ["¡Vas muy bien!", "¡Sigue así!", "¡Genial!", "¡Estupendo!", "¡Fabulóso!", "¡Maravilloso!", "¡Ánimo!",
                   "¡Lo estás haciendo muy bien!"]
-WINNING_SOUNDS = ["../resources/common/sounds/happy1.mp3", "resources/sounds/happy2.mp3"]
-LOST_SOUNDS = ["../resources/common/sounds/sad1.mp3", "resources/sounds/sad2-2.mp3"]
+WINNING_SOUNDS = ["../resources/common/sounds/happy1.mp3", "../resources/common/sounds/happy2.mp3"]
+LOST_SOUNDS = ["../resources/common/sounds/sad1.mp3", "../resources/common/sounds/sad2-2.mp3"]
 SPEECH_COMMAND = "gtts es "
 
 GREEN_TITTLE_COLOR = "#91C69A"

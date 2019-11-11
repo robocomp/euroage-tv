@@ -19,6 +19,9 @@ if sys.version_info < (3, 0):
 
 
 class VideoIndexLabel(QLabel):
+    """
+    Custom QLabel with a big appearance to be shown on the Help video frame with the index of the destination piece.
+    """
     def __init__(self, number=0, text_size=60, h=100, w=150):
         super(VideoIndexLabel, self).__init__(str(number))
         self.setAlignment(Qt.AlignCenter)
@@ -31,6 +34,9 @@ class VideoIndexLabel(QLabel):
         self.setText(str(number))
 
 class FrameButton(QPushButton):
+    """
+    Custom QPushButton with a big appearance to be shown on the Help video frame.
+    """
     def __init__(self, text="", text_size=10, h=150, w=250, offset=20, color="green", style=None, parent=None):
         self.parent = parent
         super(FrameButton, self).__init__(text, parent)
@@ -57,6 +63,10 @@ class FrameButton(QPushButton):
             raise Exception("color must be a QColor class")
 
     def _set_pressed_shadow(self):
+        """
+        Update the widget shadow to a harder and narrower one.
+        :return:
+        """
         pressed_shadow = QGraphicsDropShadowEffect(self)
         pressed_shadow.setBlurRadius(10)
         pressed_shadow.setOffset(2)
@@ -64,6 +74,10 @@ class FrameButton(QPushButton):
         self.update()
 
     def _set_released_shadow(self):
+        """
+        Update the widget to show a shadow when released for a softer and wider one.
+        :return:
+        """
         released_shadow = QGraphicsDropShadowEffect(self)
         released_shadow.setBlurRadius(22)
         released_shadow.setOffset(10)
@@ -71,14 +85,26 @@ class FrameButton(QPushButton):
         self.update()
 
     def _button_pressed(self):
+        """
+        Slot to react to a button pressed event
+        :return:
+        """
         self.w, self.h = self.width() - self._offset, self.height() - self._offset
         self.offset = self._offset / 2
         self._set_pressed_shadow()
 
     def _button_released(self):
+        """
+        Slot to react to a button release event
+        :return:
+        """
         self._set_released_shadow()
 
 class ListVideoPlayer(QWidget):
+    """
+    Custom widget to play a list of videos with some basic Pause an Close actions.
+
+    """
     def __init__(self, relative_width=0.8, relative_height=0.8, parent=None):
         super(ListVideoPlayer, self).__init__(parent=parent)
         self._frame = QFrame()
@@ -124,8 +150,6 @@ class ListVideoPlayer(QWidget):
         self.move(desktop_widget.width() * (1 - relative_width) / 2,
                   desktop_widget.height() * (1 - relative_height) / 2)
 
-        # self._played_videos = 0
-        # # self.audio.setVolume(50)
         self._media_player.stateChanged.connect(self.handle_state_changed)
 
 
@@ -133,6 +157,11 @@ class ListVideoPlayer(QWidget):
         print(newstate)
 
     def add_path_to_video_list(self, video_path):
+        """
+        Add a new path to a video to the current video list
+        :param video_path: the path to the video file
+        :return: the current number of videos in the list.
+        """
         if os.path.exists(video_path):
             self._full_media_list.append(video_path)
             return len(self._full_media_list) - 1
@@ -141,6 +170,11 @@ class ListVideoPlayer(QWidget):
             return -1
 
     def play_indexes_list(self, video_indexes):
+        """
+        Play videos given a list of indexes of the videos in teh current list to be played.
+        :param video_indexes: indexes of the videos on the current list to be played.
+        :return:
+        """
         self._current_play_list.clear()
         for index in video_indexes:
             if index in range(len(self._full_media_list)):
@@ -149,17 +183,28 @@ class ListVideoPlayer(QWidget):
         self._media_player.play()
 
     def reproduce_all(self):
+        """
+        Play all the videos on the current list.
+        :return:
+        """
         self._current_play_list.clear()
         for url in self._full_media_list:
             self._current_play_list.addMedia(QMediaContent(QUrl.fromLocalFile(url)))
         self._media_player.play()
 
     def clear(self):
+        """
+        Clear the current video list.
+        :return:
+        """
         self._full_media_list = []
         self._current_play_list.clear()
         self._current_video_playing = ""
 
 class ActionsVideoPlayer(ListVideoPlayer):
+    """
+    Custom implementation of the video list to play the actions o
+    """
     def __init__(self, relative_width=0.8, relative_height=0.8, parent=None):
         super(ActionsVideoPlayer, self).__init__(relative_width, relative_height, parent)
         self._actions_list = OrderedDict()

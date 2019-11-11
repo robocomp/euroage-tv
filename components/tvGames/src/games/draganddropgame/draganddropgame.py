@@ -160,7 +160,7 @@ class GameScreen(QWidget):
             self._video_player.clear()
             for piece in pieces:
                 self._video_player.add_action(piece.id, piece.clip_path, piece.current_destination.index)
-            if len(pieces)>0:
+            if len(pieces) > 0:
                 self._video_player.show_on_second_screen()
                 print(self._video_player.current_status())
                 self._video_player.play_all_actions_as_inserted()
@@ -954,8 +954,8 @@ class TakeDragGame(QWidget):
     def already_set_pieces(self):
         self.right_wrong_pieces()
         set_pieces = []
-        #loop over sorted destinations
-        for index in range(1, len(self._destinations)):
+        # loop over sorted destinations
+        for index in range(1, len(self._destinations)+1):
             if self._destinations[index].contained_piece is not None:
                 piece = self._destinations[index].contained_piece
                 set_pieces.append(piece)

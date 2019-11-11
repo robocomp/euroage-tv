@@ -88,6 +88,7 @@ class GameScreen(QWidget):
         self._game_layout.addWidget(self._logos,2,13,1,6,Qt.AlignLeft )
 
         self._video_player = ActionsVideoPlayer()
+        self._video_player.setWindowTitle("Ayuda")
 
         # palette = self.palette()
         # brush = QBrush(QImage(os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")))
@@ -259,6 +260,7 @@ class DraggableItem(QGraphicsPixmapItem):
     def __init__(self, id, image_path,  parent=None):
         super(DraggableItem, self).__init__(parent)
         self.id = id
+        self.__image_path = None
         self.image_path = image_path
         self.correct_position = False
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
@@ -283,7 +285,11 @@ class DraggableItem(QGraphicsPixmapItem):
     @image_path.setter
     def image_path(self, image_path):
         if image_path is not None:
-            self.image = QImage(image_path).scaled(320,240, Qt.KeepAspectRatio)
+            if self.image_path is not None:
+                self.image = QImage(image_path).scaled(self.image.width(), self.image.height(), Qt.KeepAspectRatio)
+            else:
+                self.image = QImage(image_path).scaled(320, 240, Qt.KeepAspectRatio)
+
             self.setPixmap(QPixmap.fromImage(self.image))
             self.__image_path = image_path
 
@@ -478,7 +484,7 @@ class QOpencvGraphicsVideoItem(DraggableItem):
     def __init__(self, id, image_path, video_path, title, parent=None):
         super(QOpencvGraphicsVideoItem, self).__init__(id, image_path, parent)
         self._video_source = None
-        self._video_path = video_path
+        self._video_path = None
         self._video_frame = None
         if video_path is not None:
             self.set_video_path(video_path)
@@ -1302,7 +1308,7 @@ def main():
     game = GameScreen(None, 1920, 1080)
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/LionKingGame/game.json")
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
-    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER CAMA/hacer_la_cama.json")
+    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
     game.show_on_second_screen()
 
     # main_widget = GameWidget()

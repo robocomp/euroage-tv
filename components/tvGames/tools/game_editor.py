@@ -7,7 +7,12 @@ from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox, QFileDialog, QDialog
 import json
 
-from games.draganddropgame.draganddropgame import GameScreen
+try:
+    from games.draganddropgame.draganddropgame import GameScreen
+except:
+    print("Added src to python path")
+    sys.path.append('../src/')
+    from games.draganddropgame.draganddropgame import GameScreen
 
 
 class PieceWindow(QDialog):

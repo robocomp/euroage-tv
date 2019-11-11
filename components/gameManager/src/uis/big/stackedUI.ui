@@ -53,7 +53,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../../etc/logos_banner.jpg</pixmap>
+        <pixmap>../../etc/logos_banner.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>

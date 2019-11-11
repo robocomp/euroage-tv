@@ -1,0 +1,122 @@
+{
+    "title": "Hacer tostadas 2", 
+    "size": [
+        1900, 
+        1070
+    ], 
+    "difficult": 100, 
+    "time": 90.0, 
+    "depth": {
+        "destination": "0", 
+        "mouse": "50", 
+        "piece": "10"
+    }, 
+    "images": {
+        "handOpen": {
+            "size": [
+                100, 
+                100
+            ], 
+            "initial_pose": [
+                400, 
+                300
+            ], 
+            "image_path": "../../resources/common/icons/00-Pointer-Hand-icon_2.png", 
+            "name": "handOpen", 
+            "category": "mouse"
+        }, 
+        "handClose": {
+            "size": [
+                100, 
+                100
+            ], 
+            "initial_pose": [
+                400, 
+                300
+            ], 
+            "image_path": "../../resources/common/icons/00-Pointer-Hand-icon_2.png", 
+            "name": "handOpen", 
+            "category": "mouse"
+        }, 
+        "action_4": {
+            "index": 4, 
+            "title": "Comer", 
+            "size": [
+                448, 
+                336
+            ], 
+            "initial_pose": [
+                1364, 
+                20
+            ], 
+            "final_pose": [
+                1364, 
+                580
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_B/HACER_TOSTADAS_B_04.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_B/HACER_TOSTADAS_B_04.mp4", 
+            "name": "action_4", 
+            "category": "piece"
+        }, 
+        "action_3": {
+            "index": 3, 
+            "title": "Untar mermelada", 
+            "size": [
+                448, 
+                336
+            ], 
+            "initial_pose": [
+                911, 
+                20
+            ], 
+            "final_pose": [
+                911, 
+                580
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_B/HACER_TOSTADAS_B_03.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_B/HACER_TOSTADAS_B_03.mp4", 
+            "name": "action_3", 
+            "category": "piece"
+        }, 
+        "action_2": {
+            "index": 2, 
+            "title": "Untar mantequilla", 
+            "size": [
+                448, 
+                336
+            ], 
+            "initial_pose": [
+                458, 
+                20
+            ], 
+            "final_pose": [
+                458, 
+                580
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_B/HACER_TOSTADAS_B_02.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_B/HACER_TOSTADAS_B_02.mp4", 
+            "name": "action_2", 
+            "category": "piece"
+        }, 
+        "action_1": {
+            "index": 1, 
+            "title": "Sacar pan de tostadora",
+            "size": [
+                448, 
+                336
+            ], 
+            "initial_pose": [
+                5, 
+                20
+            ], 
+            "final_pose": [
+                5, 
+                580
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_B/HACER_TOSTADAS_B_01.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_B/HACER_TOSTADAS_B_01.mp4", 
+            "name": "action_1", 
+            "category": "piece"
+        }
+    }
+}

@@ -274,7 +274,6 @@ class SpecificWorker(GenericWorker):
         self.init_ui()
         self.setCentralWidget(self.ui)
 
-
         self.sessions = []
         self.__current_therapist = None
         self.current_session = None
@@ -401,6 +400,8 @@ class SpecificWorker(GenericWorker):
         self.ui.up_button.clicked.connect(self.move_list_up)
         self.ui.down_button.clicked.connect(self.move_list_down)
         self.ui.startsession_button.clicked.connect(self.start_session)
+        self.all_games_shortcut = QShortcut(QKeySequence("Ctrl+A"), self)
+        self.all_games_shortcut.activated.connect(self.add_all_games_to_list)
 
         ##new Player window
         self.ui.back_player_button.clicked.connect(self.t_create_player_to_session_init.emit)
@@ -559,6 +560,18 @@ class SpecificWorker(GenericWorker):
                                       'No se ha seleccionado ningún juego',
                                       QMessageBox.Ok)
             return False
+
+    def add_all_games_to_list(self):
+        """
+        Slot to add a game to the list of games to play in the session
+        :return:
+        """
+        for index in range(self.ui.selgame_combobox.count()):
+            next_value_in_combo = self.ui.selgame_combobox.itemText(index)
+            if next_value_in_combo != "":
+                self.ui.games_list.addItem(next_value_in_combo)
+        self.ui.selgame_combobox.setCurrentIndex(0)
+
 
     def move_list_up(self):
         """

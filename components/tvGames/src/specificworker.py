@@ -414,7 +414,8 @@ class SpecificWorker(GenericWorker):
 		:return:
 		"""
 		print("Entered state game_lost")
-		self.send_status_change(StatusType.lostGame)
+		# TODO: Only for 1 screen playing. It lets the lost screen to last 3 seconds on screen.
+		QTimer.singleShot(3000, lambda: self.send_status_change(StatusType.lostGame))
 		QTimer.singleShot(200, self.t_game_lost_to_game_start_wait)
 
 
@@ -504,7 +505,8 @@ class SpecificWorker(GenericWorker):
 		:return:
 		"""
 		print("Entered state game_won")
-		self.send_status_change(StatusType.wonGame)
+		# TODO: Only for 1 screen playing. It lets the win screen to last 3 seconds on screen.
+		QTimer.singleShot(3000, lambda: self.send_status_change(StatusType.wonGame))
 		QTimer.singleShot(200, self.t_game_won_to_game_start_wait)
 
 

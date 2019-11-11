@@ -1,0 +1,142 @@
+{
+    "title": "Nuevo contacto", 
+    "size": [
+        1900, 
+        1070
+    ], 
+    "difficult": 100, 
+    "time": 90.0, 
+    "depth": {
+        "destination": "0", 
+        "mouse": "50", 
+        "piece": "10"
+    }, 
+    "images": {
+        "handOpen": {
+            "size": [
+                100, 
+                100
+            ], 
+            "initial_pose": [
+                400, 
+                300
+            ], 
+            "image_path": "../../resources/common/icons/00-Pointer-Hand-icon_2.png", 
+            "name": "handOpen", 
+            "category": "mouse"
+        }, 
+        "handClose": {
+            "size": [
+                100, 
+                100
+            ], 
+            "initial_pose": [
+                400, 
+                300
+            ], 
+            "image_path": "../../resources/common/icons/00-Pointer-Hand-icon_2.png", 
+            "name": "handOpen", 
+            "category": "mouse"
+        }, 
+        "action_5": {
+            "index": 5, 
+            "title": "Guardar", 
+            "size": [
+                320, 
+                240
+            ], 
+            "initial_pose": [
+                1305, 
+                20
+            ], 
+            "final_pose": [
+                1305, 
+                510
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/ANADIR CONTACTO/CREAR_CONTACTO_05.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/ANADIR CONTACTO/CREAR_CONTACTO_05.mp4", 
+            "name": "action_5", 
+            "category": "piece"
+        }, 
+        "action_4": {
+            "index": 4, 
+            "title": "Nombre y N\u00famero", 
+            "size": [
+                320, 
+                240
+            ], 
+            "initial_pose": [
+                980, 
+                20
+            ], 
+            "final_pose": [
+                980, 
+                510
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/ANADIR CONTACTO/CREAR_CONTACTO_04.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/ANADIR CONTACTO/CREAR_CONTACTO_04.mp4", 
+            "name": "action_4", 
+            "category": "piece"
+        }, 
+        "action_3": {
+            "index": 3, 
+            "title": "Nuevo contacto", 
+            "size": [
+                320, 
+                240
+            ], 
+            "initial_pose": [
+                655, 
+                20
+            ], 
+            "final_pose": [
+                655, 
+                510
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/ANADIR CONTACTO/CREAR_CONTACTO_03.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/ANADIR CONTACTO/CREAR_CONTACTO_03.mp4", 
+            "name": "action_3", 
+            "category": "piece"
+        }, 
+        "action_2": {
+            "index": 2, 
+            "title": "Agenda", 
+            "size": [
+                320, 
+                240
+            ], 
+            "initial_pose": [
+                330, 
+                20
+            ], 
+            "final_pose": [
+                330, 
+                510
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/ANADIR CONTACTO/CREAR_CONTACTO_02.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/ANADIR CONTACTO/CREAR_CONTACTO_02.mp4", 
+            "name": "action_2", 
+            "category": "piece"
+        }, 
+        "action_1": {
+            "index": 1, 
+            "title": "Desbloquear", 
+            "size": [
+                320, 
+                240
+            ], 
+            "initial_pose": [
+                5, 
+                20
+            ], 
+            "final_pose": [
+                5, 
+                510
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/ANADIR CONTACTO/CREAR_CONTACTO_01.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/ANADIR CONTACTO/CREAR_CONTACTO_01.mp4", 
+            "name": "action_1", 
+            "category": "piece"
+        }
+    }
+}

@@ -1,0 +1,182 @@
+{
+    "title": "Poner mesa 1", 
+    "size": [
+        1900, 
+        1070
+    ], 
+    "difficult": 100, 
+    "time": 90.0, 
+    "depth": {
+        "destination": "0", 
+        "mouse": "50", 
+        "piece": "10"
+    }, 
+    "images": {
+        "handOpen": {
+            "size": [
+                100, 
+                100
+            ], 
+            "initial_pose": [
+                400, 
+                300
+            ], 
+            "image_path": "../../resources/common/icons/00-Pointer-Hand-icon_2.png", 
+            "name": "handOpen", 
+            "category": "mouse"
+        }, 
+        "handClose": {
+            "size": [
+                100, 
+                100
+            ], 
+            "initial_pose": [
+                400, 
+                300
+            ], 
+            "image_path": "../../resources/common/icons/00-Pointer-Hand-icon_2.png", 
+            "name": "handOpen", 
+            "category": "mouse"
+        }, 
+        "action_7": {
+            "index": 7, 
+            "title": "Poner pan", 
+            "size": [
+                228, 
+                171
+            ], 
+            "initial_pose": [
+                1403, 
+                20
+            ], 
+            "final_pose": [
+                1403, 
+                632
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_07.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_07.mp4", 
+            "name": "action_7", 
+            "category": "piece"
+        }, 
+        "action_6": {
+            "index": 6, 
+            "title": "Poner agua", 
+            "size": [
+                228, 
+                171
+            ], 
+            "initial_pose": [
+                1170, 
+                20
+            ], 
+            "final_pose": [
+                1170, 
+                632
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_06.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_06.mp4", 
+            "name": "action_6", 
+            "category": "piece"
+        }, 
+        "action_5": {
+            "index": 5, 
+            "title": "Poner cubiertos", 
+            "size": [
+                228, 
+                171
+            ], 
+            "initial_pose": [
+                937, 
+                20
+            ], 
+            "final_pose": [
+                937, 
+                632
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_05.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_05.mp4", 
+            "name": "action_5", 
+            "category": "piece"
+        }, 
+        "action_4": {
+            "index": 4, 
+            "title": "Poner servilleta", 
+            "size": [
+                228, 
+                171
+            ], 
+            "initial_pose": [
+                704, 
+                20
+            ], 
+            "final_pose": [
+                704, 
+                632
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_04.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_04.mp4", 
+            "name": "action_4", 
+            "category": "piece"
+        }, 
+        "action_3": {
+            "index": 3, 
+            "title": "Poner vaso", 
+            "size": [
+                228, 
+                171
+            ], 
+            "initial_pose": [
+                471, 
+                20
+            ], 
+            "final_pose": [
+                471, 
+                632
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_03.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_03.mp4", 
+            "name": "action_3", 
+            "category": "piece"
+        }, 
+        "action_2": {
+            "index": 2, 
+            "title": "Poner platos", 
+            "size": [
+                228, 
+                171
+            ], 
+            "initial_pose": [
+                238, 
+                20
+            ], 
+            "final_pose": [
+                238, 
+                632
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_02.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_02.mp4", 
+            "name": "action_2", 
+            "category": "piece"
+        }, 
+        "action_1": {
+            "index": 1, 
+            "title": "Poner mantel", 
+            "size": [
+                228, 
+                171
+            ], 
+            "initial_pose": [
+                5, 
+                20
+            ], 
+            "final_pose": [
+                5, 
+                632
+            ], 
+            "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_01.jpg", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER MESA_A/PONER_MESA_A_01.mp4", 
+            "name": "action_1", 
+            "category": "piece"
+        }
+    }
+}

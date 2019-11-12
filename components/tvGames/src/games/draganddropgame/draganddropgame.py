@@ -39,17 +39,37 @@ try:
     from subprocess import DEVNULL  # py3k
 except ImportError:
     import os
-
     DEVNULL = open(os.devnull, 'wb')
 
 CURRENT_PATH = os.path.dirname(__file__)
 
-CONGRAT_STRINGS = ["¡Vas muy bien!", "¡Sigue así!", "¡Genial!", "¡Buen trabajo!", "¡Estupendo!", "¡Fabulóso!", "¡Maravilloso!", "¡Ánimo!",
-                  "¡Lo estás haciendo muy bien!", "¡Continua!"]
-RECHECK_STRINGS = ["Quizás deberías revisar tus piezas", "Puedes comprobar tus resultados", "Recuerda que puedes pulsar el botón de Ayuda", "mmmm",
-                   "Algunas secuencias son un poco complicadas", "¿Crees que podría ser de otra forma?"]
-RIGHT_STRINGS = ["¡No está mal! ¡Continua!", "¡Vas bien, pero recuerda que puedes comprobar!", "¡Vas bien, pero recuerda que puedes pulsar ayuda!"]
-WRONG_STRINGS = ["¡No está mal! Pero puedes revisar algunas piezas", "Puedes hacer algunos cambios", "Piensa si la secuencia tiene sentido"]
+# Strings for the text to speech
+CONGRAT_STRINGS = ["¡Vas muy bien!",
+                   "¡Sigue así!",
+                   "¡Genial!",
+                   "¡Buen trabajo!",
+                   "¡Estupendo!",
+                   "¡Fabulóso!",
+                   "¡Maravilloso!",
+                   "¡Ánimo!",
+                   "¡Lo estás haciendo muy bien!",
+                   "¡Continúa!"]
+
+RECHECK_STRINGS = ["Quizás deberías revisar tus piezas",
+                   "Puedes comprobar tus resultados",
+                   "Recuerda que puedes pulsar el botón de Ayuda",
+                   "Algunas secuencias son un poco complicadas",
+                   "¿Crees que podría ser de otra forma?"]
+
+RIGHT_STRINGS = ["¡No está mal! ¡Continua!",
+                 "¡Vas bien, pero recuerda que puedes comprobar!",
+                 "¡Vas bien, pero recuerda que puedes pulsar ayuda!"]
+
+WRONG_STRINGS = ["¡No está mal! Pero puedes revisar algunas piezas",
+                 "Puedes hacer algunos cambios",
+                 "Piensa si la secuencia tiene sentido"]
+
+# Configured sounds for the win / lost states
 # WINNING_SOUNDS = ["../resources/common/sounds/happy1.mp3", "../resources/common/sounds/happy2.mp3"]
 WINNING_SOUNDS = ["../resources/common/sounds/happy1.mp3"]
 # LOST_SOUNDS = ["../resources/common/sounds/sad1.mp3", "../resources/common/sounds/sad2-2.mp3"]
@@ -1036,27 +1056,9 @@ class TakeDragGame(QWidget):
                 self._pointers[pointer_id].taken.setZValue(zvalue)
                 # check correct position
                 self.adjust_to_nearest_destination(pointer_id)
-                self.say_feedback()
+                # self.say_feedback()
                 # self._update_scores()
 
-                # TODO: REMOVE individual pieces check and anchoring
-            # 	# Set the overlay of the "right" sign over the object
-            # 	self._pointers[pointer_id].taken.set_overlay(True)
-            #
-            # 	# Update the data of the object to avoid to be taken
-            # 	if not self._pointers[pointer_id].taken.correct_position:
-            # 		self._pointers[pointer_id].taken.correct_position = True
-            # 		self._pointers[pointer_id].taken.draggable = False
-            # 		self.correct_images = self.correct_images + 1
-            # 	# Check if game is ended and if a string is "talked"
-            # 	index = randint(0, len(CONGRAT_STRING))
-            # 	if self.correct_images == self.total_images:
-            # 		self.end_game(True)
-            # 	elif index <= len(CONGRAT_STRING):
-            # 		text = CONGRAT_STRING[index]
-            # 		# print("Speeching: %s"%(SPEECH_COMMAND+text))
-            # 		subprocess.Popen(SPEECH_COMMAND + "\"" + text + "\"", stdout=DEVNULL, shell=True)
-            # else:
                 if self._pointers[pointer_id].taken.correct_position:
                     self._pointers[pointer_id].taken.correct_position = False
                     self.correct_images = self.correct_images - 1

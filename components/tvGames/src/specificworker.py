@@ -149,7 +149,7 @@ class SpecificWorker(GenericWorker):
 	Main class of the tvGames component.
 	This class doesn't implement the game logic but the state machine logic to work in sync with gameManager
 	and the needed methods to keep track of the metrics of the played game.
-	The current game implamantation can be found on src/games/draganddropgame/draganddropgame.py
+	The current game implementation can be found on src/games/draganddropgame/draganddropgame.py
 	The configuration for the different variations of this game can be found on src/games/resources
 	"""
 	def __init__(self, proxy_map):

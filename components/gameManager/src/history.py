@@ -33,9 +33,9 @@ class History(QDialog):
 
     def initialize(self):
         # GUI connections
-        self.ui.paciente_lw.itemClicked.connect(self.load_patient_info)
-        self.ui.sesion_lw.itemClicked.connect(self.load_session_info)
-        self.ui.juego_lw.itemClicked.connect(self.load_game_info)
+        self.ui.paciente_lw.itemSelectionChanged.connect(self.load_patient_info)
+        self.ui.sesion_lw.itemSelectionChanged.connect(self.load_session_info)
+        self.ui.juego_lw.itemSelectionChanged.connect(self.load_game_info)
         self.ui.close_btn.clicked.connect(self.close)
         # load data
         self.load_patients()
@@ -47,8 +47,9 @@ class History(QDialog):
             item.setData(Qt.UserRole, pat)
             self.ui.paciente_lw.addItem(item)
 
-    def load_patient_info(self, item):
+    def load_patient_info(self):
         self.clear_patient_info()
+        item = self.ui.paciente_lw.currentItem()
         patient = item.data(Qt.UserRole)
         self.ui.paciente_gb.setTitle("[" + patient.nombre + "] ")
         self.ui.p_sexo_le.setText(patient.sexo)
@@ -117,8 +118,9 @@ class History(QDialog):
         self.ui.s_help_le.clear()
         self.ui.s_check_le.clear()
 
-    def load_session_info(self, item):
+    def load_session_info(self):
         self.clear_session_info()
+        item = self.ui.sesion_lw.currentItem()
         session = item.data(Qt.UserRole)
         self.ui.sesion_gb.setTitle("[" + session.start_time.strftime("%d/%m/%Y") + "]")
         total_time = (session.end_time - session.start_time)
@@ -126,8 +128,9 @@ class History(QDialog):
         self.ui.s_time_le.setText(str(total_time).split('.')[0])
         self.reload_rounds(session.id)
 
-    def load_game_info(self, item):
+    def load_game_info(self):
         self.clear_game_info()
+        item = self.ui.juego_lw.currentItem()
         game = item.data(Qt.UserRole)
         self.ui.juego_gb.setTitle("[" + game.name + "]")
         play_time = (game.end_time - game.start_time)

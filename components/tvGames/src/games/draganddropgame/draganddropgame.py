@@ -444,13 +444,16 @@ class DraggableItem(QGraphicsPixmapItem):
         """
         # Check that the piece is kept inside the scene rect
         if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
-            newPos = value
-            rect = self.scene().sceneRect()
+
+            top_left = value
+            bottom_right = value+QPoint(self.width, self.height)
+            view_rect = self.scene().views()[0].sceneRect()
             # If it doen't it position the piece on a valid position inside the scene rect
-            if not rect.contains(newPos):
-                newPos.setX(min(rect.right(), max(newPos.x(), rect.left())))
-                newPos.setY(min(rect.bottom(), max(newPos.y(), rect.top())))
-                return newPos
+            if not view_rect.contains(top_left) or not view_rect.contains(bottom_right):
+                new_pos = value
+                new_pos.setX(min(view_rect.right()-self.width, max(top_left.x(), view_rect.left())))
+                new_pos.setY(min(view_rect.bottom()-self.height, max(top_left.y(), view_rect.top())))
+                return new_pos
         return super(DraggableItem, self).itemChange(change, value)
 
 

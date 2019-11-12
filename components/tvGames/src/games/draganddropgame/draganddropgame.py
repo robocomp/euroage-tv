@@ -80,6 +80,9 @@ GREEN_TITTLE_COLOR = "#91C69A"
 
 # Create a class for our main window
 class GameScreen(QWidget):
+    """
+    Custom widget containing the top bar, the game frame, the buttons and the logos banner
+    """
     game_win = Signal()
     game_lost = Signal()
     help_clicked = Signal()
@@ -148,16 +151,30 @@ class GameScreen(QWidget):
         self._help_button.clicked.connect(self.help_clicked)
         self._game_frame.score_update.connect(self.score_update)
 
+    @property
+    def game_frame(self):
+        """
+        TODO: Work in progress: private attributes and properties / setters
+        Property to return the game frame
+        :return:
+        """
+        return self._game_frame
 
 
-
-    def show_big_scores(self, value1, value2):
+    def show_big_scores(self, right_value, wrong_value):
+        """
+        Show the big widget with the scores on the center of the screen.
+        :param right_value: integer with the right pieces
+        :param wrong_value: integer with the wrong pieces
+        :return:
+        """
         # aux_layout = QVBoxLayout()
         # dialog.setLayout(aux_layout)
         # aux_layout.a
         aux_scores = GameScores(self._scores_dialog)
-        aux_scores.set_score(1, value1)
-        aux_scores.set_score(0, value2)
+        aux_scores.set_score(1, right_value)
+        aux_scores.set_score(0, wrong_value)
+
         desktop_widget = QApplication.desktop()
         aux_scores.setFixedSize(500, 280)
         aux_scores.setMaximumSize(500, 280)
@@ -166,21 +183,21 @@ class GameScreen(QWidget):
             screen_rect = desktop_widget.screenGeometry(1)
         else:
             screen_rect = desktop_widget.screenGeometry(0)
-        newx = screen_rect.left() + (screen_rect.width() - self._scores_dialog.width()) / 2
-        newy = screen_rect.top() + (screen_rect.height() - self._scores_dialog.height()) / 2
-        self._scores_dialog.move(newx, newy)
+        new_x = screen_rect.left() + (screen_rect.width() - self._scores_dialog.width()) / 2
+        new_y = screen_rect.top() + (screen_rect.height() - self._scores_dialog.height()) / 2
+        self._scores_dialog.move(new_x, new_y)
+
         self._scores_dialog.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        self._scores_close_timer.timeout.connect(self._scores_dialog.close)
-        self._scores_close_timer.start(2000)
+        # TODO: This time should be configurable
+        QTimer.singleShot(2000, self._scores_dialog.close)
         self._scores_dialog.exec_()
 
 
-
-    @property
-    def game_frame(self):
-        return self._game_frame
-
     def show_help(self):
+        """
+        Show the widget with the help video sequence of the pieces on the destination.
+        :return:
+        """
         # TODO: add some feedback to the user when there's no video to play.
         if self._video_player.current_status() != QMediaPlayer.State.PlayingState:
             pieces = self._game_frame.already_set_pieces()
@@ -192,38 +209,62 @@ class GameScreen(QWidget):
                 print(self._video_player.current_status())
                 self._video_player.play_all_actions_as_inserted()
 
-
     def game_timeout(self):
+        """
+        Slot for the clock timeout that ends the game
+        :return:
+        """
         self.end_game()
 
     def end_game(self):
+        """
+        Ends the game checking the win/lost state of it.
+        Change to the final screen.
+        Play the sounds of win / lost
+        Emits the corresponding signal.
+        TODO: text and sounds could be configurable.
+        :return:
+        """
         result = False
         if self._game_frame.check_win():
             result = True
             self.end_message.setText(u"<font color='green'>¡Has ganado!</font>")
             index = randint(0, len(WINNING_SOUNDS))
-            file = WINNING_SOUNDS[index]
-            subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
+            sound_file = WINNING_SOUNDS[index]
+            subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, sound_file) + "\"", stdout=DEVNULL, shell=True)
             self.game_win.emit()
         else:
             self.end_message.setText(u"<font color='red'>¡Has perdido!</font>")
             index = randint(0, len(LOST_SOUNDS))
-            file = LOST_SOUNDS[index]
-            subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, file) + "\"", stdout=DEVNULL, shell=True)
+            sound_file = LOST_SOUNDS[index]
+            subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, sound_file) + "\"", stdout=DEVNULL, shell=True)
             self._game_frame._update_scores()
             self.game_lost.emit()
-        self._game_frame.end_game()
         self._main_layout.setCurrentIndex(1)
+        self._game_frame.end_game()
         return result
 
     def pause_game(self):
+        """
+        Stops the time for the game
+        :return:
+        """
         self._top_bar.pause_clock()
 
     def resume_game(self):
+        """
+        Resume the time of the game
+        :return:
+        """
         self._top_bar.resume_clock()
 
 
     def init_game(self, full_path):
+        """
+        Initialize the game given a path of the configuration json file.
+        :param full_path: path tho the configuration json file
+        :return:
+        """
         if isinstance(full_path, str):
             full_path = os.path.join(CURRENT_PATH, full_path)
             if os.path.isfile(full_path):
@@ -244,6 +285,11 @@ class GameScreen(QWidget):
     # 	super(GameWidget, self).paintEvent(event)
 
     def show_on_second_screen(self):
+        """
+        Tries to show the GameScreen on the second screen if it exists. If there's not it is shown in the current screen.
+        It's shown on full screen mode.
+        :return:
+        """
         desktop_widget = QApplication.desktop()
         if desktop_widget.screenCount() > 1:
             # TODO: set 1 to production
@@ -253,6 +299,11 @@ class GameScreen(QWidget):
         self.showFullScreen()
 
     def paintEvent(self, event):
+        """
+        This code is needed to be able to add an image on the background of the GameScreen widget
+        :param event:
+        :return:
+        """
         opt = QStyleOption()
         opt.init(self)
         p = QPainter(self)
@@ -262,8 +313,11 @@ class GameScreen(QWidget):
 
 
 
-# Reimplemented QGraphicScene to catch mouse movements for testing porposes
+
 class MyQGraphicsScene(QGraphicsScene):
+    """
+    Reimplemented QGraphicScene to catch mouse movements for testing purposes
+    """
     moved = Signal(int, int, int, bool)
     
     def __init__(self,*args, **kwargs):
@@ -280,8 +334,11 @@ class MyQGraphicsScene(QGraphicsScene):
 
 
 
-# It's the item to be moved on the game
+
 class DraggableItem(QGraphicsPixmapItem):
+    """
+    It's the items / pieces of the game to be moved on the game.
+    """
 
     def __init__(self, id, image_path,  parent=None):
         super(DraggableItem, self).__init__(parent)
@@ -354,6 +411,11 @@ class DraggableItem(QGraphicsPixmapItem):
 
 
     def set_overlay(self, value):
+        """
+        TODO: Probably deprecated. The pieces doesn't show the right "ok" sign over it anymore.
+        :param value:
+        :return:
+        """
         if value:
             self.overlay = True
             self.setPixmap(QPixmap.fromImage(self.c_image))
@@ -362,17 +424,24 @@ class DraggableItem(QGraphicsPixmapItem):
             self.setPixmap(QPixmap.fromImage(self.image))
 
     def resize(self, width, height):
+        """
+        Reimplementation to resize to also resize the contained image.
+        :param width:
+        :param height:
+        :return:
+        """
         current_pos = self.pos()
         self.image = QImage(self.image_path).scaled(width, height, Qt.KeepAspectRatio)
         self.setPos(current_pos)
-        # if self.c_image:
-        #     self.create_overlary_image()
-        # if self.overlay:
-        #     self.setPixmap(QPixmap.fromImage(self.c_image))
-        # else:
-        #     self.setPixmap(QPixmap.fromImage(self.image))
+
 
     def itemChange(self, change, value ):
+        """
+
+        :param change:
+        :param value:
+        :return:
+        """
         # Check that the piece is kept inside the scene rect
         if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
             newPos = value

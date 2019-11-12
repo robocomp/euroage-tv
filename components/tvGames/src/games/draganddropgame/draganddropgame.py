@@ -44,10 +44,16 @@ except ImportError:
 
 CURRENT_PATH = os.path.dirname(__file__)
 
-CONGRAT_STRING = ["¡Vas muy bien!", "¡Sigue así!", "¡Genial!", "¡Estupendo!", "¡Fabulóso!", "¡Maravilloso!", "¡Ánimo!",
-                  "¡Lo estás haciendo muy bien!"]
-WINNING_SOUNDS = ["../resources/common/sounds/happy1.mp3", "../resources/common/sounds/happy2.mp3"]
-LOST_SOUNDS = ["../resources/common/sounds/sad1.mp3", "../resources/common/sounds/sad2-2.mp3"]
+CONGRAT_STRINGS = ["¡Vas muy bien!", "¡Sigue así!", "¡Genial!", "¡Buen trabajo!", "¡Estupendo!", "¡Fabulóso!", "¡Maravilloso!", "¡Ánimo!",
+                  "¡Lo estás haciendo muy bien!", "¡Continua!"]
+RECHECK_STRINGS = ["Quizás deberías revisar tus piezas", "Puedes comprobar tus resultados", "Recuerda que puedes pulsar el botón de Ayuda", "mmmm",
+                   "Algunas secuencias son un poco complicadas", "¿Crees que podría ser de otra forma?"]
+RIGHT_STRINGS = ["¡No está mal! ¡Continua!", "¡Vas bien, pero recuerda que puedes comprobar!", "¡Vas bien, pero recuerda que puedes pulsar ayuda!"]
+WRONG_STRINGS = ["¡No está mal! Pero puedes revisar algunas piezas", "Puedes hacer algunos cambios", "Piensa si la secuencia tiene sentido"]
+# WINNING_SOUNDS = ["../resources/common/sounds/happy1.mp3", "../resources/common/sounds/happy2.mp3"]
+WINNING_SOUNDS = ["../resources/common/sounds/happy1.mp3"]
+# LOST_SOUNDS = ["../resources/common/sounds/sad1.mp3", "../resources/common/sounds/sad2-2.mp3"]
+LOST_SOUNDS = ["../resources/common/sounds/sad2-2.mp3"]
 SPEECH_COMMAND = "gtts es "
 
 GREEN_TITTLE_COLOR = "#91C69A"
@@ -821,6 +827,7 @@ class TakeDragGame(QWidget):
         self._pieces = []
         self._destinations = {}
         self._already_set = []
+        self._can_i_talk = True
 
 
         #TODO: generalize for the game
@@ -1029,6 +1036,7 @@ class TakeDragGame(QWidget):
                 self._pointers[pointer_id].taken.setZValue(zvalue)
                 # check correct position
                 self.adjust_to_nearest_destination(pointer_id)
+                self.say_feedback()
                 # self._update_scores()
 
                 # TODO: REMOVE individual pieces check and anchoring
@@ -1090,6 +1098,7 @@ class TakeDragGame(QWidget):
                 #If added set pos to center
                 taken_widget.setPos(new_xpos, new_ypos)
                 self._scene.update()
+
                 # TODO: remove If we only want to check win whn Comprobar button is clicked
                 # if self.check_win():
                 #    self.game_win.emit()
@@ -1104,6 +1113,41 @@ class TakeDragGame(QWidget):
             # and If the dropped piece had a current (previous destination)
             self.remove_piece_from_destination(taken_widget)
         print("=======================")
+
+    def say_feedback(self):
+        if self._can_i_talk == False:
+            return
+        # TODO: Move to a config file or parameter
+        talkative_probability = 90
+        talkative = randint(1, 99)
+        if talkative < talkative_probability:
+            text = None
+            right, wrong = self.right_wrong_pieces()
+            if wrong == 0 and right > 0:
+                index = randint(0, len(CONGRAT_STRINGS))
+                if index <= len(CONGRAT_STRINGS):
+                    text = CONGRAT_STRINGS[index]
+            elif wrong > 1 and right == 0:
+                index = randint(0, len(RECHECK_STRINGS))
+                if index <= len(RECHECK_STRINGS):
+                    text = RECHECK_STRINGS[index]
+            elif right >= wrong and right > 1:
+                index = randint(0, len(RIGHT_STRINGS))
+                if index <= len(RIGHT_STRINGS):
+                    text = RIGHT_STRINGS[index]
+            elif wrong > right and wrong > 1:
+                index = randint(0, len(WRONG_STRINGS))
+                if index <= len(WRONG_STRINGS):
+                    text = WRONG_STRINGS[index]
+
+            if text is not None:
+                subprocess.Popen(SPEECH_COMMAND + "\"" + text + "\"", stdout=DEVNULL, shell=True)
+                self._can_i_talk = False
+                # TODO: This time would be configurable
+                QTimer.singleShot(5000, self.feedback_silence_timeout)
+
+    def feedback_silence_timeout(self):
+        self._can_i_talk = True
 
 
     def add_piece_to_destination(self, piece, destination):

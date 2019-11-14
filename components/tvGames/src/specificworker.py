@@ -24,7 +24,7 @@ from datetime import datetime
 
 import cv2
 import numpy as np
-from PySide2.QtCore import Qt, QTimer
+from PySide2.QtCore import Qt, QTimer, QTranslator, QLocale
 from PySide2.QtWidgets import QApplication
 
 from games.draganddropgame.draganddropgame import GameScreen
@@ -154,6 +154,17 @@ class SpecificWorker(GenericWorker):
 	"""
 	def __init__(self, proxy_map):
 		super(SpecificWorker, self).__init__(proxy_map)
+		app = QApplication.instance()
+		translator = QTranslator(app)
+		if translator.load('src/i18n/pt_PT.qm'):
+			print("-------Loading translation")
+			if app is not None:
+				print("-------Translating")
+				result = app.installTranslator(translator)
+			else:
+				print("-------Could not find app instance")
+		else:
+			print("-------couldn't load translation")
 		self._current_players = []
 		self.hands = []
 		self.font = cv2.FONT_HERSHEY_SIMPLEX
@@ -181,7 +192,6 @@ class SpecificWorker(GenericWorker):
 			self._game_screen_width = screen_1_width
 			self._game_screen_height = screen_1_height
 		self.calibrator = ManualCalibrationStateMachine(self._game_screen_width, self._game_screen_height)
-
 
 
 

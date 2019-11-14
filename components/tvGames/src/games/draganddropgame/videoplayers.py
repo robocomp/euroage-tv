@@ -129,9 +129,9 @@ class ListVideoPlayer(QWidget):
         self._main_layout = QVBoxLayout(self)
         self._main_layout.addWidget(self._frame, 1)
 
-        self.play_button = FrameButton(text="PAUSAR", text_size=30, color="#3cc21b", parent=self)
+        self.play_button = FrameButton(text=self.tr("PAUSAR"), text_size=30, color="#3cc21b", parent=self)
         self.video_index = VideoIndexLabel()
-        self.stop_button = FrameButton(text="CERRAR", text_size=30, color="#c21b1b", parent=self)
+        self.stop_button = FrameButton(text=self.tr("CERRAR"), text_size=30, color="#c21b1b", parent=self)
         self._button_layout.addWidget(self.play_button)
         self._button_layout.addWidget(self.video_index)
         self._button_layout.addWidget(self.stop_button)

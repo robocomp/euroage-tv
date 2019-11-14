@@ -33,7 +33,7 @@ class MyQMessageBox(QMessageBox):
         )
         message_box.setStandardButtons(QMessageBox.Ok)
         button_accept = message_box.button(QMessageBox.Ok)
-        button_accept.setText('Vale')
+        button_accept.setText(message_box.tr('Vale'))
         return message_box.exec_()
 
     @staticmethod
@@ -55,9 +55,9 @@ class MyQMessageBox(QMessageBox):
         )
         message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         buttonY = message_box.button(QMessageBox.Yes)
-        buttonY.setText('Si')
+        buttonY.setText(message_box.tr('Si'))
         buttonN = message_box.button(QMessageBox.No)
-        buttonN.setText('No')
+        buttonN.setText(message_box.tr('No'))
         message_box.setDefaultButton(QMessageBox.Yes)
         return message_box.exec_()
 

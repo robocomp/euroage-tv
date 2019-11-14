@@ -347,5 +347,13 @@
         <source>Sacar leche caliente</source>
         <translation>Retire o leite quente</translation>
     </message>
+    <message>
+        <source>¡Has ganado!</source>
+        <translation>Ganhaste!</translation>
+    </message>
+    <message>
+        <source>¡Has perdido!</source>
+        <translation>Você perdeu!</translation>
+    </message>
 </context>
 </TS>

@@ -229,13 +229,13 @@ class GameScreen(QWidget):
         result = False
         if self._game_frame.check_win():
             result = True
-            self.end_message.setText(u"<font color='green'>¡Has ganado!</font>")
+            self.end_message.setText(u"<font color='green'>"+QObject().tr("¡Has ganado!")+"</font>")
             index = randint(0, len(WINNING_SOUNDS))
             sound_file = WINNING_SOUNDS[index]
             subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, sound_file) + "\"", stdout=DEVNULL, shell=True)
             self.game_win.emit()
         else:
-            self.end_message.setText(u"<font color='red'>¡Has perdido!</font>")
+            self.end_message.setText(u"<font color='red'>"+QObject().tr("¡Has perdido!")+"</font>")
             index = randint(0, len(LOST_SOUNDS))
             sound_file = LOST_SOUNDS[index]
             subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, sound_file) + "\"", stdout=DEVNULL, shell=True)

@@ -1424,6 +1424,16 @@ def main():
     # Again, this is boilerplate, it's going to be the same on
     # almost every app you write
     app = QApplication(sys.argv)
+    translator = QTranslator(app)
+    if translator.load('src/i18n/pt_PT.qm'):
+        print("-------Loading translation")
+        if app is not None:
+            print("-------Translating")
+            result = app.installTranslator(translator)
+        else:
+            print("-------Could not find app instance")
+    else:
+        print("-------couldn't load translation")
     game = GameScreen(None, 1920, 1080)
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/LionKingGame/game.json")
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")

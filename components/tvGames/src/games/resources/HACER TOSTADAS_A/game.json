@@ -134,7 +134,7 @@
                 510
             ], 
             "image_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_A/HACER_TOSTADAS_A_01.jpg", 
-            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_A/HACER_TOSTADAS_A_02.mp4", 
+            "video_path": "/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/HACER TOSTADAS_A/HACER_TOSTADAS_A_01.mp4",
             "name": "action_1", 
             "category": "piece"
         }

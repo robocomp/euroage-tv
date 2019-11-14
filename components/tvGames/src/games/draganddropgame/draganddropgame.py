@@ -13,7 +13,7 @@ import sys
 from os import listdir
 from os.path import isfile, join
 
-from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize, QRectF, QUrl
+from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize, QRectF, QUrl, QTranslator, QLocale
 from PySide2.QtGui import QImage, QPixmap, QPainter, QFont, QPen, QBrush, QColor, QPalette
 from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtMultimediaWidgets import QGraphicsVideoItem
@@ -107,9 +107,9 @@ class GameScreen(QWidget):
         self._game_layout.addWidget(self._top_bar, 0, 0, 1, 20)
         self._game_frame = TakeDragGame(width, height)
         self._game_layout.addWidget(self._game_frame, 1, 1, 1, 18)
-        self._help_button = CoolButton(text="AYUDA", size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","common","button","justQuestion.png"))
+        self._help_button = CoolButton(text=self.tr("AYUDA"), size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","common","button","justQuestion.png"))
         self._help_button.set_color(QColor("Green"))
-        self._check_button = CoolButton(text="REVISAR", size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","common","button","checked.png"))
+        self._check_button = CoolButton(text=self.tr("REVISAR"), size=150, image_path=os.path.join(CURRENT_PATH,"..","resources","common","button","checked.png"))
         self._help_button.set_color(QColor("Orange"))
         self._game_layout.addWidget(self._help_button, 2, 1, 1, 2, Qt.AlignRight)
         self._game_layout.addWidget(self._check_button, 2, 3, 1, 2)
@@ -271,7 +271,8 @@ class GameScreen(QWidget):
                 with open(full_path) as file_path:
                     self._game_config = json.load(file_path)
                 self._game_frame.init_game(full_path)
-                self._top_bar.set_game_name(self._game_config["title"])
+                the_title = QObject().tr(self._game_config["title"])
+                self._top_bar.set_game_name(the_title)
                 self._top_bar.set_time(int(self._game_config["time"]))
                 self._top_bar.start_clock()
 
@@ -589,7 +590,7 @@ class QOpencvGraphicsVideoItem(DraggableItem):
         self._play_timer = QTimer()
         self._play_timer.timeout.connect(self.show_next_frame)
         self._old_image = None
-        self._title = title
+        self._title = QObject().tr(title)
         self._label = QGraphicsTextItem(self)  # Label
         self._set_label(self._title.upper(), "margin:10px; font-weight: bold; font-size: " + str(
             self.width / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")  # Nombre
@@ -1423,6 +1424,16 @@ def main():
     # Again, this is boilerplate, it's going to be the same on
     # almost every app you write
     app = QApplication(sys.argv)
+    translator = QTranslator(app)
+    if translator.load('src/i18n/pt_PT.qm'):
+        print("-------Loading translation")
+        if app is not None:
+            print("-------Translating")
+            result = app.installTranslator(translator)
+        else:
+            print("-------Could not find app instance")
+    else:
+        print("-------couldn't load translation")
     game = GameScreen(None, 1920, 1080)
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/LionKingGame/game.json")
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")

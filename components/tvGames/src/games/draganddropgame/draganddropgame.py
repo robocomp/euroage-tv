@@ -27,6 +27,7 @@ from PySide2.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxL
 
 from numpy.random.mtrand import randint
 
+from games.draganddropgame.gamelayout import GameLayout
 
 try:
     from games.draganddropgame.gamewidgets import GameTopBarWidget, GameScores, CoolButton, GameScreenLogo
@@ -582,6 +583,7 @@ class PieceItem(DraggableItem):
 class QOpencvGraphicsVideoItem(DraggableItem):
     def __init__(self, id, image_path, video_path, title, parent=None):
         super(QOpencvGraphicsVideoItem, self).__init__(id, image_path, parent)
+
         self._video_source = None
         self._video_path = None
         self._video_frame = None
@@ -598,8 +600,19 @@ class QOpencvGraphicsVideoItem(DraggableItem):
         # self._label.setY(-20) # Posicionar arriba
         self._label.setTextWidth(self.width)
 
-        self._final_destination = None
+        self.__final_destination = None
         self._current_destination = None
+
+    @property
+    def index(self):
+        assert self.final_destination is not None, "This piece don't have index because it doesn't have final dest set"
+        return self.final_destination.index
+
+    @index.setter
+    def index(self, value):
+        assert self.final_destination is not None, "This piece don't have index because it doesn't have final dest set"
+        assert isinstance(value, int), "The index of a piece must be an integer"
+        self.final_destination.index = value
 
     @property
     def width(self):
@@ -613,15 +626,13 @@ class QOpencvGraphicsVideoItem(DraggableItem):
         self._label.setY(self.height - 10)
         self._label.setTextWidth(self.width)
 
-
-
     @property
     def final_destination(self):
-        return self._final_destination
+        return self.__final_destination
 
     @final_destination.setter
     def final_destination(self, dest):
-        self._final_destination = dest
+        self.__final_destination = dest
 
     @property
     def current_destination(self):
@@ -1306,6 +1317,8 @@ class TakeDragGame(QWidget):
 
             # Randomize initial position
             random.shuffle(temp_pieces_pos)
+            # layout = GameLayout(scene= self._scene, pieces=self._pieces, minimum_piece_width=32, minimum_piece_height=24, piece_spacing=5, max_pieces_per_row=5, margins=None)
+            # layout.get_initial_piece_positions()
             for piece in self._pieces:
                 random_new_pos = temp_pieces_pos.pop()
                 piece.setPos(random_new_pos[0], random_new_pos[1])

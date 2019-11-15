@@ -365,7 +365,7 @@ class SpecificWorker(GenericWorker):
         self.ui = loader.load(file, self.parent())
         file.close()
 
-        ##Menu
+        # Menu
         self.mainMenu = self.menuBar()
         fileMenu = self.mainMenu.addMenu('&Menú')
         if self.ui.stackedWidget.currentIndex == 0 or self.ui.stackedWidget.currentIndex == 1:
@@ -380,13 +380,13 @@ class SpecificWorker(GenericWorker):
         # closeAction.triggered.connect(self.close_thsession_clicked)
         # fileMenu.addAction(closeAction)
 
-        ## Login window
+        # Login window
         self.loginShortcut = QShortcut(QKeySequence(Qt.Key_Return), self)
         self.loginShortcut.activated.connect(self.check_login)
         self.ui.login_button_2.clicked.connect(self.check_login)
         self.ui.newuser_button_2.clicked.connect(self.t_user_login_to_create_user.emit)
 
-        ## Register window
+        # Register window
         self.ui.password_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.password_2_lineedit_reg.textChanged.connect(self.password_strength_check)
         self.ui.createuser_button_reg.clicked.connect(self.create_new_user)
@@ -403,7 +403,7 @@ class SpecificWorker(GenericWorker):
         self.all_games_shortcut = QShortcut(QKeySequence("Ctrl+A"), self)
         self.all_games_shortcut.activated.connect(self.add_all_games_to_list)
 
-        ##new Player window
+        # New Player window
         self.ui.back_player_button.clicked.connect(self.t_create_player_to_session_init.emit)
         self.ui.create_player_button.clicked.connect(self.create_player)
 
@@ -1111,11 +1111,13 @@ class SpecificWorker(GenericWorker):
             self.t_playing_to_paused.emit()
 
         if state_name == "wonGame":
+            self.activateWindow()
             self.aux_wonGame = True
             self.t_playing_to_game_end.emit()
             self.t_paused_to_game_end.emit()
 
         if state_name == "lostGame":
+            self.activateWindow()
             self.aux_wonGame = False
             self.t_playing_to_game_end.emit()
             self.t_paused_to_game_end.emit()
@@ -1125,6 +1127,7 @@ class SpecificWorker(GenericWorker):
             self.t_paused_to_admin_games.emit()
         #
         if state_name == "endSession":
+            self.activateWindow()
             self.t_admin_games_to_session_end.emit()
             self.t_wait_play_to_session_end.emit()
 

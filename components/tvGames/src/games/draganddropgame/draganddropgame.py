@@ -3,28 +3,23 @@
 import json
 import math
 import numbers
-
-import cv2
-import numpy as np
 import os
 import random
 import subprocess
 import sys
-from os import listdir
-from os.path import isfile, join
 
-from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize, QRectF, QUrl
-from PySide2.QtGui import QImage, QPixmap, QPainter, QFont, QPen, QBrush, QColor, QPalette
+import cv2
+import numpy as np
+from PySide2.QtCore import Qt, QSize, QPoint
+from PySide2.QtCore import Signal, QObject, QTimer, QEvent, QPointF, QUrl, QTranslator
+from PySide2.QtGui import QColor, QPixmap, QPainter, QFont
+from PySide2.QtGui import QImage, QBrush
 from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtMultimediaWidgets import QGraphicsVideoItem
-from PySide2.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QWidget, QHBoxLayout, QGraphicsView, \
-    QGraphicsTextItem, QApplication, QGridLayout, QLabel, QStyleOption, QStyle, QGraphicsRectItem, \
-    QGraphicsSimpleTextItem, QGraphicsItem, QStackedLayout, QFrame, QDialog, QVBoxLayout
-from PySide2.QtCore import QRect, Qt, QSize, QPoint
-from PySide2.QtGui import QRegion, QColor, QIcon, QPixmap, QPainter, QFont, QFontMetrics
-from PySide2.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout, QGraphicsDropShadowEffect, \
-    QHBoxLayout
-
+from PySide2.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout
+from PySide2.QtWidgets import QGraphicsScene, QGraphicsPixmapItem, QGraphicsView, \
+    QGraphicsTextItem, QGridLayout, QStyleOption, QStyle, QGraphicsRectItem, \
+    QGraphicsItem, QStackedLayout, QFrame, QDialog
 from numpy.random.mtrand import randint
 
 from games.draganddropgame.gamelayout import GameLayout
@@ -343,6 +338,7 @@ class DraggableItem(QGraphicsPixmapItem):
 
     def __init__(self, id, image_path,  parent=None):
         super(DraggableItem, self).__init__(parent)
+        self._first_time = True
         self.id = id
         self.__image_path = None
         self.image_path = image_path
@@ -350,6 +346,7 @@ class DraggableItem(QGraphicsPixmapItem):
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
         self.c_image = None
         self.overlay = None
+
         # self.setAcceptTouchEvents(True)
         # self.pixmap().setAttribute(Qt.WA_AcceptTouchEvents)
 
@@ -443,18 +440,26 @@ class DraggableItem(QGraphicsPixmapItem):
         :param value:
         :return:
         """
-        # Check that the piece is kept inside the scene rect
-        if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
 
-            top_left = value
-            bottom_right = value+QPoint(self.width, self.height)
-            view_rect = self.scene().views()[0].sceneRect()
-            # If it doen't it position the piece on a valid position inside the scene rect
-            if not view_rect.contains(top_left) or not view_rect.contains(bottom_right):
-                new_pos = value
-                new_pos.setX(min(view_rect.right()-self.width, max(top_left.x(), view_rect.left())))
-                new_pos.setY(min(view_rect.bottom()-self.height, max(top_left.y(), view_rect.top())))
-                return new_pos
+
+        if change == QGraphicsItem.ItemPositionChange:
+            if self._first_time:
+                self._first_time = False
+                return super(DraggableItem, self).itemChange(change, value)
+            if self.scene() is not None and len(self.scene().views()) > 0:
+                top_left = value
+                bottom_right = value+QPoint(self.width, self.height)
+                view = self.scene().views()[0]
+                # take de rect of the view
+                view_rect = view.rect()
+                # transform this to scene coords (but maptoScene returns QPoligon)
+                view_rect = view.mapToScene(view_rect).boundingRect().toRect()
+                # Check that the piece is out of the rect and move the piece to a valid position inside the scene rect
+                if not view_rect.contains(top_left.toPoint()) or not view_rect.contains(bottom_right.toPoint()):
+                    new_pos = value
+                    new_pos.setX(min(view_rect.right()-self.width, max(top_left.x(), view_rect.left())))
+                    new_pos.setY(min(view_rect.bottom()-self.height, max(top_left.y(), view_rect.top())))
+                    return new_pos
         return super(DraggableItem, self).itemChange(change, value)
 
 
@@ -982,21 +987,21 @@ class TakeDragGame(QWidget):
         # TODO: Fix it
         # to avoid the resize to the exact escen we create a invisible item at 0,0 in the scene
         # it's beacuse the wai the resizeEvent is implemented
-        self._invisible_00_item = QGraphicsRectItem(0,0, 0,0)
-        self._scene.addItem(self._invisible_00_item)
+        # self._invisible_00_item = QGraphicsRectItem(0,0, 0,0)
+        # self._scene.addItem(self._invisible_00_item)
 
         # Calculate the bottom right position
-        far_right_piece_pos = [0,0]
-        for destination in self._destinations.values():
-            if destination.pos().y()+destination.height > far_right_piece_pos[1]:
-                far_right_piece_pos = [destination.pos().x()+destination.width, destination.pos().y()+destination.height]
-            elif destination.pos().y()+destination.height == far_right_piece_pos[1]:
-                if destination.pos().x() > far_right_piece_pos[0]:
-                    far_right_piece_pos = [destination.pos().x()+destination.width, destination.pos().y()+destination.height]
+        # far_right_piece_pos = [0,0]
+        # for destination in self._destinations.values():
+        #     if destination.pos().y()+destination.height > far_right_piece_pos[1]:
+        #         far_right_piece_pos = [destination.pos().x()+destination.width, destination.pos().y()+destination.height]
+        #     elif destination.pos().y()+destination.height == far_right_piece_pos[1]:
+        #         if destination.pos().x() > far_right_piece_pos[0]:
+        #             far_right_piece_pos = [destination.pos().x()+destination.width, destination.pos().y()+destination.height]
 
         # add invisible item to let the title been seen
-        self._invisible_last_item = QGraphicsRectItem(far_right_piece_pos[0]+10, far_right_piece_pos[1]+20, 0, 0)
-        self._scene.addItem(self._invisible_last_item)
+        # self._invisible_last_item = QGraphicsRectItem(far_right_piece_pos[0]+10, far_right_piece_pos[1]+20, 0, 0)
+        # self._scene.addItem(self._invisible_last_item)
 
 
     def clear_scene(self):
@@ -1279,7 +1284,6 @@ class TakeDragGame(QWidget):
         return distance
 
     def create_and_add_images(self):
-
         if self.game_config is not None:
             temp_pieces_pos = []
             for image_id, item in self.game_config["images"].items():
@@ -1294,7 +1298,7 @@ class TakeDragGame(QWidget):
 
 
                 new_image.setZValue(int(self.game_config["depth"][item["category"]]))
-                new_image.setPos(item["initial_pose"][0], item["initial_pose"][1])
+                # new_image.setPos(item["initial_pose"][0], item["initial_pose"][1])
                 # Height is calculate proportional to the width
                 new_image.width = item["size"][0]
                 self.game_config["images"][image_id]["widget"] = new_image
@@ -1311,18 +1315,19 @@ class TakeDragGame(QWidget):
                     self.total_images = self.total_images + 1
                     self._scene.addItem(dest_item)
 
-            # Randomize initial position
-            random.shuffle(temp_pieces_pos)
-            # layout = GameLayout(scene= self._scene, pieces=self._pieces, minimum_piece_width=32, minimum_piece_height=24, piece_spacing=5, max_pieces_per_row=5, margins=None)
-            # layout.get_initial_piece_positions()
+            layout = GameLayout(scene= self._scene, pieces=self._pieces, minimum_piece_width=32, minimum_piece_height=24, piece_spacing=4, max_pieces_per_row=len(self._pieces), margins=None)
+            new_initial_positions = layout.initial_positions
+            initial_destinations = layout.destination_positions
+            random_positions = new_initial_positions.values()
+            random.shuffle(random_positions)
             for piece in self._pieces:
-                random_new_pos = temp_pieces_pos.pop()
-                piece.setPos(random_new_pos[0], random_new_pos[1])
+                new_pos = random_positions.pop()
+                new_dest = initial_destinations[piece]
+                piece.width = layout.piece_size[0]
+                piece.setPos(new_pos[0], new_pos[1])
+                piece.final_destination.setRect(piece.boundingRect())
+                piece.final_destination.setPos(new_dest[0], new_dest[1])
 
-            ############# FOR AUTO RESIZING AND POSITIONING PIECES ########
-            # self.resize_pieces_auto()
-            # self.set_random_initial_auto_pieces_positions()
-            # self.set_auto_initial_destinations_positions()
 
 
     def resize_pieces_auto(self):
@@ -1383,41 +1388,16 @@ class TakeDragGame(QWidget):
         return right, wrong
 
     def adjust_view(self):
+        # self._scene.setSceneRect(self._scene.itemsBoundingRect())
+        self._scene.setSceneRect(self._view.mapToScene(self._view.rect()).boundingRect().toRect())
         self._view.fitInView(self._scene.itemsBoundingRect(), Qt.KeepAspectRatio)
-        self._scene.setSceneRect(self._scene.itemsBoundingRect())
+        # self._view.fitInView(self._view.mapToScene(self._view.rect()).boundingRect().toRect(), Qt.KeepAspectRatio)
+        # self._view.centerOn(self._view.mapFromScene(0, 0))
 
     def resizeEvent(self, event):
-        # skip initial entry
         self.adjust_view()
-        # if self.game_config is not None:
-            # self.set_random_initial_auto_pieces_positions()
         super(TakeDragGame, self).resizeEvent(event)
-        # if self.game_config is None:
-        # 	return
-        # if event.oldSize().width() < 0 or event.oldSize().height() < 0:
-        # 	return
-        # # self.clock_proxy.setPos(self.view.width() - self.clock_proxy.boundingRect().width() * 1.1, 0)
-        # self.end_message.setPos(self.view.width() / 2 - self.end_message.boundingRect().width() / 2,
-        # 						self.view.height() / 2 - self.end_message.boundingRect().height() / 2)
-        # # images
-        # xfactor = float(event.size().width()) / float(event.oldSize().width())
-        # yfactor = float(event.size().height()) / float(event.oldSize().height())
-        # for key, item in self.game_config["images"].items():
-        # 	# TODO: resize called before widget creation
-        # 	if "widget" in item:
-        # 		# update size
-        # 		new_xsize = item["widget"].width * xfactor
-        # 		new_ysize = item["widget"].height * yfactor
-        # 		item["widget"].resize(new_xsize, new_ysize)
-        # 		# update position
-        # 		new_xpos = float(item["widget"].scenePos().x()) * xfactor
-        # 		new_ypos = float(item["widget"].scenePos().y()) * yfactor
-        # 		item["widget"].setPos(new_xpos, new_ypos)
-        # 		# update final pose
-        # 		if item["widget"].draggable:
-        # 			new_finalx = item["widget"].final_pose_x * xfactor
-        # 			new_finaly = item["widget"].final_pose_y * yfactor
-        # 			item["widget"].set_final_pose(new_finalx, new_finaly)
+
 
     def show_on_second_screen(self):
         desktop_widget = QApplication.desktop()
@@ -1434,10 +1414,10 @@ def main():
     # almost every app you write
     app = QApplication(sys.argv)
     game = GameScreen(None, 1920, 1080)
+    game.show_on_second_screen()
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/LionKingGame/game.json")
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
-    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
-    game.show_on_second_screen()
+    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER LAVADORA_A/game.json")
 
     # main_widget = GameWidget()
     # main_widget.show_on_second_screen()

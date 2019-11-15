@@ -1094,9 +1094,9 @@ class SpecificWorker(GenericWorker):
 		:param status_type:
 		:return:
 		"""
-		initialicing_status = Status()
-		initialicing_status.currentStatus = status_type
-		initialicing_status.date = datetime.now().isoformat()
+		initializing_status = Status()
+		initializing_status.currentStatus = status_type
+		initializing_status.date = datetime.now().isoformat()
 		print("Sending %s"%str(status_type))
-		self.gamemetrics_proxy.statusChanged(initialicing_status)
+		self.gamemetrics_proxy.statusChanged(initializing_status)
 

@@ -13,8 +13,8 @@
 
  <node alias="gameManager" endpoint="gamemetrics:tcp -h localhost -p 10158">
   <dependence alias="tvGames" />
-  <workingDir path="/home/robolab/robocomp/components/euroage-tv/components/gameManager/" />
-  <upCommand command="rcremote localhost gameManager /home/robolab/robocomp/components/euroage-tv/components/gameManager/ PYTHONPATH='/home/robolab/robocomp/components/euroage-tv/components/bbdd' python src/gameManager.py /home/robolab/robocomp/components/euroage-tv/components/gameManager/etc/config" />
+  <workingDir path="/home/robocomp/robocomp/components/euroage-tv/components/gameManager/" />
+  <upCommand command="rcremote localhost gameManager /home/robocomp/robocomp/components/euroage-tv/components/gameManager/ PYTHONPATH='/home/robocomp/robocomp/components/euroage-tv/components/bbdd' python src/gameManager.py /home/robocomp/robocomp/components/euroage-tv/components/gameManager/etc/config" />
   <downCommand command="pkill -9 -f gameManager.py" />
   <configFile path="" />
   <xpos value="31.734059895" />
@@ -28,8 +28,8 @@
   <dependence alias="cameraSimple" />
   <dependence alias="RGBD" />
   <dependence alias="AprilTags" />
-  <workingDir path="/home/robolab/robocomp/components/euroage-tv/components/tvGames/" />
-  <upCommand command="rcremote localhost tvGames /home/robolab/robocomp/components/euroage-tv/components/tvGames/ python src/tvgames.py /home/robolab/robocomp/components/euroage-tv/components/tvGames/etc/config" />
+  <workingDir path="/home/robocomp/robocomp/components/euroage-tv/components/tvGames/" />
+  <upCommand command="rcremote localhost tvGames /home/robocomp/robocomp/components/euroage-tv/components/tvGames/ python src/tvgames.py /home/robocomp/robocomp/components/euroage-tv/components/tvGames/etc/config" />
   <downCommand command="pkill -9 -f tvgames.py" />
   <configFile path="" />
   <xpos value="-105.916085878" />
@@ -40,8 +40,8 @@
 
  <node alias="AprilTags" endpoint="getapriltags:tcp -h localhost -p 14310">
   <dependence alias="RGBD" />
-  <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/detection/" />
-  <upCommand command="rcremote localhost AprilTags /home/robolab/robocomp/components/robocomp-robolab/components/detection/apriltagsComp/ ./bin/AprilTagsComp etc/config_rgbd" />
+  <workingDir path="/home/robocomp/robocomp/components/robocomp-robolab/components/detection/" />
+  <upCommand command="rcremote localhost AprilTags /home/robocomp/robocomp/components/robocomp-robolab/components/detection/apriltagsComp/ ./bin/AprilTagsComp etc/config_rgbd" />
   <downCommand command="pkill -9 -f AprilTagsComp" />
   <configFile path="" />
   <xpos value="259.428026236" />
@@ -53,8 +53,8 @@
  <node alias="handDetection" endpoint="handdetection:tcp -h localhost -p 21222">
   <dependence alias="cameraSimple" />
   <dependence alias="RGBD" />
-  <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/detection/" />
-  <upCommand command="rcremote localhost handDetection /home/robolab/robocomp/components/robocomp-robolab/components/detection/handDetection python src/handDetection.py /home/robolab/robocomp/components/robocomp-robolab/components/detection/handDetection/etc/config" />
+  <workingDir path="/home/robocomp/robocomp/components/robocomp-robolab/components/detection/" />
+  <upCommand command="rcremote localhost handDetection /home/robocomp/robocomp/components/robocomp-robolab/components/detection/handDetection python src/handDetection.py /home/robocomp/robocomp/components/robocomp-robolab/components/detection/handDetection/etc/config" />
   <downCommand command="pkill -9 -f handDetection" />
   <configFile path="" />
   <xpos value="15.5910675653" />
@@ -64,8 +64,8 @@
  </node>
 
  <node alias="cameraSimple" endpoint="camerasimple:tcp -p 10005">
-  <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/hardware/camera/camerasimple/" />
-  <upCommand command="rcremote localhost cameraSimple /home/robolab/robocomp/components/robocomp-robolab/components/hardware/camera/camerasimple python src/camerasimple.py /home/robolab/robocomp/components/robocomp-robolab/components/hardware/camera/camerasimple/etc/config" />
+  <workingDir path="/home/robocomp/robocomp/components/robocomp-robolab/components/hardware/camera/camerasimple/" />
+  <upCommand command="rcremote localhost cameraSimple /home/robocomp/robocomp/components/robocomp-robolab/components/hardware/camera/camerasimple python src/camerasimple.py /home/robocomp/robocomp/components/robocomp-robolab/components/hardware/camera/camerasimple/etc/config" />
   <downCommand command="pkill -9 -f camerasimple" />
   <configFile path="" />
   <xpos value="-100.116845469" />
@@ -75,8 +75,8 @@
  </node>
 
  <node alias="RGBD" endpoint="rgbd:tcp -h localhost -p 10096">
-  <workingDir path="/home/robolab/robocomp/components/robocomp-robolab/components/hardware/camera/astraRGBD" />
-  <upCommand command="rcremote localhost RGBD /home/robolab/robocomp/components/robocomp-robolab/components/hardware/camera/astraRGBD ./bin/astraRGBD etc/config" />
+  <workingDir path="/home/robocomp/robocomp/components/robocomp-robolab/components/hardware/camera/astraRGBD" />
+  <upCommand command="rcremote localhost RGBD /home/robocomp/robocomp/components/robocomp-robolab/components/hardware/camera/astraRGBD ./bin/astraRGBD etc/config" />
   <downCommand command="pkill -9 -f astraRGBD" />
   <configFile path="etc/config" />
   <xpos value="147.591067565" />
@@ -88,10 +88,10 @@
  <node alias="IntegratedHand" endpoint="commonbehavior:tcp -p 18333">
   <dependence alias="handDetection" />
   <dependence alias="tvGames" />
-  <workingDir path="/home/robolab//robocomp/components/euroage-tv/components/integratedHand" />
-  <upCommand command="rcremote localhost integratedHand /home/robolab/robocomp/components/euroage-tv/components/integratedHand ./bin/IntegratedHand /home/robolab/robocomp/components/euroage-tv/components/integratedHand/etc/config" />
+  <workingDir path="/home/robocomp/robocomp/components/euroage-tv/components/integratedHand" />
+  <upCommand command="rcremote localhost integratedHand /home/robocomp/robocomp/components/euroage-tv/components/integratedHand ./bin/IntegratedHand /home/robocomp/robocomp/components/euroage-tv/components/integratedHand/etc/config" />
   <downCommand command="pkill -9 -f integratedHand" />
-  <configFile path="/home/robolab/robocomp/components/euroage-tv/components/integratedHand/etc/config" />
+  <configFile path="/home/robocomp/robocomp/components/euroage-tv/components/integratedHand/etc/config" />
   <xpos value="-248.311289913" />
   <ypos value="86.0882289752" />
   <radius value="10.0" />

@@ -559,6 +559,7 @@ class SpecificWorker(GenericWorker):
                 return True
 
     def view_history_clicked(self):
+        self.history.initialize()
         self.history.showMaximized()
         patient_username = self.ui.selplayer_combobox.currentText()
         if patient_username != "":

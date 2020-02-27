@@ -738,7 +738,7 @@ class DestinationItem(QGraphicsRectItem):
         painter.save()
         painter.setBrush(QColor("black"))
         font = painter.font()
-        font.setPointSize(100)
+        font.setPointSize(70)
         painter.setFont(font)
         painter.drawText(self.rect(), self._text, Qt.AlignCenter | Qt.AlignVCenter)
         painter.restore()

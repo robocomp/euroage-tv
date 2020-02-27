@@ -28,7 +28,6 @@ class History(QDialog):
         self.mylayout.addWidget(self.ui)
         self.mylayout.setContentsMargins(0, 0, 0, 0)
         file.close()
-        self.initialize()
         self.ui.paciente_lw.setCurrentRow(0)
 
     def initialize(self):

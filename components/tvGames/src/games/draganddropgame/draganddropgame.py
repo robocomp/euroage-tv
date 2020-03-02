@@ -272,7 +272,7 @@ class GameScreen(QWidget):
                 if duration is not None and duration > 0:
                     self._top_bar.set_time(duration)
                 else:
-                self._top_bar.set_time(int(self._game_config["time"]))
+                    self._top_bar.set_time(int(self._game_config["time"]))
                 self._top_bar.start_clock()
 
 
@@ -1325,7 +1325,7 @@ class TakeDragGame(QWidget):
             layout = GameLayout(scene= self._scene, pieces=self._pieces, minimum_piece_width=32, minimum_piece_height=24, piece_spacing=4, max_pieces_per_row=len(self._pieces), margins=None)
             new_initial_positions = layout.initial_positions
             initial_destinations = layout.destination_positions
-            random_positions = new_initial_positions.values()
+            random_positions = list(new_initial_positions.values())
             random.shuffle(random_positions)
             for piece in self._pieces:
                 new_pos = random_positions.pop()

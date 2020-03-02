@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import os
 import sys
@@ -163,6 +163,6 @@ if __name__ == '__main__':
     bbdd.open_database("/home/robolab/robocomp/components/euroage-tv/components/bbdd/prueba1.db")
 
     history = History(bbdd)
+    history.initialize()
     history.show()
-
     sys.exit(app.exec_())

@@ -120,7 +120,7 @@ class GameLayout:
 
     @initial_positions.setter
     def initial_positions(self, value):
-        assert isinstance(dict), "Initial positions must be a dict with the pieces as key"
+        assert isinstance(value, dict), "Initial positions must be a dict with the pieces as key"
         self.__initial_positions = value
 
 
@@ -130,7 +130,7 @@ class GameLayout:
 
     @destination_positions.setter
     def destination_positions(self, value):
-        assert isinstance(dict), "Initial destinations must be a dict with the pieces as key"
+        assert isinstance(value, dict), "Initial destinations must be a dict with the pieces as key"
         self.__destination_positions = value
 
     @property
@@ -139,8 +139,8 @@ class GameLayout:
 
     @piece_size.setter
     def piece_size(self, value):
-        assert isinstance(value (tuple,list, type(None))), "Piece size must be a tuple, list or None"
-        assert len(value) == 2 or value is None, "Piece must be a len of exactly 2"
+        assert value is None or isinstance(value, (tuple,list)), "Piece size must be a tuple, list or None"
+        assert value is None or len(value) == 2, "Piece must be a len of exactly 2"
         self.__piece_size = value
 
 

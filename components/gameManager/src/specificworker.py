@@ -25,8 +25,6 @@ import math
 import os
 from datetime import datetime
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 
 import bcrypt
@@ -45,7 +43,7 @@ from history import History
 try:
     from bbdd import BBDD
 except:
-    print ("Database module not found")
+    print("Database module not found")
     exit(1)
 
 FILE_PATH = os.path.abspath(__file__)
@@ -87,7 +85,7 @@ class Session:
     def save_session(self):
 
         saving_dir = os.path.join(CURRENT_PATH, "../savedSessions")
-        print ("Saving session in ", saving_dir)
+        print("Saving session in ", saving_dir)
 
         if not os.path.isdir(saving_dir):
             os.mkdir(saving_dir)
@@ -102,7 +100,7 @@ class Session:
         date_dir = os.path.join(patient_dir, date)
 
         if os.path.isdir(date_dir):
-            print ("Error, la sesion ya ha sido guardada")
+            print("Error, la sesion ya ha sido guardada")
             return
         else:
             os.mkdir(date_dir)
@@ -123,7 +121,7 @@ class Session:
 
     def save_session_to_ddbb(self, ddbb):
 
-        print ("Saving session in ")
+        print("Saving session in ")
 
         date = datetime.strftime(self.date, "%Y%m%d %H%M%S")
         result, session = ddbb.new_session(start=self.date, end=datetime.now(), patient=self.patient, therapist=self.therapist)
@@ -447,7 +445,7 @@ class SpecificWorker(GenericWorker):
         """
         Checks login from DDBB and update the state and UI.
         """
-        print ("[INFO] Checking login ...")
+        print("[INFO] Checking login ...")
 
         username = unicode(self.ui.username_lineedit.text())
         # username = username.strip().lower() ##The username is stored and checked in lower case
@@ -503,7 +501,7 @@ class SpecificWorker(GenericWorker):
         Checks password strength, check if user already exists, create the new user and change the corresponding state
         :return: False if failed, True if user is created.
         """
-        print ("[INFO] Trying to create new user ...")
+        print("[INFO] Trying to create new user ...")
 
         if self.password_strength_check():
             username = unicode(self.ui.username_lineedit_reg.text())
@@ -528,7 +526,7 @@ class SpecificWorker(GenericWorker):
                 self.t_create_user_to_user_login.emit()
                 return True
         else:
-            print ("[ERROR] The user couldn't be created ")
+            print("[ERROR] The user couldn't be created ")
             return False
 
 
@@ -610,7 +608,7 @@ class SpecificWorker(GenericWorker):
         new_index = current_index - 1
         previous_text = self.ui.games_list.item(new_index).text()
 
-        print self.ui.games_list.item(new_index).text()
+        print(self.ui.games_list.item(new_index).text())
 
         self.ui.games_list.item(current_index).setText(previous_text)
         self.ui.games_list.item(new_index).setText(current_text)
@@ -627,7 +625,7 @@ class SpecificWorker(GenericWorker):
         new_index = current_index + 1
         previous_text = self.ui.games_list.item(new_index).text()
 
-        print self.ui.games_list.item(new_index).text()
+        print(self.ui.games_list.item(new_index).text())
 
         self.ui.games_list.item(current_index).setText(previous_text)
         self.ui.games_list.item(new_index).setText(current_text)
@@ -697,7 +695,7 @@ class SpecificWorker(GenericWorker):
         player = self.ui.selplayer_combobox.currentText()
         self.list_games_toplay = []
 
-        for index in xrange(self.ui.games_list.count()):
+        for index in range(self.ui.games_list.count()):
             self.list_games_toplay.append(self.ui.games_list.item(index).data(Qt.UserRole))
 
         if player == "":
@@ -723,7 +721,7 @@ class SpecificWorker(GenericWorker):
             self.admingame_proxy.adminEndSession()
 
     def __del__(self):
-        print 'SpecificWorker destructor'
+        print('SpecificWorker destructor')
 
     def setParams(self, params):
         return True
@@ -821,7 +819,7 @@ class SpecificWorker(GenericWorker):
             self.aux_savedGames = True
             timeplayed = self.aux_currentDate - self.current_game.start_time
             self.current_game.time_played = timeplayed.total_seconds() * 1000
-            print "Time played =  ", self.current_game.time_played, "milliseconds"
+            print("Time played =  ", self.current_game.time_played, "milliseconds")
 
             self.current_session.games.append(self.current_game)
 
@@ -880,7 +878,7 @@ class SpecificWorker(GenericWorker):
             time = self.aux_currentDate - self.aux_datePaused
             self.current_session.current_game.time_paused += time.total_seconds() * 1000
             self.aux_datePaused = None
-            print "Time paused =  ", self.current_session.current_game.time_paused, "milliseconds"
+            print("Time paused =  ", self.current_session.current_game.time_paused, "milliseconds")
 
     #
     # sm_session_init
@@ -1048,7 +1046,7 @@ class SpecificWorker(GenericWorker):
             if reply == QMessageBox.Yes:
                 time = self.aux_currentDate - self.current_session.date
                 self.current_session.total_time = time.total_seconds() * 1000
-                print "Session time =  ", self.current_session.total_time, "milliseconds"
+                print("Session time =  ", self.current_session.total_time, "milliseconds")
 
                 self.compute_session_metrics()
                 self.current_session.save_session_to_ddbb(self.ddbb)
@@ -1097,7 +1095,7 @@ class SpecificWorker(GenericWorker):
             self.current_game.metrics.append(new_metrics)
             self.updateUISig.emit()
         else:
-            print ("NO se ha iniciado el juego")
+            print("NO se ha iniciado el juego")
 
     #
     # statusChanged

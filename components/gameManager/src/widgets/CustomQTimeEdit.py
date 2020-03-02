@@ -1,3 +1,26 @@
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QFont
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QStyle, QDialog, QDialogButtonBox
+
+
+class CustomTimeEditDialog(QDialog):
+    def __init__(self, parent=None):
+        super(CustomTimeEditDialog, self).__init__(parent)
+        self.__main_layout = QVBoxLayout()
+        self.setLayout(self.__main_layout)
+        self.__time_edit = CustomQTimeEdit()
+        self.__main_layout.addWidget(self.__time_edit)
+        self.__buttons_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.__main_layout.addWidget(self.__buttons_box)
+        self.__buttons_box.rejected.connect(self.close)
+        self.__buttons_box.accepted.connect(self.accept)
+        self.setWindowModality(Qt.WindowModal)
+
+    @property
+    def seconds(self):
+        return self.__time_edit.seconds
+
+
 class CustomQTimeEdit(QWidget):
     def __init__(self, parent=None):
         super(CustomQTimeEdit, self).__init__(parent)
@@ -63,3 +86,7 @@ class CustomQTimeEdit(QWidget):
         minutes = int(self.__seconds / 60)
         seconds = int(self.__seconds%60)
         self.__time_label.setText("%02d:%02d"%(minutes, seconds))
+
+    @property
+    def seconds(self):
+        return self.__seconds

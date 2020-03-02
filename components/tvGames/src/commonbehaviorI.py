@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 by YOUR NAME HERE
+# Copyright (C) 2020 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -23,10 +23,10 @@ ROBOCOMP = ''
 try:
 	ROBOCOMP = os.environ['ROBOCOMP']
 except:
-	print ('$ROBOCOMP environment variable not set, using the default value /opt/robocomp')
+	print('$ROBOCOMP environment variable not set, using the default value /opt/robocomp')
 	ROBOCOMP = '/opt/robocomp'
 if len(ROBOCOMP)<1:
-	print ('ROBOCOMP environment variable not set! Exiting.')
+	print('ROBOCOMP environment variable not set! Exiting.')
 	sys.exit()
 
 additionalPathStr = ''
@@ -38,97 +38,41 @@ try:
 		icePaths.append(p)
 		additionalPathStr += ' -I' + p + ' '
 except:
-	print ('SLICE_PATH environment variable was not exported. Using only the default paths')
+	print('SLICE_PATH environment variable was not exported. Using only the default paths')
 	pass
 
-ice_AdminGame = False
-for p in icePaths:
-	print ('Trying', p, 'to load AdminGame.ice')
-	if os.path.isfile(p+'/AdminGame.ice'):
-		print ('Using', p, 'to load AdminGame.ice')
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"AdminGame.ice"
-		Ice.loadSlice(wholeStr)
-		ice_AdminGame = True
-		break
-if not ice_AdminGame:
-	print ('Couldn\'t load AdminGame')
-	sys.exit(-1)
-from EuroAgeGamesAdmin import *
 ice_CommonBehavior = False
 for p in icePaths:
-	print ('Trying', p, 'to load CommonBehavior.ice')
+	print('Trying', p, 'to load CommonBehavior.ice')
 	if os.path.isfile(p+'/CommonBehavior.ice'):
-		print ('Using', p, 'to load CommonBehavior.ice')
+		print('Using', p, 'to load CommonBehavior.ice')
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
 		wholeStr = preStr+"CommonBehavior.ice"
 		Ice.loadSlice(wholeStr)
 		ice_CommonBehavior = True
 		break
 if not ice_CommonBehavior:
-	print ('Couldn\'t load CommonBehavior')
+	print('Couldn\'t load CommonBehavior')
 	sys.exit(-1)
 from RoboCompCommonBehavior import *
-ice_GameMetrics = False
-for p in icePaths:
-	print ('Trying', p, 'to load GameMetrics.ice')
-	if os.path.isfile(p+'/GameMetrics.ice'):
-		print ('Using', p, 'to load GameMetrics.ice')
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GameMetrics.ice"
-		Ice.loadSlice(wholeStr)
-		ice_GameMetrics = True
-		break
-if not ice_GameMetrics:
-	print ('Couldn\'t load GameMetrics')
-	sys.exit(-1)
-from EuroAgeGamesMetrics import *
-ice_TouchPoints = False
-for p in icePaths:
-	print ('Trying', p, 'to load TouchPoints.ice')
-	if os.path.isfile(p+'/TouchPoints.ice'):
-		print ('Using', p, 'to load TouchPoints.ice')
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TouchPoints.ice"
-		Ice.loadSlice(wholeStr)
-		ice_TouchPoints = True
-		break
-if not ice_TouchPoints:
-	print ('Couldn\'t load TouchPoints')
-	sys.exit(-1)
-from RoboCompTouchPoints import *
-ice_TvGames = False
-for p in icePaths:
-	print ('Trying', p, 'to load TvGames.ice')
-	if os.path.isfile(p+'/TvGames.ice'):
-		print ('Using', p, 'to load TvGames.ice')
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TvGames.ice"
-		Ice.loadSlice(wholeStr)
-		ice_TvGames = True
-		break
-if not ice_TvGames:
-	print ('Couldn\'t load TvGames')
-	sys.exit(-1)
-from RoboCompTvGames import *
 
 class CommonBehaviorI(CommonBehavior):
 	def __init__(self, worker):
 		self.worker = worker
 
 	def getParameterList(self, c):
-		return self.worker.getParameterList()
+		return self.worker.CommonBehavior_getParameterList()
 	def getPeriod(self, c):
-		return self.worker.getPeriod()
+		return self.worker.CommonBehavior_getPeriod()
 	def getState(self, c):
-		return self.worker.getState()
+		return self.worker.CommonBehavior_getState()
 	def killYourSelf(self, c):
-		return self.worker.killYourSelf()
+		return self.worker.CommonBehavior_killYourSelf()
 	def reloadConfig(self, c):
-		return self.worker.reloadConfig()
+		return self.worker.CommonBehavior_reloadConfig()
 	def setParameterList(self, l, c):
-		return self.worker.setParameterList(l)
+		return self.worker.CommonBehavior_setParameterList(l)
 	def setPeriod(self, period, c):
-		return self.worker.setPeriod(period)
+		return self.worker.CommonBehavior_setPeriod(period)
 	def timeAwake(self, c):
-		return self.worker.timeAwake()
+		return self.worker.CommonBehavior_timeAwake()

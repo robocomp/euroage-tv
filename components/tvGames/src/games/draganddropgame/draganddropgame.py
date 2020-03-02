@@ -255,7 +255,7 @@ class GameScreen(QWidget):
         self._top_bar.resume_clock()
 
 
-    def init_game(self, full_path):
+    def init_game(self, full_path, duration = None):
         """
         Initialize the game given a path of the configuration json file.
         :param full_path: path tho the configuration json file
@@ -269,6 +269,9 @@ class GameScreen(QWidget):
                 self._game_frame.init_game(full_path)
                 the_title = QObject().tr(self._game_config["title"])
                 self._top_bar.set_game_name(the_title)
+                if duration is not None and duration > 0:
+                    self._top_bar.set_time(duration)
+                else:
                 self._top_bar.set_time(int(self._game_config["time"]))
                 self._top_bar.start_clock()
 
@@ -1431,7 +1434,7 @@ def main():
     game.show_on_second_screen()
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/LionKingGame/game.json")
     # game.init_game("/home/robocomp/robocomp/components/euroage-tv/components/tvGames/src/games/resources/CALENTAR VASO LECHE/calentar_leche.json")
-    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER LAVADORA_A/game.json")
+    game.init_game("/home/robolab/robocomp/components/euroage-tv/components/tvGames/src/games/resources/PONER LAVADORA_A/game.json", 180)
 
     # main_widget = GameWidget()
     # main_widget.show_on_second_screen()

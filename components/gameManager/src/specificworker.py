@@ -28,6 +28,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+
 import bcrypt
 from PySide2.QtGui import QKeySequence
 from pprint import pprint
@@ -570,10 +571,15 @@ class SpecificWorker(GenericWorker):
         Slot to add a game to the list of games to play in the session
         :return:
         """
+
         selected_game_incombo = self.ui.selgame_combobox.currentData()
         selected_name_incombo = self.ui.selgame_combobox.currentText()
         if selected_game_incombo is not None:
+            from widgets.CustomQTimeEdit import CustomTimeEditDialog
+            time_widget = CustomTimeEditDialog(self)
+            if time_widget.exec_():
             item = QListWidgetItem(selected_name_incombo)
+                selected_game_incombo.duration = time_widget.seconds
             item.setData(Qt.UserRole, selected_game_incombo)
             self.ui.games_list.addItem(item)
             self.ui.selgame_combobox.setCurrentIndex(0)
@@ -653,7 +659,7 @@ class SpecificWorker(GenericWorker):
         """
         Slot to send the adminStartGame command to the game
         """
-        self.admingame_proxy.adminStartGame(self.current_game.name)
+        self.admingame_proxy.adminStartGame(self.current_game.name, self.current_game.duration)
 
     def pause_clicked(self):
         """
@@ -956,6 +962,7 @@ class SpecificWorker(GenericWorker):
             self.current_game = Game()
             self.current_game.game_id = ddbb_game.id
             self.current_game.name = ddbb_game.name
+            self.current_game.duration = ddbb_game.duration
             self.ui.info_game_label.setText(game_name)
             if self.aux_firtsGameInSession or self.aux_reseted:
                 self.aux_firtsGameInSession = False
@@ -1066,7 +1073,7 @@ class SpecificWorker(GenericWorker):
     #
     # metricsObtained
     #
-    def metricsObtained(self, m):
+    def GameMetrics_metricsObtained(self, m):
         self.aux_currentDate = datetime.strptime(m.currentDate, "%Y-%m-%dT%H:%M:%S.%f")
         new_metrics = Metrics()
         new_metrics.time = self.aux_currentDate
@@ -1101,7 +1108,7 @@ class SpecificWorker(GenericWorker):
     #
     # statusChanged
     #
-    def statusChanged(self, s):
+    def GameMetrics_statusChanged(self, s):
         state_name = str(s.currentStatus.name)
         self.aux_currentStatus = state_name
         self.aux_currentDate = datetime.strptime(s.date, "%Y-%m-%dT%H:%M:%S.%f")

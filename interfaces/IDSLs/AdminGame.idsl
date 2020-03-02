@@ -4,7 +4,7 @@ module EuroAgeGamesAdmin
 interface AdminGame
     {
      	void adminStartSession(string player);
-	    void adminStartGame (string game);
+	    void adminStartGame (string game, int duration);
      	void adminStopGame();
      	void adminPauseGame();
      	void adminContinueGame();

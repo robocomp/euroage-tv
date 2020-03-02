@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Copyright (C) 2019 by YOUR NAME HERE
+# Copyright (C) 2020 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -122,7 +122,7 @@ if __name__ == '__main__':
 		proxyString = ic.getProperties().getProperty('AdminGameProxy')
 		try:
 			basePrx = ic.stringToProxy(proxyString)
-			admingame_proxy = AdminGamePrx.checkedCast(basePrx)
+			admingame_proxy = AdminGamePrx.uncheckedCast(basePrx)
 			mprx["AdminGameProxy"] = admingame_proxy
 		except Ice.Exception:
 			print('Cannot connect to the remote object (AdminGame)', proxyString)

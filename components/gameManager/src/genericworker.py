@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2019 by YOUR NAME HERE
+# Copyright (C) 2020 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -44,18 +44,6 @@ except:
 	print('SLICE_PATH environment variable was not exported. Using only the default paths')
 	pass
 
-ice_GameMetrics = False
-for p in icePaths:
-	if os.path.isfile(p+'/GameMetrics.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GameMetrics.ice"
-		Ice.loadSlice(wholeStr)
-		ice_GameMetrics = True
-		break
-if not ice_GameMetrics:
-	print('Couln\'t load GameMetrics')
-	sys.exit(-1)
-from EuroAgeGamesMetrics import *
 ice_AdminGame = False
 for p in icePaths:
 	if os.path.isfile(p+'/AdminGame.ice'):
@@ -68,6 +56,18 @@ if not ice_AdminGame:
 	print('Couln\'t load AdminGame')
 	sys.exit(-1)
 from EuroAgeGamesAdmin import *
+ice_GameMetrics = False
+for p in icePaths:
+	if os.path.isfile(p+'/GameMetrics.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"GameMetrics.ice"
+		Ice.loadSlice(wholeStr)
+		ice_GameMetrics = True
+		break
+if not ice_GameMetrics:
+	print('Couln\'t load GameMetrics')
+	sys.exit(-1)
+from EuroAgeGamesMetrics import *
 
 
 from gamemetricsI import *

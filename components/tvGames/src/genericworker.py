@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2019 by YOUR NAME HERE
+# Copyright (C) 2020 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -44,42 +44,6 @@ except:
 	print('SLICE_PATH environment variable was not exported. Using only the default paths')
 	pass
 
-ice_GameMetrics = False
-for p in icePaths:
-	if os.path.isfile(p+'/GameMetrics.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GameMetrics.ice"
-		Ice.loadSlice(wholeStr)
-		ice_GameMetrics = True
-		break
-if not ice_GameMetrics:
-	print('Couln\'t load GameMetrics')
-	sys.exit(-1)
-from EuroAgeGamesMetrics import *
-ice_CommonBehavior = False
-for p in icePaths:
-	if os.path.isfile(p+'/CommonBehavior.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"CommonBehavior.ice"
-		Ice.loadSlice(wholeStr)
-		ice_CommonBehavior = True
-		break
-if not ice_CommonBehavior:
-	print('Couln\'t load CommonBehavior')
-	sys.exit(-1)
-from RoboCompCommonBehavior import *
-ice_TouchPoints = False
-for p in icePaths:
-	if os.path.isfile(p+'/TouchPoints.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TouchPoints.ice"
-		Ice.loadSlice(wholeStr)
-		ice_TouchPoints = True
-		break
-if not ice_TouchPoints:
-	print('Couln\'t load TouchPoints')
-	sys.exit(-1)
-from RoboCompTouchPoints import *
 ice_TvGames = False
 for p in icePaths:
 	if os.path.isfile(p+'/TvGames.ice'):
@@ -92,6 +56,30 @@ if not ice_TvGames:
 	print('Couln\'t load TvGames')
 	sys.exit(-1)
 from RoboCompTvGames import *
+ice_TouchPoints = False
+for p in icePaths:
+	if os.path.isfile(p+'/TouchPoints.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"TouchPoints.ice"
+		Ice.loadSlice(wholeStr)
+		ice_TouchPoints = True
+		break
+if not ice_TouchPoints:
+	print('Couln\'t load TouchPoints')
+	sys.exit(-1)
+from RoboCompTouchPoints import *
+ice_CommonBehavior = False
+for p in icePaths:
+	if os.path.isfile(p+'/CommonBehavior.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"CommonBehavior.ice"
+		Ice.loadSlice(wholeStr)
+		ice_CommonBehavior = True
+		break
+if not ice_CommonBehavior:
+	print('Couln\'t load CommonBehavior')
+	sys.exit(-1)
+from RoboCompCommonBehavior import *
 ice_AdminGame = False
 for p in icePaths:
 	if os.path.isfile(p+'/AdminGame.ice'):
@@ -104,6 +92,18 @@ if not ice_AdminGame:
 	print('Couln\'t load AdminGame')
 	sys.exit(-1)
 from EuroAgeGamesAdmin import *
+ice_GameMetrics = False
+for p in icePaths:
+	if os.path.isfile(p+'/GameMetrics.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"GameMetrics.ice"
+		Ice.loadSlice(wholeStr)
+		ice_GameMetrics = True
+		break
+if not ice_GameMetrics:
+	print('Couln\'t load GameMetrics')
+	sys.exit(-1)
+from EuroAgeGamesMetrics import *
 
 
 from admingameI import *
@@ -134,8 +134,6 @@ class GenericWorker(QtWidgets.QWidget):
 	t_game_loop_to_game_won = QtCore.Signal()
 	t_game_loop_to_game_lost = QtCore.Signal()
 	t_game_loop_to_game_end = QtCore.Signal()
-	t_game_won_to_game_start_wait = QtCore.Signal()
-	t_game_lost_to_game_start_wait = QtCore.Signal()
 	t_game_pause_to_game_loop = QtCore.Signal()
 	t_game_pause_to_game_reset = QtCore.Signal()
 	t_game_pause_to_game_resume = QtCore.Signal()
@@ -212,8 +210,6 @@ class GenericWorker(QtWidgets.QWidget):
 		self.game_loop_state.addTransition(self.t_game_loop_to_game_won, self.game_won_state)
 		self.game_loop_state.addTransition(self.t_game_loop_to_game_lost, self.game_lost_state)
 		self.game_loop_state.addTransition(self.t_game_loop_to_game_end, self.game_end_state)
-		self.game_won_state.addTransition(self.t_game_won_to_game_start_wait, self.game_start_wait_state)
-		self.game_lost_state.addTransition(self.t_game_lost_to_game_start_wait, self.game_start_wait_state)
 		self.game_pause_state.addTransition(self.t_game_pause_to_game_loop, self.game_loop_state)
 		self.game_pause_state.addTransition(self.t_game_pause_to_game_reset, self.game_reset_state)
 		self.game_pause_state.addTransition(self.t_game_pause_to_game_resume, self.game_resume_state)

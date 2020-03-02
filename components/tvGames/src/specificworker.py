@@ -141,6 +141,10 @@ class GameMetrics(Metrics):
 			self.pos.y = pos.y
 
 
+class GameStartData:
+	def __init__(self):
+		self.name = None
+		self.duration = -1
 
 
 
@@ -208,7 +212,7 @@ class SpecificWorker(GenericWorker):
 		self._player_to_hand_index = {}
 		self.hand_track = []
 		self.hand_mouses = MultiHandMouses()
-		self._current_game_name = None
+		self._current_game =  None
 
 		# game name and path
 		self._available_games = {}
@@ -235,7 +239,7 @@ class SpecificWorker(GenericWorker):
 		to create, connect signal an start the selected game.
 		:return:
 		"""
-		if self._current_game_name is not None:
+		if self._current_game is not None:
 			self._game = GameScreen(None, self._game_screen_width, self._game_screen_height)
 			self._game.game_frame.touch_signal.connect(self.detectedTouchPoints)
 			self._game.help_clicked.connect(self.game_help_clicked)
@@ -283,9 +287,9 @@ class SpecificWorker(GenericWorker):
 		the load_available_games in this same file
 		:return:
 		"""
-		config_path = self._available_games[str(self._current_game_name)]
+		config_path = self._available_games[str(self._current_game.name)]
 		self._game_metrics = GameMetrics()
-		self._game.init_game(config_path)
+		self._game.init_game(config_path, self._current_game.duration)
 
 	def mouse_pressed_on_tv(self, point):
 		"""
@@ -861,7 +865,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminPauseGame
 	#
-	def adminPauseGame(self):
+	def AdminGame_adminPauseGame(self):
 		"""
 		Implementation of the communication required for adminPauseGame.
 		This will just generate the transition to the State Machine pause state.
@@ -873,7 +877,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminStopApp
 	#
-	def adminStopApp(self):
+	def AdminGame_adminStopApp(self):
 		"""
 		Implementation of the communication required for adminStopApp.
 		This will just generate the transition to the State Machine pause state.
@@ -891,7 +895,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminResetGame
 	#
-	def adminResetGame(self):
+	def AdminGame_adminResetGame(self):
 		"""
 		Implementation of the communication required for adminResetGame.
 		This will just generate the transition to the State Machine game_reset state.
@@ -906,14 +910,16 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminStartGame
 	#
-	def adminStartGame(self, game):
+	def AdminGame_adminStartGame(self, game, duration):
 		"""
 		Implementation of the communication required for adminStartGame.
 		This will just generate the transition to the State Machine game_init state.
 		:return:
 		"""
 		print("adminStartGame")
-		self._current_game_name = game
+		self._current_game = GameStartData()
+		self._current_game.name = game
+		self._current_game.duration = duration
 		self.activateWindow()
 		self.t_game_start_wait_to_game_init.emit()
 
@@ -921,7 +927,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminContinueGame
 	#
-	def adminContinueGame(self):
+	def AdminGame_adminContinueGame(self):
 		"""
 		Implementation of the communication required for adminContinueGame.
 		This will just generate the transition to the State Machine game_resume state.
@@ -936,7 +942,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminEndSession
 	#
-	def adminEndSession(self):
+	def AdminGame_adminEndSession(self):
 		"""
 		Implementation of the communication required for adminEndSession.
 		This will just generate the transition to the State Machine session_end state.
@@ -950,7 +956,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminStartSession
 	#
-	def adminStartSession(self, player):
+	def AdminGame_adminStartSession(self, player):
 		"""
 		Implementation of the communication required for adminStartSession.
 		This will create a new player with the provided name and will generate the transition to the State Machine session_init state.
@@ -967,7 +973,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# adminStopGame
 	#
-	def adminStopGame(self):
+	def AdminGame_adminStopGame(self):
 		"""
 		Implementation of the communication required for adminStopGame.
 		This will just generate the transition to the State Machine pause state.
@@ -981,7 +987,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# reloadConfig
 	#
-	def reloadConfig(self):
+	def CommonBehavior_reloadConfig(self):
 		#
 		# implementCODE
 		#
@@ -991,7 +997,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# setPeriod
 	#
-	def setPeriod(self, period):
+	def CommonBehavior_setPeriod(self, period):
 		#
 		# implementCODE
 		#
@@ -1001,7 +1007,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# getState
 	#
-	def getState(self):
+	def CommonBehavior_getState(self):
 		ret = State()
 		#self.touchpoints_proxy.detectedTouchPoints(touch_points)
 		# implementCODE
@@ -1012,7 +1018,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# setParameterList
 	#
-	def setParameterList(self, l):
+	def CommonBehavior_setParameterList(self, l):
 		#
 		# implementCODE
 		#
@@ -1022,7 +1028,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# timeAwake
 	#
-	def timeAwake(self):
+	def CommonBehavior_timeAwake(self):
 		ret = int()
 		#
 		# implementCODE
@@ -1033,7 +1039,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# getParameterList
 	#
-	def getParameterList(self):
+	def CommonBehavior_getParameterList(self):
 		ret = ParameterList()
 		#
 		# implementCODE
@@ -1044,7 +1050,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# killYourSelf
 	#
-	def killYourSelf(self):
+	def CommonBehavior_killYourSelf(self):
 		#
 		# implementCODE
 		#
@@ -1054,7 +1060,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# getPeriod
 	#
-	def getPeriod(self):
+	def CommonBehavior_getPeriod(self):
 		ret = int()
 		#
 		# implementCODE
@@ -1065,7 +1071,7 @@ class SpecificWorker(GenericWorker):
 	#
 	# launchGame
 	#
-	def launchGame(self, name):
+	def TvGames_launchGame(self, name):
 		#
 		# implementCODE
 		#

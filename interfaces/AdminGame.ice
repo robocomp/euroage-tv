@@ -12,14 +12,14 @@ module EuroAgeGamesAdmin
 {
 	interface AdminGame
 	{
-		void adminStartSession (string player);
-		void adminStartGame (string game);
-		void adminStopGame ();
-		void adminPauseGame ();
 		void adminContinueGame ();
-		void adminResetGame ();
 		void adminEndSession ();
+		void adminPauseGame ();
+		void adminResetGame ();
+		void adminStartGame (string game, int duration);
+		void adminStartSession (string player);
 		void adminStopApp ();
+		void adminStopGame ();
 	};
 };
 

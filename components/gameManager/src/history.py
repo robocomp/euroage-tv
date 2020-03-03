@@ -154,7 +154,7 @@ class History(QDialog):
         found_patients = self.ui.paciente_lw.findItems(patient, Qt.MatchExactly)
         if len(found_patients)>0:
             self.ui.paciente_lw.setCurrentItem(found_patients[0])
-            self.load_patient_info(found_patients[0])
+            self.load_patient_info()
 
 
 if __name__ == '__main__':

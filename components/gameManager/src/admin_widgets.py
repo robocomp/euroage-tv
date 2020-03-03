@@ -9,6 +9,70 @@ from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication
 CURRENT_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 UIS_FOLDER = os.path.join(CURRENT_FILE_PATH, "uis")
 
+
+class MyQMessageBox(QMessageBox):
+    def __init__(self, *args):
+        super(MyQMessageBox, self).__init__(*args)
+
+    @staticmethod
+    def show_information(parent, title, message, button_text="Vale", button_role=QMessageBox.YesRole):
+        message_box = QMessageBox(parent)
+        message_box.setWindowTitle(title)
+        message_box.setText(message)
+        message_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        message_box.setSizeGripEnabled(True)
+        message_box.setStyleSheet(
+            "QPushButton {"
+            " font: 30px;"
+            " min-height: 50px;"
+            " min-width: 100px;"
+            "}"
+            "QLabel {"
+            "font: 30px;"
+            "}"
+        )
+        message_box.setStandardButtons(QMessageBox.Ok)
+        button_accept = message_box.button(QMessageBox.Ok)
+        button_accept.setText(message_box.tr('Vale'))
+        return message_box.exec_()
+
+    @staticmethod
+    def show_question(parent, title, message, button_text="Vale", button_role=QMessageBox.YesRole):
+        message_box = QMessageBox(parent)
+        message_box.setWindowTitle(title)
+        message_box.setText(message)
+        message_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        message_box.setSizeGripEnabled(True)
+        message_box.setStyleSheet(
+            "QPushButton {"
+            " font: 30px;"
+            " min-height: 50px;"
+            " min-width: 100px;"
+            "}"
+            "QLabel {"
+            "font: 30px;"
+            "}"
+        )
+        message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        buttonY = message_box.button(QMessageBox.Yes)
+        buttonY.setText(message_box.tr('Si'))
+        buttonN = message_box.button(QMessageBox.No)
+        buttonN.setText(message_box.tr('No'))
+        message_box.setDefaultButton(QMessageBox.Yes)
+        return message_box.exec_()
+
+
+    @staticmethod
+    def information(parent, title, text, button0=None, button1=None):
+        return MyQMessageBox.show_information(parent=parent, title=title, message=text)
+
+    @staticmethod
+    def question(parent, title, text, button0=None, button1=None):
+        return MyQMessageBox.show_question(parent=parent, title=title, message=text)
+
+
+
+
 # TODO:  try to unifiy the repeated code.
 class LoginWindow(QWidget):  # crea widget vacio
     def __init__(self, parent=None):

@@ -404,7 +404,7 @@ class SpecificWorker(GenericWorker):
 
         # TODO: Only for DEMO restore on production
         if True: # self.user_login_manager.check_user_password(username, password):
-            self.current_therapist = username
+            self.current_therapist = self.ddbb.get_therapist_by_username(username)
             self.loginShortcut.activated.disconnect(self.check_login)
             self.login_executed.emit(True)
             self.t_user_login_to_session_init.emit()
@@ -593,9 +593,9 @@ class SpecificWorker(GenericWorker):
         sexo = str(self.ui.sexo_player_lineedit.text())
         edad = float(self.ui.edad_player_lineedit.text())
 
-        patient = self.ddbb.new_patient(username=username, nombre=nombre, sexo=sexo, edad=edad, profesional=self.current_therapist)
+        patient = self.ddbb.new_patient(username=username, nombre=nombre, sexo=sexo, edad=edad, profesional=self.current_therapist.id_terapeuta)
         # update the players show on the ui
-        patients = self.ddbb.get_all_patients_by_therapist(self.current_therapist)
+        patients = self.ddbb.get_all_patients_by_therapist(self.current_therapist.id_terapeuta)
         completer = QCompleter([patient.username for patient in patients])
         self.ui.selplayer_combobox.addItem(patient.username)
         self.ui.selplayer_combobox.setCompleter(completer)
@@ -644,13 +644,14 @@ class SpecificWorker(GenericWorker):
         Slot to create the Session, send the adminStartSession command with the selected player/patient and configure
         the list of games to play.
         """
-        player = self.ui.selplayer_combobox.currentText()
+        patient = self.ui.selplayer_combobox.currentData()
+        player_name = patient.username
         self.list_games_toplay = []
 
         for index in range(self.ui.games_list.count()):
             self.list_games_toplay.append(self.ui.games_list.item(index).data(Qt.UserRole))
 
-        if player == "":
+        if player_name == "":
             MyQMessageBox.information(self.focusWidget(), 'Error',
                                       self.tr('No se ha seleccionado ningun jugador'),
                                       QMessageBox.Ok)
@@ -659,8 +660,9 @@ class SpecificWorker(GenericWorker):
                                       self.tr('No se ha seleccionado ningún juego'),
                                       QMessageBox.Ok)
         else:
-            self.current_session = Session(therapist=self.current_therapist, patient=str(player))
-            self.admingame_proxy.adminStartSession(player)
+
+            self.current_session = Session(therapist=self.current_therapist.id_terapeuta, patient=str(patient.id_paciente))
+            self.admingame_proxy.adminStartSession(player_name)
 
     def end_session_clicked(self):
         """
@@ -856,29 +858,20 @@ class SpecificWorker(GenericWorker):
 
         if self.aux_sessionInit == False:
 
-            patients = self.ddbb.get_all_patients_by_therapist(self.current_therapist)
+            patients = self.ddbb.get_all_patients_by_therapist(self.current_therapist.id_terapeuta)
             patients_list = []
             for p in patients:
-                patients_list.append(p.username)
+                self.ui.selplayer_combobox.addItem(p.username, p)
 
-            # completer2 = QCompleter(patients_list)
 
-            self.ui.selplayer_combobox.addItems(patients_list)
-            # self.ui.selplayer_combobox.lineEdit().setCompleter(completer2)
-            # self.ui.selplayer_combobox.lineEdit().setPlaceholderText("Selecciona jugador...")
-            translated_game_names = []
             for game in self.ddbb.get_all_games():
                 translated_name = QObject().tr(game.name)
                 self.ui.selgame_combobox.addItem(translated_name, game)
-            completer3 = QCompleter(translated_game_names)
 
-
-            # self.ui.selgame_combobox.lineEdit().setCompleter(completer3)
-            # self.ui.selgame_combobox.lineEdit().setPlaceholderText("Selecciona juego...")
 
             self.aux_sessionInit = True
-        self.ui.games_list.clear()
 
+        self.ui.games_list.clear()
         self.mainMenu.setEnabled(True)
         self.aux_savedGames = False
 

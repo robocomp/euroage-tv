@@ -7,6 +7,10 @@ import traceback
 
 from model import *
 
+from importlib import reload
+import sys
+reload(sys)
+
 
 class BBDD(object):
     engine = None
@@ -16,6 +20,7 @@ class BBDD(object):
     def create_database(self, filename):
         self.open_database(filename)
         # create database
+        # Base.metadata.drop_all(self.engine)
         Base.metadata.create_all(self.engine)
 
     def open_database(self, filename):
@@ -225,3 +230,5 @@ class BBDD(object):
 
     def get_all_round_by_session_id(self, id):
         return self.session.query(Round).filter(Round.session_id == id).all()
+
+

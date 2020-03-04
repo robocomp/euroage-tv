@@ -39,7 +39,7 @@ from admin_widgets import *
 from genericworker import *
 from history import History
 
-from src.widgets.QUserManager import QUserManager
+from widgets.QUserManager import QUserManager
 
 try:
     from bbdd import BBDD
@@ -125,7 +125,7 @@ class Session:
         print("Saving session in ")
 
         date = datetime.strftime(self.date, "%Y%m%d %H%M%S")
-        result, session = ddbb.new_session(start=self.date, end=datetime.now(), patient=self.patient, therapist=self.therapist)
+        result, session = ddbb.new_session(start=self.date, end=datetime.now(), patient=self.patient.id_paciente, therapist=self.therapist.id_terapeuta)
         if result:
             for game in self.games:
                 game.session_id = session.id
@@ -658,7 +658,7 @@ class SpecificWorker(GenericWorker):
                                       QMessageBox.Ok)
         else:
 
-            self.current_session = Session(therapist=self.current_therapist.id_terapeuta, patient=str(patient.id_paciente))
+            self.current_session = Session(therapist=self.current_therapist, patient=patient)
             self.admingame_proxy.adminStartSession(player_name)
 
     def end_session_clicked(self):

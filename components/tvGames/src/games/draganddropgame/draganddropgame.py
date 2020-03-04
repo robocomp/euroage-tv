@@ -125,14 +125,18 @@ class GameScreen(QWidget):
         style_sheet_string = "GameScreen {background-image: url("+os.path.join(CURRENT_PATH,"..","resources","common", "kitchen-2165756_1920.jpg")+");}"
         self.setStyleSheet(style_sheet_string)
 
-        self.end_message = QLabel(u"¡Has perdido!")
+        self.initial_message = QLabel(u"Espera un momento.\n¡El próximo juego empezará\nen breve!")
+        self.initial_message.setFont(QFont("Arial", 90, QFont.Bold))
+        self.initial_message.setAlignment(Qt.AlignCenter)
 
+        self.end_message = QLabel(u"¡Has perdido!")
         self.end_message.setFont(QFont("Arial", 90, QFont.Bold))
         self.end_message.setAlignment(Qt.AlignCenter)
 
         self._game_config = {}
         self._main_layout.addWidget(self.end_message)
-        self._main_layout.setCurrentIndex(0)
+        self._main_layout.addWidget(self.initial_message)
+        self._main_layout.setCurrentIndex(2)
         self._scores_close_timer = QTimer()
         self._scores_dialog = QDialog()
 
@@ -221,6 +225,8 @@ class GameScreen(QWidget):
         TODO: text and sounds could be configurable.
         :return:
         """
+
+        self._top_bar.pause_clock()
         result = False
         if self._game_frame.check_win():
             result = True
@@ -236,9 +242,14 @@ class GameScreen(QWidget):
             subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, sound_file) + "\"", stdout=DEVNULL, shell=True)
             self._game_frame._update_scores()
             self.game_lost.emit()
+
         self._main_layout.setCurrentIndex(1)
         self._game_frame.end_game()
+        QTimer.singleShot(2000, self.waiting_screen)
         return result
+
+    def waiting_screen(self):
+        self._main_layout.setCurrentIndex(2)
 
     def pause_game(self):
         """
@@ -262,6 +273,7 @@ class GameScreen(QWidget):
         :return:
         """
         if isinstance(full_path, str):
+            self._main_layout.setCurrentIndex(0)
             full_path = os.path.join(CURRENT_PATH, full_path)
             if os.path.isfile(full_path):
                 with open(full_path) as file_path:

@@ -216,7 +216,8 @@ class SpecificWorker(GenericWorker):
 
 		# game name and path
 		self._available_games = {}
-		self._game = None
+		self._game = GameScreen()
+		self._game.show_on_second_screen()
 
 		# self._admin_image = None
 		self._mouse_release_point = None
@@ -226,7 +227,7 @@ class SpecificWorker(GenericWorker):
 		# TODO: Testing only. Remove on production.
 		# self.adminStartSession("Juan Lopez")
 		# TODO: Probably deprecated. No image should be shown on the same computer than tvGame
-		self.tv_image.show_on_second_screen()
+		# self.tv_image.show_on_second_screen()
 
 		self.application_machine.start()
 
@@ -588,6 +589,7 @@ class SpecificWorker(GenericWorker):
 				#TODO: NOASTRA => uncomment obtain_player and remove
 				#self.obtain_player_id(player)
 				self.current_state = "game_tracking"
+
 		#TODO: testing only. Remove on production
 		acquired=True
 

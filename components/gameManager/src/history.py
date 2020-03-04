@@ -5,8 +5,7 @@ import sys
 
 from PySide2.QtCore import Qt, QFile
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QApplication, QListWidgetItem, QVBoxLayout, QWidget, QDialog
-from bbdd import *
+from PySide2.QtWidgets import QApplication, QListWidgetItem, QVBoxLayout, QDialog
 
 CURRENT_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 UIS_FOLDER = os.path.join(CURRENT_FILE_PATH, "uis" )
@@ -130,16 +129,17 @@ class History(QDialog):
     def load_game_info(self):
         self.clear_game_info()
         item = self.ui.juego_lw.currentItem()
-        game = item.data(Qt.UserRole)
-        self.ui.juego_gb.setTitle("[" + game.name + "]")
-        play_time = (game.end_time - game.start_time)
-        self.ui.j_fecha_le.setText(game.start_time.strftime("%d/%m/%Y"))
-        self.ui.j_ganado_le.setText("Sí" if game.result else "No")
-        # TODO: look for a better way to format text than spliting
-        self.ui.j_tjugado_le.setText(str(play_time).split('.')[0])
-        self.ui.j_distancia_le.setText(str(game.distance))
-        self.ui.j_ayudas_le.setText(str(game.n_helps))
-        self.ui.j_comprobaciones_le.setText(str(game.n_checks))
+        if item is not None:
+            game = item.data(Qt.UserRole)
+            self.ui.juego_gb.setTitle("[" + game.name + "]")
+            play_time = (game.end_time - game.start_time)
+            self.ui.j_fecha_le.setText(game.start_time.strftime("%d/%m/%Y"))
+            self.ui.j_ganado_le.setText("Sí" if game.result else "No")
+            # TODO: look for a better way to format text than spliting
+            self.ui.j_tjugado_le.setText(str(play_time).split('.')[0])
+            self.ui.j_distancia_le.setText(str(game.distance))
+            self.ui.j_ayudas_le.setText(str(game.n_helps))
+            self.ui.j_comprobaciones_le.setText(str(game.n_checks))
 
     def clear_game_info(self):
         self.ui.juego_gb.setTitle("[Juego]")
@@ -159,7 +159,7 @@ class History(QDialog):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    bbdd = BBDD()
+    bbdd = BBDD2()
     bbdd.open_database("/home/robolab/robocomp/components/euroage-tv/components/bbdd/prueba1.db")
 
     history = History(bbdd)

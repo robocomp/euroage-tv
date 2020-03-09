@@ -251,7 +251,7 @@ class SpecificWorker(GenericWorker):
 
         self.ddbb = BBDD()
         self.ddbb.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba1.db")
-        self.user_login_manager = QUserManager(ddbb=self.ddbb)
+        self.user_login_manager = qusermanager.QUserManager(ddbb=self.ddbb)
         self.history = History(self.ddbb, self)
 
 
@@ -311,11 +311,11 @@ class SpecificWorker(GenericWorker):
         :return:
         """
         loader = QUiLoader()
-        loader.registerCustomWidget(LoginWindow)
-        loader.registerCustomWidget(RegisterWindow)
-        loader.registerCustomWidget(UsersWindow)
-        loader.registerCustomWidget(PlayersWindow)
-        loader.registerCustomWidget(GameWindow)
+        loader.registerCustomWidget(adminwidgets.LoginWindow)
+        loader.registerCustomWidget(adminwidgets.RegisterWindow)
+        loader.registerCustomWidget(adminwidgets.UsersWindow)
+        loader.registerCustomWidget(adminwidgets.PlayersWindow)
+        loader.registerCustomWidget(adminwidgets.GameWindow)
         file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/gameManager/src/uis/big/stackedUI.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
@@ -326,6 +326,7 @@ class SpecificWorker(GenericWorker):
         fileMenu = self.mainMenu.addMenu('&Menú')
         if self.ui.stackedWidget.currentIndex == 0 or self.ui.stackedWidget.currentIndex == 1:
             self.mainMenu.setEnabled(False)
+
 
         exitAction = QAction('&Salir', self)
         exitAction.triggered.connect(self.t_admin_to_app_end)
@@ -793,6 +794,8 @@ class SpecificWorker(GenericWorker):
 
 
         self.t_game_end_to_admin_games.emit()
+
+
 
     #
     # sm_paused

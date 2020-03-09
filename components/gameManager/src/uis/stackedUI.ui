@@ -101,31 +101,31 @@
   <customwidget>
    <class>GameWindow</class>
    <extends>QWidget</extends>
-   <header location="global">admin_widgets.py</header>
+   <header location="global">widgets.adminwidgets.py</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>LoginWindow</class>
    <extends>QWidget</extends>
-   <header location="global">admin_widgets.py</header>
+   <header location="global">widgets.adminwidgets.py</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>RegisterWindow</class>
    <extends>QWidget</extends>
-   <header location="global">admin_widgets.py</header>
+   <header location="global">widgets.adminwidgets.py</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>UsersWindow</class>
    <extends>QWidget</extends>
-   <header location="global">admin_widgets.py</header>
+   <header location="global">widgets.adminwidgets.py</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PlayersWindow</class>
    <extends>QWidget</extends>
-   <header location="global">admin_widgets.py</header>
+   <header location="global">widgets.adminwidgets.py</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

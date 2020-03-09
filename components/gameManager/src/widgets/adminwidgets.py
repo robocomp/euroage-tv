@@ -7,7 +7,7 @@ from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox, QPushButton, QLabel, QSizePolicy
 
 CURRENT_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
-UIS_FOLDER = os.path.join(CURRENT_FILE_PATH, "uis" )
+UIS_FOLDER = os.path.join(CURRENT_FILE_PATH, "../uis" )
 
 
 class MyQMessageBox(QMessageBox):

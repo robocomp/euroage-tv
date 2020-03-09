@@ -44,18 +44,6 @@ except:
 	print('SLICE_PATH environment variable was not exported. Using only the default paths')
 	pass
 
-ice_AdminGame = False
-for p in icePaths:
-	if os.path.isfile(p+'/AdminGame.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"AdminGame.ice"
-		Ice.loadSlice(wholeStr)
-		ice_AdminGame = True
-		break
-if not ice_AdminGame:
-	print('Couln\'t load AdminGame')
-	sys.exit(-1)
-from EuroAgeGamesAdmin import *
 ice_GameMetrics = False
 for p in icePaths:
 	if os.path.isfile(p+'/GameMetrics.ice'):
@@ -68,6 +56,18 @@ if not ice_GameMetrics:
 	print('Couln\'t load GameMetrics')
 	sys.exit(-1)
 from EuroAgeGamesMetrics import *
+ice_AdminGame = False
+for p in icePaths:
+	if os.path.isfile(p+'/AdminGame.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"AdminGame.ice"
+		Ice.loadSlice(wholeStr)
+		ice_AdminGame = True
+		break
+if not ice_AdminGame:
+	print('Couln\'t load AdminGame')
+	sys.exit(-1)
+from EuroAgeGamesAdmin import *
 
 
 from gamemetricsI import *
@@ -84,6 +84,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 	kill = QtCore.Signal()
 #Signals for State Machine
 	t_admin_to_app_end = QtCore.Signal()
+	t_init_screen_to_user_login = QtCore.Signal()
 	t_user_login_to_create_user = QtCore.Signal()
 	t_user_login_to_session_init = QtCore.Signal()
 	t_create_user_to_user_login = QtCore.Signal()
@@ -127,6 +128,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 
 
 
+		self.user_login_state = QtCore.QState(self.admin_state)
 		self.create_user_state = QtCore.QState(self.admin_state)
 		self.session_init_state = QtCore.QState(self.admin_state)
 		self.create_player_state = QtCore.QState(self.admin_state)
@@ -137,13 +139,14 @@ class GenericWorker(QtWidgets.QMainWindow):
 		self.paused_state = QtCore.QState(self.admin_state)
 		self.game_end_state = QtCore.QState(self.admin_state)
 		self.session_end_state = QtCore.QState(self.admin_state)
-		self.user_login_state = QtCore.QState(self.admin_state)
+		self.init_screen_state = QtCore.QState(self.admin_state)
 
 
 
 #------------------
 #Initialization State machine
 		self.admin_state.addTransition(self.t_admin_to_app_end, self.app_end_state)
+		self.init_screen_state.addTransition(self.t_init_screen_to_user_login, self.user_login_state)
 		self.user_login_state.addTransition(self.t_user_login_to_create_user, self.create_user_state)
 		self.user_login_state.addTransition(self.t_user_login_to_session_init, self.session_init_state)
 		self.create_user_state.addTransition(self.t_create_user_to_user_login, self.user_login_state)
@@ -166,6 +169,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 
 		self.admin_state.entered.connect(self.sm_admin)
 		self.app_end_state.entered.connect(self.sm_app_end)
+		self.init_screen_state.entered.connect(self.sm_init_screen)
 		self.user_login_state.entered.connect(self.sm_user_login)
 		self.create_user_state.entered.connect(self.sm_create_user)
 		self.session_init_state.entered.connect(self.sm_session_init)
@@ -179,7 +183,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 		self.session_end_state.entered.connect(self.sm_session_end)
 
 		self.manager_machine.setInitialState(self.admin_state)
-		self.admin_state.setInitialState(self.user_login_state)
+		self.admin_state.setInitialState(self.init_screen_state)
 
 #------------------
 
@@ -192,6 +196,11 @@ class GenericWorker(QtWidgets.QMainWindow):
 	@QtCore.Slot()
 	def sm_app_end(self):
 		print("Error: lack sm_app_end in Specificworker")
+		sys.exit(-1)
+
+	@QtCore.Slot()
+	def sm_user_login(self):
+		print("Error: lack sm_user_login in Specificworker")
 		sys.exit(-1)
 
 	@QtCore.Slot()
@@ -245,8 +254,8 @@ class GenericWorker(QtWidgets.QMainWindow):
 		sys.exit(-1)
 
 	@QtCore.Slot()
-	def sm_user_login(self):
-		print("Error: lack sm_user_login in Specificworker")
+	def sm_init_screen(self):
+		print("Error: lack sm_init_screen in Specificworker")
 		sys.exit(-1)
 
 

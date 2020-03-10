@@ -20,26 +20,18 @@
 #
 
 import csv
-import json
 import math
 import os
 from datetime import datetime
-import sys
-
-
-import bcrypt
-from PySide2.QtGui import QKeySequence
-from pprint import pprint
 
 import passwordmeter
-from PySide2.QtCore import Signal, QObject, Qt, QTranslator
+from PySide2.QtCore import Signal, QObject, Qt, QTranslator, QFile
+from PySide2.QtGui import QKeySequence
+from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QMessageBox, QCompleter, QAction, qApp, QApplication, QShortcut, QListWidgetItem
-
-from admin_widgets import *
 from genericworker import *
 from history import History
-
-from widgets.QUserManager import QUserManager
+from widgets import qusermanager, qvideodialog, adminwidgets
 
 try:
     from bbdd import BBDD
@@ -703,6 +695,17 @@ class SpecificWorker(GenericWorker):
         pass
 
     #
+    # sm_init_screen
+    #
+    @QtCore.Slot()
+    def sm_init_screen(self):
+        print("Entered state init_screen")
+        self.__video_dialog = qvideodialog.QVideoDialog()
+        self.__video_dialog.showFullScreen()
+        self.__video_dialog.play()
+        self.__video_dialog.video_stopped.connect(self.t_init_screen_to_user_login)
+
+    #
     # sm_user_login
     #
     @QtCore.Slot()
@@ -712,8 +715,9 @@ class SpecificWorker(GenericWorker):
         create_user => user_login;
         :return:
         """
+        self.__video_dialog.hide()
         print("Entered state user_login")
-
+        self.showFullScreen()
         self.ui.stackedWidget.setCurrentIndex(0)
         completer = QCompleter(list_of_users)
         self.ui.username_lineedit.setCompleter(completer)

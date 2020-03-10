@@ -7,11 +7,12 @@ manager_machine{
 };
 
 :admin{
-    states create_user, session_init, create_player, wait_ready, admin_games, wait_play, playing, paused, game_end,session_end;
-    initial_state user_login;
+    states user_login, create_user, session_init, create_player, wait_ready, admin_games, wait_play, playing, paused, game_end, session_end;
+    initial_state init_screen;
 
     transitions{
-        user_login => create_user,session_init;
+        init_screen => user_login;
+        user_login => create_user, session_init;
         create_user => user_login;
         session_init => create_player, wait_ready;
         create_player => session_init;

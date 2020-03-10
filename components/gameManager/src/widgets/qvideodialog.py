@@ -7,7 +7,7 @@
 import signal
 import sys
 
-from PySide2.QtCore import QUrl, Signal
+from PySide2.QtCore import QUrl, Signal, QEvent
 from PySide2.QtMultimedia import QMediaPlayer, QMediaPlaylist
 from PySide2.QtMultimediaWidgets import QVideoWidget
 from PySide2.QtWidgets import QApplication, QDialog, QVBoxLayout
@@ -17,6 +17,7 @@ dirname = os.path.dirname(__file__)
 
 class QVideoDialog(QDialog):
     video_stopped = Signal()
+    clicked = Signal()
     def __init__(self, parent=None):
         super(QVideoDialog, self).__init__(parent)
         self.__video_widget = QVideoWidget()
@@ -30,6 +31,15 @@ class QVideoDialog(QDialog):
         self.__main_layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.__main_layout)
         self.__main_layout.addWidget(self.__video_widget)
+        self.installEventFilter(self)
+        self.__video_widget.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.MouseButtonPress:
+            self.clicked.emit()
+            return True
+        else:
+            return False
 
 
     def video_available_changed(self, available):

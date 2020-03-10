@@ -704,6 +704,7 @@ class SpecificWorker(GenericWorker):
         self.__video_dialog.showFullScreen()
         self.__video_dialog.play()
         self.__video_dialog.video_stopped.connect(self.t_init_screen_to_user_login)
+        self.__video_dialog.clicked.connect(self.t_init_screen_to_user_login)
 
     #
     # sm_user_login

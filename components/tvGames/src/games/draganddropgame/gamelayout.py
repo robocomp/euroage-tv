@@ -217,7 +217,9 @@ class GameLayout:
     def check_pieces_resolution(self):
         ratios = defaultdict(list)
         for piece in self.pieces:
-            ratios[piece.width/float(piece.height)].append(piece)
+            # Truncated float for the ratio
+            ratio = float(int((piece.width/float(piece.height))*100))/100.
+            ratios[ratio].append(piece)
         if len(ratios) > 1:
             # get the ratio that represent less pieces
             print("Problem: the images for the pieces must have the same ratio of width x height")

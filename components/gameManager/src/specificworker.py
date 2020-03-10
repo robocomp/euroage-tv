@@ -1065,41 +1065,50 @@ class SpecificWorker(GenericWorker):
         self.aux_currentDate = datetime.strptime(s.date, "%Y-%m-%dT%H:%M:%S.%f")
 
         if state_name == "initializingSession":
+            print("Received game status: initializingSession")
             self.t_session_init_to_wait_ready.emit()
 
         if state_name == "readySession":
+            print("Received game status: readySession")
             # TODO: Patch to resolve a problem of desincronization if this arrives before this SM is in the wait_ready state
             self.__ready_session_received = True
             self.t_wait_ready_to_admin_games.emit()
 
         if state_name == "waitingGame":
+            print("Received game status: waitingGame")
             self.t_admin_games_to_wait_play.emit()
 
         if state_name == "playingGame":
+            print("Received game status: playingGame")
             self.t_wait_play_to_playing.emit()
             self.t_paused_to_playing.emit()
             self.updateUISig.emit()
 
         if state_name == "pausedGame":
+            print("Received game status: pausedGame")
             self.t_playing_to_paused.emit()
 
         if state_name == "wonGame":
+            print("Received game status: wonGame")
             self.activateWindow()
             self.aux_wonGame = True
             self.t_playing_to_game_end.emit()
             self.t_paused_to_game_end.emit()
 
         if state_name == "lostGame":
+            print("Received game status: lostGame")
             self.activateWindow()
             self.aux_wonGame = False
             self.t_playing_to_game_end.emit()
             self.t_paused_to_game_end.emit()
 
         if state_name == "resetedGame":
+            print("Received game status: resetedGame")
             self.aux_reseted = True
             self.t_paused_to_admin_games.emit()
         #
         if state_name == "endSession":
+            print("Received game status: endSession")
             self.activateWindow()
             self.t_admin_games_to_session_end.emit()
             self.t_wait_play_to_session_end.emit()

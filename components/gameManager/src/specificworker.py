@@ -24,8 +24,9 @@ import math
 import os
 from datetime import datetime
 
+import yaml
 import passwordmeter
-from PySide2.QtCore import Signal, QObject, Qt, QTranslator, QFile
+from PySide2.QtCore import Signal, QObject, Qt, QTranslator, QFile, QTimer
 from PySide2.QtGui import QKeySequence
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QMessageBox, QCompleter, QAction, qApp, QApplication, QShortcut, QListWidgetItem
@@ -33,11 +34,15 @@ from genericworker import *
 from history import History
 from widgets import qusermanager, qvideodialog, adminwidgets
 
+from src.widgets.adminwidgets import MyQMessageBox
 try:
     from bbdd import BBDD
 except:
     print("Database module not found")
     exit(1)
+
+stream = open("src/config.yml", 'r')
+config = yaml.load(stream)
 
 FILE_PATH = os.path.abspath(__file__)
 CURRENT_PATH = os.path.dirname(__file__)
@@ -766,10 +771,11 @@ class SpecificWorker(GenericWorker):
         :return:
         """
         print("Entered state game_end")
-
-        reply = MyQMessageBox.question(self.focusWidget(), 'Juego terminado',
-                                     self.tr('¿Desea guardar los datos del juego?'), QMessageBox.Yes, QMessageBox.No)
-        if reply == QMessageBox.Yes:
+        reply = QMessageBox.Yes
+        if not config['quick_execution']:
+            reply = MyQMessageBox.question(self.focusWidget(), 'Juego terminado',
+                                         self.tr('¿Desea guardar los datos del juego?'), QMessageBox.Yes, QMessageBox.No)
+        if  config['quick_execution'] or reply == QMessageBox.Yes:
             self.current_game.end()
             self.current_game.game_won = self.aux_wonGame
             self.aux_savedGames = True
@@ -786,7 +792,9 @@ class SpecificWorker(GenericWorker):
 
         self.current_game = None
 
-
+        if config['quick_execution']:
+            QTimer.singleShot(3000, self.t_game_end_to_admin_games)
+        else:
         self.t_game_end_to_admin_games.emit()
 
 
@@ -896,6 +904,10 @@ class SpecificWorker(GenericWorker):
         :return:
         """
         print("Entered state admin_games")
+        self.ui.pause_game_button.setEnabled(False)
+        self.ui.continue_game_button.setEnabled(False)
+        self.ui.finish_game_button.setEnabled(False)
+        self.ui.reset_game_button.setEnabled(False)
         if len(self.list_games_toplay)>0:
             ddbb_game = self.list_games_toplay.pop(0)
             game_name = QObject().tr(ddbb_game.name)
@@ -911,10 +923,6 @@ class SpecificWorker(GenericWorker):
             print("No quedan juegos")
             self.admingame_proxy.adminEndSession()
 
-        self.ui.pause_game_button.setEnabled(False)
-        self.ui.continue_game_button.setEnabled(False)
-        self.ui.finish_game_button.setEnabled(False)
-        self.ui.reset_game_button.setEnabled(False)
 
     #
     # sm_wait_play
@@ -927,8 +935,11 @@ class SpecificWorker(GenericWorker):
         :return:
         """
         print("Entered state wait_play")
+        if self.aux_firtsGameInSession or not config["quick_execution"]:
         self.ui.start_game_button.setEnabled(True)
         self.ui.end_session_button.setEnabled(True)
+        else:
+            self.admingame_proxy.adminStartGame(self.current_game.name, self.current_game.duration)
 
         self.ui.status_label.setText(self.aux_currentStatus)
         self.ui.num_screentouched_label.setText("-")

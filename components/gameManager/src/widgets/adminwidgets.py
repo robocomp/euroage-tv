@@ -4,10 +4,10 @@ import sys
 
 from PySide2.QtCore import QFile
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox, QPushButton, QLabel, QSizePolicy
 
 CURRENT_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
-UIS_FOLDER = os.path.join(CURRENT_FILE_PATH, "uis")
+UIS_FOLDER = os.path.join(CURRENT_FILE_PATH, "../uis" )
 
 
 class MyQMessageBox(QMessageBox):
@@ -81,7 +81,7 @@ class LoginWindow(QWidget):  # crea widget vacio
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(LoginWindow)
-        file = QFile(os.path.join(UIS_FOLDER, "login.ui"))
+        file = QFile(os.path.join(UIS_FOLDER, "big", "login.ui"))
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -96,7 +96,7 @@ class RegisterWindow(QWidget):  # crea widget vacio
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(RegisterWindow)
-        file = QFile(os.path.join(UIS_FOLDER, "register.ui"))
+        file = QFile(os.path.join(UIS_FOLDER,"big", "register.ui"))
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -111,7 +111,7 @@ class UsersWindow(QWidget):  # crea widget vacio
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(UsersWindow)
-        file = QFile(os.path.join(UIS_FOLDER, "usersv2.ui"))
+        file = QFile(os.path.join(UIS_FOLDER,"big", "usersv2.ui"))
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -126,7 +126,7 @@ class PlayersWindow(QWidget):  # crea widget vacio
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(PlayersWindow)
-        file = QFile(os.path.join(UIS_FOLDER, "player.ui"))
+        file = QFile(os.path.join(UIS_FOLDER,"big", "player.ui"))
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)
@@ -144,7 +144,7 @@ class GameWindow(QWidget):
         self.setLayout(self.mylayout)
         loader = QUiLoader()
         loader.registerCustomWidget(GameWindow)
-        file = QFile(os.path.join(UIS_FOLDER, "AdminInterface.ui"))
+        file = QFile(os.path.join(UIS_FOLDER,"big", "AdminInterface.ui"))
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)

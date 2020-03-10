@@ -4,11 +4,11 @@ from PySide2.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushBu
 
 
 class CustomTimeEditDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, default_seconds=60):
         super(CustomTimeEditDialog, self).__init__(parent)
         self.__main_layout = QVBoxLayout()
         self.setLayout(self.__main_layout)
-        self.__time_edit = CustomQTimeEdit()
+        self.__time_edit = CustomQTimeEdit(default_seconds)
         self.__main_layout.addWidget(self.__time_edit)
         self.__buttons_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.__main_layout.addWidget(self.__buttons_box)
@@ -22,10 +22,10 @@ class CustomTimeEditDialog(QDialog):
 
 
 class CustomQTimeEdit(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, default_seconds=60, parent=None):
         super(CustomQTimeEdit, self).__init__(parent)
 
-        self.__seconds = 0
+        self.__seconds = default_seconds
 
         self.__main_layout = QVBoxLayout()
         self.setLayout(self.__main_layout)
@@ -63,6 +63,7 @@ class CustomQTimeEdit(QWidget):
         self.__minutes_down_button.pressed.connect(self.down_minutes)
         self.__seconds_up_button.pressed.connect(self.up_seconds)
         self.__seconds_down_button.pressed.connect(self.down_seconds)
+        self.update_label()
 
     def up_minutes(self):
         self.__seconds += 60
@@ -84,8 +85,8 @@ class CustomQTimeEdit(QWidget):
         if self.__seconds < 0:
             self.__seconds = 0
         minutes = int(self.__seconds / 60)
-        seconds = int(self.__seconds%60)
-        self.__time_label.setText("%02d:%02d"%(minutes, seconds))
+        seconds = int(self.__seconds % 60)
+        self.__time_label.setText("%02d:%02d" % (minutes, seconds))
 
     @property
     def seconds(self):

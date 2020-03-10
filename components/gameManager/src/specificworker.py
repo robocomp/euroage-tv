@@ -516,7 +516,7 @@ class SpecificWorker(GenericWorker):
         selected_game_incombo = self.ui.selgame_combobox.currentData()
         selected_name_incombo = self.ui.selgame_combobox.currentText()
         if selected_game_incombo is not None:
-            from widgets.CustomQTimeEdit import CustomTimeEditDialog
+            from widgets.customqtimer import CustomTimeEditDialog
             time_widget = CustomTimeEditDialog(self)
             if time_widget.exec_():
             item = QListWidgetItem(selected_name_incombo)

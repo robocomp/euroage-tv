@@ -12,9 +12,9 @@ manager_machine{
 
     transitions{
         init_screen => user_login;
-        user_login => create_user, session_init;
+        user_login => user_login, create_user, session_init;
         create_user => user_login;
-        session_init => create_player, wait_ready;
+        session_init => session_init, create_player, wait_ready;
         create_player => session_init;
         wait_ready => admin_games;
         admin_games => wait_play, session_end;
@@ -22,7 +22,7 @@ manager_machine{
         playing => paused, game_end;
         paused => admin_games, playing, game_end;
         game_end => admin_games;
-	    session_end => session_init;
+	    session_end => session_end, session_init;
     };
 };
 

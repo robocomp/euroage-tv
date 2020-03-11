@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2019 by YOUR NAME HERE
+# Copyright (C) 2020 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -22,6 +22,7 @@
 import csv
 import math
 import os
+import traceback
 from datetime import datetime
 
 import yaml
@@ -128,6 +129,11 @@ class Session:
                 game.session_id = session.id
                 game.save_game_to_ddbb(ddbb=ddbb)
 
+# If RoboComp was compiled with Python bindings you can use InnerModel in Python
+# sys.path.append('/opt/robocomp/lib')
+# import librobocomp_qmat
+# import librobocomp_osgviewer
+# import librobocomp_innermodel
 
 class Metrics:
     """
@@ -617,6 +623,13 @@ class SpecificWorker(GenericWorker):
         self.ui.games_list.item(new_index).setText(current_text)
         self.ui.games_list.setCurrentRow(new_index)
 
+    def connection_ddbb_error_retry(self):
+        reply = MyQMessageBox.question(self.focusWidget(), '',
+                                     self.tr('Problemas al establecer la conexión con el servidor.\n'
+                                             'Compruebe que el dispositivo se encuentra conectado a internet.'
+                                             '¿Desea reintentar?'), QMessageBox.Yes, QMessageBox.No)
+        return reply == QMessageBox.Yes
+
     # New player
     def create_player(self):
         """
@@ -679,6 +692,11 @@ class SpecificWorker(GenericWorker):
         the list of games to play.
         """
         patient = self.ui.selplayer_combobox.currentData()
+        if patient == None:
+            MyQMessageBox.information(self.focusWidget(), 'Error',
+                                      self.tr('No se ha seleccionado ningun jugador'),
+                                      QMessageBox.Ok)
+            return
         player_name = patient.username
         self.list_games_toplay = []
 
@@ -713,6 +731,13 @@ class SpecificWorker(GenericWorker):
 
     def setParams(self, params):
         return True
+
+    def process_retry_exception(self, singal_to_emit):
+        reply = self.connection_ddbb_error_retry()
+        if reply:
+            singal_to_emit.emit()
+        else:
+            QApplication.quit()
 
     # =============== Slots methods for State Machine ===================
     # ===================================================================
@@ -765,7 +790,12 @@ class SpecificWorker(GenericWorker):
         print("Entered state user_login")
         self.showFullScreen()
         self.ui.stackedWidget.setCurrentIndex(0)
-        therapists = self.ddbb.get_all_therapist()
+        try:
+            therapists = self.ddbb.get_all_therapist()
+        except (ValueError, ConnectionError) as e:
+            traceback.print_exc()
+            self.process_retry_exception(self.t_user_login_to_user_login)
+        else:
         list_of_users  = [therapist.username for therapist in therapists]
         # completer = QCompleter(list_of_users)
         # self.ui.username_lineedit.setCompleter(completer)
@@ -904,28 +934,38 @@ class SpecificWorker(GenericWorker):
         """
         print("Entered state session_init")
         self.ui.stackedWidget.setCurrentIndex(2)
-
         self.ui.selplayer_combobox.setCurrentIndex(0)
         self.ui.selgame_combobox.setCurrentIndex(0)
+        self.ui.games_list.clear()
+        self.mainMenu.setEnabled(True)
 
         if self.aux_sessionInit == False:
 
-            patients = self.ddbb.get_all_patients_by_therapist(self.current_therapist.id_terapeuta)
+            try:
+                patients = self.ddbb.get_all_patients_by_therapist(self.current_therapist.id_terapeuta)
+            except (ValueError, ConnectionError) as e:
+                traceback.print_exc()
+                self.process_retry_exception(self.t_session_init_to_session_init)
+            else:
             patients_list = []
             for p in patients:
                 self.ui.selplayer_combobox.addItem(p.username, p)
 
-
-            for game in self.ddbb.get_all_games():
+                try:
+                    games = self.ddbb.get_all_games()
+                except (ValueError, ConnectionError) as e:
+                    traceback.print_exc()
+                    self.process_retry_exception(self.t_session_init_to_session_init)
+                else:
+                    for game in games:
                 translated_name = QObject().tr(game.name)
                 self.ui.selgame_combobox.addItem(translated_name, game)
 
+                self.aux_sessionInit = True
+                self.aux_savedGames = False
 
-            self.aux_sessionInit = True
 
-        self.ui.games_list.clear()
-        self.mainMenu.setEnabled(True)
-        self.aux_savedGames = False
+
 
     def get_all_games_names(self):
         all_ddbb_games = self.ddbb.get_all_games()
@@ -1052,14 +1092,17 @@ class SpecificWorker(GenericWorker):
                 print("Session time =  ", self.current_session.total_time, "milliseconds")
 
                 self.compute_session_metrics()
-                self.current_session.save_session_to_ddbb(self.ddbb)
-                self.sessions.append(self.current_session)
 
+                try:
+                self.current_session.save_session_to_ddbb(self.ddbb)
+                except (ValueError, ConnectionError) as e:
+                    traceback.print_exc()
+                    self.process_retry_exception(self.t_session_end_to_session_end)
+                else:
+                self.sessions.append(self.current_session)
         MyQMessageBox.information(self.focusWidget(), 'Adios',
                                   self.tr('Se ha finalizado la sesion'),
                                   QMessageBox.Ok)
-
-        # exit(-1)
         self.t_session_end_to_session_init.emit()
 
     # =================================================================

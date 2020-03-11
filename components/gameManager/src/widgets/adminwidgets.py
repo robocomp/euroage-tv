@@ -7,7 +7,7 @@ from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication, QMessageBox, QPushButton, QLabel, QSizePolicy
 
 CURRENT_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
-UIS_FOLDER = os.path.join(CURRENT_FILE_PATH, "../uis" )
+UIS_FOLDER = os.path.join(CURRENT_FILE_PATH, "../uis")
 
 
 class MyQMessageBox(QMessageBox):
@@ -61,7 +61,6 @@ class MyQMessageBox(QMessageBox):
         message_box.setDefaultButton(QMessageBox.Yes)
         return message_box.exec_()
 
-
     @staticmethod
     def information(parent, title, text, button0=None, button1=None):
         return MyQMessageBox.show_information(parent=parent, title=title, message=text)
@@ -71,85 +70,50 @@ class MyQMessageBox(QMessageBox):
         return MyQMessageBox.show_question(parent=parent, title=title, message=text)
 
 
+class FileWidgetLoader(QWidget):
+    def __init__(self, filename, type="big", parent=None):
+        super(FileWidgetLoader, self).__init__(parent)
+        self.__mylayout = QVBoxLayout()
+        self.setLayout(self.__mylayout)
+        loader = QUiLoader()
+        loader.setLanguageChangeEnabled(True)
+        # loader.registerCustomWidget(FileWidgetLoader)
+        file = QFile(os.path.join(UIS_FOLDER, type, filename))
+        file.open(QFile.ReadOnly)
+        self.ui = loader.load(file, self.parent())
+        self.__mylayout.addWidget(self.ui)
+        self.__mylayout.setContentsMargins(0, 0, 0, 0)
+        file.close()
 
 
 # TODO:  try to unifiy the repeated code.
-class LoginWindow(QWidget):  # crea widget vacio
+class LoginWindow(FileWidgetLoader):  # crea widget vacio
     def __init__(self, parent=None):
-        super(LoginWindow, self).__init__(parent)
-        self.mylayout = QVBoxLayout()
-        self.setLayout(self.mylayout)
-        loader = QUiLoader()
-        loader.registerCustomWidget(LoginWindow)
-        file = QFile(os.path.join(UIS_FOLDER, "big", "login.ui"))
-        file.open(QFile.ReadOnly)
-        self.ui = loader.load(file, self.parent())
-        self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0, 0, 0, 0)
-        file.close()
+        super(LoginWindow, self).__init__("login.ui", "big", parent)
 
 
-class RegisterWindow(QWidget):  # crea widget vacio
+class RegisterWindow(FileWidgetLoader):  # crea widget vacio
     def __init__(self, parent=None):
-        super(RegisterWindow, self).__init__(parent)
-        self.mylayout = QVBoxLayout()
-        self.setLayout(self.mylayout)
-        loader = QUiLoader()
-        loader.registerCustomWidget(RegisterWindow)
-        file = QFile(os.path.join(UIS_FOLDER,"big", "register.ui"))
-        file.open(QFile.ReadOnly)
-        self.ui = loader.load(file, self.parent())
-        self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0, 0, 0, 0)
-        file.close()
+        super(RegisterWindow, self).__init__("register.ui", "big", parent)
 
 
-class UsersWindow(QWidget):  # crea widget vacio
+class UsersWindow(FileWidgetLoader):  # crea widget vacio
     def __init__(self, parent=None):
-        super(UsersWindow, self).__init__(parent)
-        self.mylayout = QVBoxLayout()
-        self.setLayout(self.mylayout)
-        loader = QUiLoader()
-        loader.registerCustomWidget(UsersWindow)
-        file = QFile(os.path.join(UIS_FOLDER,"big", "usersv2.ui"))
-        file.open(QFile.ReadOnly)
-        self.ui = loader.load(file, self.parent())
-        self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0, 0, 0, 0)
-        file.close()
+        super(UsersWindow, self).__init__("usersv2.ui", "big", parent)
 
 
-class PlayersWindow(QWidget):  # crea widget vacio
+class PlayersWindow(FileWidgetLoader):  # crea widget vacio
     def __init__(self, parent=None):
-        super(PlayersWindow, self).__init__(parent)
-        self.mylayout = QVBoxLayout()
-        self.setLayout(self.mylayout)
-        loader = QUiLoader()
-        loader.registerCustomWidget(PlayersWindow)
-        file = QFile(os.path.join(UIS_FOLDER,"big", "player.ui"))
-        file.open(QFile.ReadOnly)
-        self.ui = loader.load(file, self.parent())
-        self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0, 0, 0, 0)
-        file.close()
+        super(PlayersWindow, self).__init__("player.ui", "big", parent)
 
 
-class GameWindow(QWidget):
+class GameWindow(FileWidgetLoader):
     """
     This is the widget for the GameWindow.
     """
+
     def __init__(self, parent=None):
-        super(GameWindow, self).__init__(parent)
-        self.mylayout = QVBoxLayout()
-        self.setLayout(self.mylayout)
-        loader = QUiLoader()
-        loader.registerCustomWidget(GameWindow)
-        file = QFile(os.path.join(UIS_FOLDER,"big", "AdminInterface.ui"))
-        file.open(QFile.ReadOnly)
-        self.ui = loader.load(file, self.parent())
-        self.mylayout.addWidget(self.ui)
-        self.mylayout.setContentsMargins(0, 0, 0, 0)
-        file.close()
+        super(GameWindow, self).__init__("AdminInterface.ui", "big", parent)
 
 
 if __name__ == '__main__':

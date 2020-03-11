@@ -26,8 +26,8 @@ from datetime import datetime
 
 import yaml
 import passwordmeter
-from PySide2.QtCore import Signal, QObject, Qt, QTranslator, QFile, QTimer
-from PySide2.QtGui import QKeySequence
+from PySide2.QtCore import Signal, QObject, Qt, QTranslator, QFile, QTimer, QEvent
+from PySide2.QtGui import QKeySequence, QIcon
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QMessageBox, QCompleter, QAction, qApp, QApplication, QShortcut, QListWidgetItem
 from genericworker import *
@@ -210,24 +210,17 @@ class Game:
 
 
 
-
 class SpecificWorker(GenericWorker):
     login_executed = Signal(bool)
     updateUISig = Signal()
 
     def __init__(self, proxy_map):
         super(SpecificWorker, self).__init__(proxy_map)
-        app = QApplication.instance()
-        translator = QTranslator(app)
-        if translator.load('src/i18n/pt_PT.qm'):
-            print("-------Loading translation")
-            if app is not None:
-                print("-------Translating")
-                result = app.installTranslator(translator)
+        self.translator = None
+        if config["default_language"] == "Portuguese":
+            self.translate_into_portuguese()
             else:
-                print("-------Could not find app instance")
-        else:
-            print("-------couldn't load translation")
+            self.translate_into_spanish()
 
         self.Period = 2000
         self.timer.start(self.Period)
@@ -327,15 +320,33 @@ class SpecificWorker(GenericWorker):
 
         # Menu
         self.mainMenu = self.menuBar()
-        fileMenu = self.mainMenu.addMenu('&Menú')
+        file_menu = self.mainMenu.addMenu(self.tr('&Menú'))
+        language_menu = self.mainMenu.addMenu(self.tr('&Idioma'))
         if self.ui.stackedWidget.currentIndex == 0 or self.ui.stackedWidget.currentIndex == 1:
             self.mainMenu.setEnabled(False)
 
 
-        exitAction = QAction('&Salir', self)
-        exitAction.triggered.connect(self.t_admin_to_app_end)
+        exit_action = QAction('&Salir', self)
+        exit_action.triggered.connect(self.t_admin_to_app_end)
         QApplication.instance().aboutToQuit.connect(self.t_admin_to_app_end)
-        fileMenu.addAction(exitAction)
+        file_menu.addAction(exit_action)
+
+        to_spanish_action = QAction('&Español', self)
+        to_spanish_action.triggered.connect(self.translate_into_spanish)
+        to_portuguese_action = QAction('&Português', self)
+        to_portuguese_action.triggered.connect(self.translate_into_portuguese)
+        language_menu.addAction(to_spanish_action)
+        language_menu.addAction(to_portuguese_action)
+
+
+
+        self.ui.ES_button.setDefaultAction(to_spanish_action)
+        self.ui.PT_button.setDefaultAction(to_portuguese_action)
+
+
+
+        self.ui.ES_button.setIcon(QIcon(os.path.join("src","resources", "ES-Spain-Flag-icon.png")))
+        self.ui.PT_button.setIcon(QIcon(os.path.join("src", "resources", "PT-Portugal-Flag-icon.png")))
 
         # closeAction = QAction('&Cerrar sesión', self)
         # closeAction.triggered.connect(self.close_thsession_clicked)
@@ -377,6 +388,32 @@ class SpecificWorker(GenericWorker):
         self.ui.end_session_button.clicked.connect(self.end_session_clicked)
 
         self.ui.quit_button.clicked.connect(self.t_admin_to_app_end)
+
+
+    def translate_into_spanish(self):
+        self.translate_to("src/i18n/es_ES.qm")
+
+    def translate_into_portuguese(self):
+        self.translate_to("src/i18n/pt_PT.qm")
+
+    def translate_to(self, translation_file_path):
+        app = QApplication.instance()
+        if self.translator is None:
+            self.translator = QTranslator()
+        else:
+            app.removeTranslator(self.translator)
+        if self.translator.load(translation_file_path):
+            print("-------Loading translation")
+            if app is not None:
+                print("-------Translating")
+                app.installTranslator(self.translator)
+            else:
+                print("-------Could not find app instance")
+                self.translator = None
+        else:
+            print("-------couldn't load translation")
+            self.translator = None
+
 
     def ddbb_status_changed(self, string):
         """
@@ -654,9 +691,9 @@ class SpecificWorker(GenericWorker):
                                       self.tr('No se ha seleccionado ningún juego'),
                                       QMessageBox.Ok)
         else:
-
             self.current_session = Session(therapist=self.current_therapist, patient=patient)
             self.admingame_proxy.adminStartSession(player_name)
+
 
     def end_session_clicked(self):
         """

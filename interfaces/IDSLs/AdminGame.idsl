@@ -11,6 +11,7 @@ interface AdminGame
      	void adminResetGame();
 	    void adminEndSession();
 	    void adminStopApp();
+	    void adminChangeLanguage(string language);
     };
 };
 

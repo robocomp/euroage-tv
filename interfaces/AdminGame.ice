@@ -12,6 +12,7 @@ module EuroAgeGamesAdmin
 {
 	interface AdminGame
 	{
+		void adminChangeLanguage (string language);
 		void adminContinueGame ();
 		void adminEndSession ();
 		void adminPauseGame ();

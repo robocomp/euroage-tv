@@ -591,18 +591,13 @@ class CoolButton(QPushButton):
         self._offset = offset
         self.setFixedSize(QSize(size, size))
         self.set_color(color)
+        self.__text = text
+        self.__image_path = image_path
+        self.__size = size
+        self.__offset = offset
+        self.__color = color
+        self.repaint()
 
-        pixmap = QPixmap(image_path).scaled(QSize(size, size))
-        painter = QPainter(pixmap)
-        f = QFont("Arial",size/12, QFont.Bold)
-        painter.setFont(f)
-        font_size = QFontMetrics(f).width(text.upper())
-        painter.drawText(QPoint((size-font_size)/2+2, size*0.8), text.upper())
-        painter.end()
-        icon = QIcon(pixmap)
-
-        self.setIcon(icon)
-        self.setIconSize(pixmap.rect().size())
 
         # self.setMask(QRegion(QRect(OFFSET/4, OFFSET/4, self._size-OFFSET, self._size-OFFSET), QRegion.Ellipse))
         self.setMask(
@@ -617,6 +612,21 @@ class CoolButton(QPushButton):
         # Shadow
         self._set_released_shadow()
 
+    def setText(self, text):
+        self.__text = text
+        self.repaint()
+
+    def repaint(self):
+        pixmap = QPixmap(self.__image_path).scaled(QSize(self.__size, self.__size))
+        painter = QPainter(pixmap)
+        f = QFont("Arial", self.__size / 12, QFont.Bold)
+        painter.setFont(f)
+        font_size = QFontMetrics(f).width(self.__text.upper())
+        painter.drawText(QPoint((self.__size - font_size) / 2 + 2, self.__size * 0.8), self.__text.upper())
+        painter.end()
+        icon = QIcon(pixmap)
+        self.setIcon(icon)
+        self.setIconSize(pixmap.rect().size())
 
     def set_color(self, color):
         if isinstance(color, QColor):

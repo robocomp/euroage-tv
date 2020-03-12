@@ -60,6 +60,8 @@ class AdminGameI(AdminGame):
 	def __init__(self, worker):
 		self.worker = worker
 
+	def adminChangeLanguage(self, language, c):
+		return self.worker.AdminGame_adminChangeLanguage(language)
 	def adminContinueGame(self, c):
 		return self.worker.AdminGame_adminContinueGame()
 	def adminEndSession(self, c):

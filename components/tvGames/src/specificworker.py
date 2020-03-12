@@ -158,17 +158,8 @@ class SpecificWorker(GenericWorker):
 	"""
 	def __init__(self, proxy_map):
 		super(SpecificWorker, self).__init__(proxy_map)
-		app = QApplication.instance()
-		translator = QTranslator(app)
-		if translator.load('src/i18n/pt_PT.qm'):
-			print("-------Loading translation")
-			if app is not None:
-				print("-------Translating")
-				result = app.installTranslator(translator)
-			else:
-				print("-------Could not find app instance")
-		else:
-			print("-------couldn't load translation")
+		self.__language = None
+		self.__translator = None
 		self._current_players = []
 		self.hands = []
 		self.font = cv2.FONT_HERSHEY_SIMPLEX
@@ -306,6 +297,24 @@ class SpecificWorker(GenericWorker):
 		self.mouse_grab = False
 		self._mouse_release_point = point
 		print("Mouse released")
+
+	def translate_to(self, translation_file_path):
+		app = QApplication.instance()
+		if self.__translator is None:
+			self.__translator = QTranslator()
+		else:
+			app.removeTranslator(self.__translator)
+		if self.__translator.load(translation_file_path):
+			print("-------Loading translation")
+			if app is not None:
+				print("-------Translating")
+				app.installTranslator(self.__translator)
+			else:
+				print("-------Could not find app instance")
+				self.__translator = None
+		else:
+			print("-------couldn't load translation")
+			self.__translator = None
 
 	def setParams(self, params):
 		"""
@@ -863,6 +872,21 @@ class SpecificWorker(GenericWorker):
 
 # =============== Methods for Component Implements ==================
 # ===================================================================
+
+	#
+	# adminChangeLanguage
+	#
+	def AdminGame_adminChangeLanguage(self, language):
+		#
+		# implementCODE
+		#
+		print("Asked to change language to %s"%language)
+		self.__language = language
+		if language == "Portuguese":
+			self.translate_to("src/i18n/pt_PT.qm")
+		else:
+			self.translate_to("src/i18n/es_ES.qm")
+
 
 	#
 	# adminPauseGame

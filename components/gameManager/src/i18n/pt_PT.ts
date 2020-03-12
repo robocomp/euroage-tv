@@ -668,4 +668,14 @@
         <translation>Retire o leite quente</translation>
     </message>
 </context>
+<context>
+    <name>CustomTimeEditDialog</name>
+    <message>
+        <location filename="widgets/customqtimeedit.py" line="14"/>
+        <source>Seleccione el tiempo
+para este juego</source>
+        <translation>Selecione a duração
+deste jogo</translation>
+    </message>
+</context>
 </TS>

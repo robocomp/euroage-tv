@@ -150,6 +150,7 @@ class GameLayout:
         self.columns = len(self.pieces) if len(self.pieces) < self.max_pieces_per_row else self.max_pieces_per_row
         self.piece_size = self.calculate_max_piece_size()
 
+        # loop over pieces shorted by its index
         for l_index, piece in enumerate(sorted(self.pieces, key=operator.attrgetter('index'))):
             current_column = l_index % self.max_pieces_per_row
             current_row = int(l_index / float(self.max_pieces_per_row))
@@ -168,6 +169,7 @@ class GameLayout:
         return column_initial_x + piece_offset
 
     def y_for_piece_in_row(self, row, destination=False):
+        # row height thinking on origin and destination
         row_height = (self.scene_height / self.rows)/2
         assert self.piece_size[1] <= row_height, "Piece width can't be higher than the column width"
         if not destination:

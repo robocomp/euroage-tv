@@ -1335,56 +1335,24 @@ class TakeDragGame(QWidget):
                     self._destinations[dest_item.index]=dest_item
                     self.total_images = self.total_images + 1
                     self._scene.addItem(dest_item)
+            self.set_initial_pieces_positions()
 
-            layout = GameLayout(scene= self._scene, pieces=self._pieces, minimum_piece_width=32, minimum_piece_height=24, piece_spacing=4, max_pieces_per_row=len(self._pieces), margins=None)
-            new_initial_positions = layout.initial_positions
-            initial_destinations = layout.destination_positions
+    def set_initial_pieces_positions(self):
+        self.layout = GameLayout(scene= self._scene, pieces=self._pieces, minimum_piece_width=32, minimum_piece_height=24, piece_spacing=4, max_pieces_per_row=len(self._pieces), margins=None)
+        print("Before Layout: %d" %self.layout.scene_height)
+        new_initial_positions = self.layout.initial_positions
+        initial_destinations = self.layout.destination_positions
             random_positions = list(new_initial_positions.values())
             random.shuffle(random_positions)
             for piece in self._pieces:
                 new_pos = random_positions.pop()
                 new_dest = initial_destinations[piece]
-                piece.width = layout.piece_size[0]
+            piece.width = self.layout.piece_size[0]
                 piece.setPos(new_pos[0], new_pos[1])
                 piece.final_destination.setRect(piece.boundingRect())
                 piece.final_destination.setPos(new_dest[0], new_dest[1])
 
 
-
-    def resize_pieces_auto(self):
-        num_pieces = len(self._pieces)
-        piece_margins = 5
-        new_piece_width = (self._scene.sceneRect().width()-(piece_margins*2*num_pieces))/num_pieces
-        for piece in self._pieces:
-            piece.width = new_piece_width
-
-    def calculate_initial_auto_pieces_positions(self):
-        piece_margins = 5
-        last_pos_x = 0
-        pieces_positions = []
-        # We divide the heght in 5 "lines" and the pieces goes on the second one
-        new_pos_y = self._scene.sceneRect().height()/5
-
-        for piece in self._pieces:
-            new_pos_x = last_pos_x + piece_margins
-            last_pos_x = new_pos_x + piece.width + piece_margins
-            pieces_positions.append((new_pos_x, new_pos_y))
-        return pieces_positions
-
-    def set_random_initial_auto_pieces_positions(self, random_order=True):
-        initial_pos = self.calculate_initial_auto_pieces_positions()
-        if random_order:
-            random.shuffle(initial_pos)
-        for piece in self._pieces:
-            random_new_pos = initial_pos.pop()
-            if piece.initial_pos is None:
-                self.initial_pos = random_new_pos
-                piece.setPos(random_new_pos[0], random_new_pos[1])
-
-    def set_auto_initial_destinations_positions(self):
-        initial_positions = self.calculate_initial_auto_pieces_positions()
-        for i in range(len(self._destinations)):
-            self._destinations[i].setPos(initial_positions(i))
 
     def check_win(self):
         right, wrong = self.right_wrong_pieces()
@@ -1416,6 +1384,10 @@ class TakeDragGame(QWidget):
         # self._view.centerOn(self._view.mapFromScene(0, 0))
 
     def resizeEvent(self, event):
+        try:
+            self.set_initial_pieces_positions()
+        except:
+            print("Couldn't set initial_positions on resize event")
         self.adjust_view()
         super(TakeDragGame, self).resizeEvent(event)
 

@@ -4,10 +4,18 @@ from PySide2.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushBu
 
 
 class CustomTimeEditDialog(QDialog):
-    def __init__(self, parent=None, default_seconds=60):
+    def __init__(self, parent=None, default_seconds=120):
         super(CustomTimeEditDialog, self).__init__(parent)
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        self.setObjectName("CustomTimeEditDialog")
+        self.setWindowTitle("")
         self.__main_layout = QVBoxLayout()
         self.setLayout(self.__main_layout)
+        self.__label = QLabel(self.tr("Seleccione el tiempo\npara este juego"))
+        self.__label.setAlignment(Qt.AlignCenter)
+        f = QFont("Arial", 14, QFont.Bold)
+        self.__label.setFont(f)
+        self.__main_layout.addWidget(self.__label)
         self.__time_edit = CustomQTimeEdit(default_seconds)
         self.__main_layout.addWidget(self.__time_edit)
         self.__buttons_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -36,6 +44,7 @@ class CustomQTimeEdit(QWidget):
         f = QFont("Arial", 50, QFont.Bold)
         self.__time_label = QLabel("00:00", self)
         self.__time_label.setFont(f)
+        self.__time_label.setAlignment(Qt.AlignCenter)
 
         self.__minutes_up_button = QPushButton()
         self.__minutes_up_button.setAutoRepeat(True)

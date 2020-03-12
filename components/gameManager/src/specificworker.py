@@ -33,7 +33,7 @@ from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QMessageBox, QCompleter, QAction, qApp, QApplication, QShortcut, QListWidgetItem
 from genericworker import *
 from history import History
-from widgets import qusermanager, qvideodialog, adminwidgets
+from widgets import qusermanager, qvideodialog, adminwidgets, customqtimeedit
 
 from src.widgets.adminwidgets import MyQMessageBox
 try:
@@ -562,8 +562,11 @@ class SpecificWorker(GenericWorker):
         selected_game_incombo = self.ui.selgame_combobox.currentData()
         selected_name_incombo = self.ui.selgame_combobox.currentText()
         if selected_game_incombo is not None:
-            from widgets.customqtimer import CustomTimeEditDialog
-            time_widget = CustomTimeEditDialog(self)
+            if "default_game_duration" in config:
+                time = config["default_game_duration"]
+            else:
+                time = 60
+            time_widget = customqtimeedit.CustomTimeEditDialog(self, time)
             if time_widget.exec_():
             item = QListWidgetItem(selected_name_incombo)
                 selected_game_incombo.duration = time_widget.seconds
@@ -872,7 +875,6 @@ class SpecificWorker(GenericWorker):
         self.t_game_end_to_admin_games.emit()
 
 
-
     #
     # sm_paused
     #
@@ -965,8 +967,6 @@ class SpecificWorker(GenericWorker):
                 self.aux_savedGames = False
 
 
-
-
     def get_all_games_names(self):
         all_ddbb_games = self.ddbb.get_all_games()
         list_of_games = []
@@ -992,7 +992,7 @@ class SpecificWorker(GenericWorker):
         self.ui.continue_game_button.setEnabled(False)
         self.ui.finish_game_button.setEnabled(False)
         self.ui.reset_game_button.setEnabled(False)
-        if len(self.list_games_toplay)>0:
+        if len(self.list_games_toplay) > 0:
             ddbb_game = self.list_games_toplay.pop(0)
             game_name = QObject().tr(ddbb_game.name)
             self.current_game = Game()

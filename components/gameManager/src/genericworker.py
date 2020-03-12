@@ -85,9 +85,11 @@ class GenericWorker(QtWidgets.QMainWindow):
 #Signals for State Machine
 	t_admin_to_app_end = QtCore.Signal()
 	t_init_screen_to_user_login = QtCore.Signal()
+	t_user_login_to_user_login = QtCore.Signal()
 	t_user_login_to_create_user = QtCore.Signal()
 	t_user_login_to_session_init = QtCore.Signal()
 	t_create_user_to_user_login = QtCore.Signal()
+	t_session_init_to_session_init = QtCore.Signal()
 	t_session_init_to_create_player = QtCore.Signal()
 	t_session_init_to_wait_ready = QtCore.Signal()
 	t_create_player_to_session_init = QtCore.Signal()
@@ -102,6 +104,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 	t_paused_to_playing = QtCore.Signal()
 	t_paused_to_game_end = QtCore.Signal()
 	t_game_end_to_admin_games = QtCore.Signal()
+	t_session_end_to_session_end = QtCore.Signal()
 	t_session_end_to_session_init = QtCore.Signal()
 
 #-------------------------
@@ -147,9 +150,11 @@ class GenericWorker(QtWidgets.QMainWindow):
 #Initialization State machine
 		self.admin_state.addTransition(self.t_admin_to_app_end, self.app_end_state)
 		self.init_screen_state.addTransition(self.t_init_screen_to_user_login, self.user_login_state)
+		self.user_login_state.addTransition(self.t_user_login_to_user_login, self.user_login_state)
 		self.user_login_state.addTransition(self.t_user_login_to_create_user, self.create_user_state)
 		self.user_login_state.addTransition(self.t_user_login_to_session_init, self.session_init_state)
 		self.create_user_state.addTransition(self.t_create_user_to_user_login, self.user_login_state)
+		self.session_init_state.addTransition(self.t_session_init_to_session_init, self.session_init_state)
 		self.session_init_state.addTransition(self.t_session_init_to_create_player, self.create_player_state)
 		self.session_init_state.addTransition(self.t_session_init_to_wait_ready, self.wait_ready_state)
 		self.create_player_state.addTransition(self.t_create_player_to_session_init, self.session_init_state)
@@ -164,6 +169,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 		self.paused_state.addTransition(self.t_paused_to_playing, self.playing_state)
 		self.paused_state.addTransition(self.t_paused_to_game_end, self.game_end_state)
 		self.game_end_state.addTransition(self.t_game_end_to_admin_games, self.admin_games_state)
+		self.session_end_state.addTransition(self.t_session_end_to_session_end, self.session_end_state)
 		self.session_end_state.addTransition(self.t_session_end_to_session_init, self.session_init_state)
 
 

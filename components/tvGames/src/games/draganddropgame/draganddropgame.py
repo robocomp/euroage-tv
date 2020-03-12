@@ -121,11 +121,11 @@ class GameScreen(QWidget):
         style_sheet_string = "GameScreen {background-image: url("+os.path.join(CURRENT_PATH,"..","resources","common", "kitchen-2165756_1920.jpg")+");}"
         self.setStyleSheet(style_sheet_string)
 
-        self.initial_message = QLabel(u"Espera un momento.\n¡El próximo juego empezará\nen breve!")
+        self.initial_message = QLabel(self.tr(u"Espera un momento.\n¡El próximo juego empezará\nen breve!"))
         self.initial_message.setFont(QFont("Arial", 90, QFont.Bold))
         self.initial_message.setAlignment(Qt.AlignCenter)
 
-        self.end_message = QLabel(u"¡Has perdido!")
+        self.end_message = QLabel(self.tr(u"¡Has perdido!"))
         self.end_message.setFont(QFont("Arial", 90, QFont.Bold))
         self.end_message.setAlignment(Qt.AlignCenter)
 
@@ -156,7 +156,16 @@ class GameScreen(QWidget):
         """
         return self._game_frame
 
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            print("Retranslating GameScreen")
+            self.retranslateUi()
+        super(GameScreen, self).changeEvent(event)
 
+    def retranslateUi(self):
+        self._help_button.setText(self.tr("AYUDA"))
+        self._check_button.setText(self.tr("REVISAR"))
+        self.initial_message.setText(self.tr(u"Espera un momento.\n¡El próximo juego empezará\nen breve!"))
     def show_big_scores(self, right_value, wrong_value):
         """
         Show the big widget with the scores on the center of the screen.

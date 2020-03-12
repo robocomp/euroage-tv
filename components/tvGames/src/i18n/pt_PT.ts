@@ -8,10 +8,20 @@
         <source>AYUDA</source>
         <translation>AJUDA</translation>
     </message>
+
     <message>
         <location filename="games/draganddropgame/draganddropgame.py" line="112"/>
         <source>REVISAR</source>
         <translation>REVISÃO</translation>
+    </message>
+    <message>
+        <location filename="games/draganddropgame/draganddropgame.py" line="110"/>
+        <source>Espera un momento.
+¡El próximo juego empezará
+en breve!</source>
+        <translation>Espera um minuto.
+O próximo jogo vai começar
+em breve!</translation>
     </message>
 </context>
 <context>

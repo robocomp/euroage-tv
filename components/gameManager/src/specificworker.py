@@ -398,9 +398,12 @@ class SpecificWorker(GenericWorker):
 
     def translate_into_spanish(self):
         self.translate_to("src/i18n/es_ES.qm")
+        self.admingame_proxy.adminChangeLanguage("Spanish")
+
 
     def translate_into_portuguese(self):
         self.translate_to("src/i18n/pt_PT.qm")
+        self.admingame_proxy.adminChangeLanguage("Portuguese")
 
     def translate_to(self, translation_file_path):
         app = QApplication.instance()

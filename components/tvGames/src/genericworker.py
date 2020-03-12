@@ -44,18 +44,6 @@ except:
 	print('SLICE_PATH environment variable was not exported. Using only the default paths')
 	pass
 
-ice_TvGames = False
-for p in icePaths:
-	if os.path.isfile(p+'/TvGames.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TvGames.ice"
-		Ice.loadSlice(wholeStr)
-		ice_TvGames = True
-		break
-if not ice_TvGames:
-	print('Couln\'t load TvGames')
-	sys.exit(-1)
-from RoboCompTvGames import *
 ice_TouchPoints = False
 for p in icePaths:
 	if os.path.isfile(p+'/TouchPoints.ice'):
@@ -80,18 +68,18 @@ if not ice_CommonBehavior:
 	print('Couln\'t load CommonBehavior')
 	sys.exit(-1)
 from RoboCompCommonBehavior import *
-ice_AdminGame = False
+ice_TvGames = False
 for p in icePaths:
-	if os.path.isfile(p+'/AdminGame.ice'):
+	if os.path.isfile(p+'/TvGames.ice'):
 		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"AdminGame.ice"
+		wholeStr = preStr+"TvGames.ice"
 		Ice.loadSlice(wholeStr)
-		ice_AdminGame = True
+		ice_TvGames = True
 		break
-if not ice_AdminGame:
-	print('Couln\'t load AdminGame')
+if not ice_TvGames:
+	print('Couln\'t load TvGames')
 	sys.exit(-1)
-from EuroAgeGamesAdmin import *
+from RoboCompTvGames import *
 ice_GameMetrics = False
 for p in icePaths:
 	if os.path.isfile(p+'/GameMetrics.ice'):
@@ -104,6 +92,18 @@ if not ice_GameMetrics:
 	print('Couln\'t load GameMetrics')
 	sys.exit(-1)
 from EuroAgeGamesMetrics import *
+ice_AdminGame = False
+for p in icePaths:
+	if os.path.isfile(p+'/AdminGame.ice'):
+		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
+		wholeStr = preStr+"AdminGame.ice"
+		Ice.loadSlice(wholeStr)
+		ice_AdminGame = True
+		break
+if not ice_AdminGame:
+	print('Couln\'t load AdminGame')
+	sys.exit(-1)
+from EuroAgeGamesAdmin import *
 
 
 from admingameI import *

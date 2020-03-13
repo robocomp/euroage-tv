@@ -220,7 +220,7 @@ class GameLayout:
         ratios = defaultdict(list)
         for piece in self.pieces:
             # Truncated float for the ratio
-            ratio = float(int((piece.width/float(piece.height))*100))/100.
+            ratio = float(int((piece.width/float(piece.height))*10))/10.
             ratios[ratio].append(piece)
         if len(ratios) > 1:
             # get the ratio that represent less pieces

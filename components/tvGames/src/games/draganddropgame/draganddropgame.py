@@ -113,7 +113,7 @@ class GameScreen(QWidget):
         self._game_layout.addWidget(self._logos,2,13,1,6,Qt.AlignLeft )
 
         self._video_player = ActionsVideoPlayer()
-        self._video_player.setWindowTitle("Ayuda")
+        self._video_player.setWindowTitle(self.tr("Ayuda"))
 
         # palette = self.palette()
         # brush = QBrush(QImage(os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")))
@@ -129,7 +129,7 @@ class GameScreen(QWidget):
         self.initial_message.setFont(QFont("Arial", 90, QFont.Bold))
         self.initial_message.setAlignment(Qt.AlignCenter)
 
-        self.end_message = QLabel(self.tr(u"¡Has perdido!"))
+        self.end_message = QLabel(self.tr(u"¡Casi!<br>Solo te han faltado %d piezas."))
         self.end_message.setFont(QFont("Arial", 90, QFont.Bold))
         self.end_message.setAlignment(Qt.AlignCenter)
 
@@ -170,6 +170,8 @@ class GameScreen(QWidget):
         self._help_button.setText(self.tr("AYUDA"))
         self._check_button.setText(self.tr("REVISAR"))
         self.initial_message.setText(self.tr(u"Espera un momento.\n¡El próximo juego empezará\nen breve!"))
+        self.end_message.setText(self.tr(u"Casi!<br>Solo te han faltado %d piezas."))
+        self._video_player.setWindowTitle(self.tr("Ayuda"))
     def show_big_scores(self, right_value, wrong_value):
         """
         Show the big widget with the scores on the center of the screen.
@@ -245,7 +247,9 @@ class GameScreen(QWidget):
             subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, sound_file) + "\"", stdout=DEVNULL, shell=True)
             self.game_win.emit()
         else:
-            self.end_message.setText(u"<font color='red'>"+QObject().tr("¡Has perdido!")+"</font>")
+            non_set_count = self.game_frame.non_set_pieces_count()
+            translated = self.tr(u"Casi!<br>Solo te han faltado %d piezas.")%non_set_count
+            self.end_message.setText(u"<font color='red'>"+translated+u"</font>")
             index = randint(0, len(LOST_SOUNDS))
             sound_file = LOST_SOUNDS[index]
             subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, sound_file) + "\"", stdout=DEVNULL, shell=True)

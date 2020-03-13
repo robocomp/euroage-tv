@@ -172,6 +172,9 @@ class GameScreen(QWidget):
         self.initial_message.setText(self.tr(u"Espera un momento.\n¡El próximo juego empezará\nen breve!"))
         self.end_message.setText(self.tr(u"Casi!<br>Solo te han faltado %d piezas."))
         self._video_player.setWindowTitle(self.tr("Ayuda"))
+        the_title = QObject().tr(self._game_config["title"])
+        self._top_bar.set_game_name(the_title)
+
     def show_big_scores(self, right_value, wrong_value):
         """
         Show the big widget with the scores on the center of the screen.
@@ -508,7 +511,6 @@ class PieceItem(DraggableItem):
     def __init__(self, id, image_path, clip_path, width, height, title, parent=None):
         super(PieceItem, self).__init__(id, image_path, width, height, parent)
         self._clip_path = clip_path
-
         self._media_player = QMediaPlayer()
         self._media_player.setMuted(True)
         self._video_background = QGraphicsRectItem(self.boundingRect(), self)
@@ -520,9 +522,8 @@ class PieceItem(DraggableItem):
         self._media_player.mediaStatusChanged.connect(self._update_media_status)
         self._media_player.stateChanged.connect(self._update_state)
         self._hide_video()
-
         self._label = QGraphicsTextItem(self) # Label
-        self._set_label(title.upper(), "margin:10px; font-weight: bold; font-size: " +str(self.width()/18)+"pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;") # Nombre
+        self.title = title
         self._label.setY(self.height()-10) # Posicionar abajo
         # self._label.setY(-20) # Posicionar arriba
         self._label.setTextWidth(self.width())
@@ -559,6 +560,14 @@ class PieceItem(DraggableItem):
     def clip_path(self, path):
         self._clip_path = path
 
+    @property
+    def title(self):
+        return self.__title
+
+    @title.setter
+    def title(self, new_title):
+        self.__title = new_title
+        self.__set_label(self.__title.upper(), "margin:10px; font-weight: bold; font-size: " + str(self.width() / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")
 
     def play_item(self):
         self._media_player.play()
@@ -577,7 +586,7 @@ class PieceItem(DraggableItem):
         self._video_background.update()
         self._video_widget.setSize(QSize(10, 10))
 
-    def _set_label(self, text, style):
+    def __set_label(self, text, style):
         self._label.setHtml("<div style='"+style+"'><center><p>"+text+"</p></center>")
 
     def is_playing(self):
@@ -625,10 +634,11 @@ class QOpencvGraphicsVideoItem(DraggableItem):
         self._play_timer = QTimer()
         self._play_timer.timeout.connect(self.show_next_frame)
         self._old_image = None
-        self._title = QObject().tr(title)
         self._label = QGraphicsTextItem(self)  # Label
-        self._set_label(self._title.upper(), "margin:10px; font-weight: bold; font-size: " + str(
-            self.width / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")  # Nombre
+        self.__title = title
+        self.__set_label(self.__title, "margin:10px; font-weight: bold; font-size: " + str(int(
+            self.width / 18)) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")
+
         self._label.setY(self.height - 10)  # Posicionar abajo
         # self._label.setY(-20) # Posicionar arriba
         self._label.setTextWidth(self.width)
@@ -654,7 +664,7 @@ class QOpencvGraphicsVideoItem(DraggableItem):
     @width.setter
     def width(self, value):
         super(QOpencvGraphicsVideoItem, self.__class__).width.fset(self, value)
-        self._set_label(self._title.upper(), "margin:10px; font-weight: bold; font-size: " + str(
+        self.__set_label(self.__title, "margin:10px; font-weight: bold; font-size: " + str(
             self.width / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")
         self._label.setY(self.height - 10)
         self._label.setTextWidth(self.width)
@@ -683,6 +693,15 @@ class QOpencvGraphicsVideoItem(DraggableItem):
     def clip_path(self, path):
         self._video_path = path
 
+    @property
+    def title(self):
+        return self.__title
+
+    @title.setter
+    def title(self, new_title):
+        self.__title = new_title
+        self.__set_label(self.__title, "margin:10px; font-weight: bold; font-size: " + str(int(
+            self.width / 18)) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")
 
     def set_video_path(self, path):
         assert os.path.isfile(path), "No valid path provided %s" % str(path)
@@ -751,8 +770,8 @@ class QOpencvGraphicsVideoItem(DraggableItem):
     def is_playing(self):
         return self._play_timer.isActive()
 
-    def _set_label(self, text, style):
-        self._label.setHtml("<div style='"+style+"'><center><p>"+text+"</p></center>")
+    def __set_label(self, text, style):
+        self._label.setHtml("<div style='"+style+"'><center><p>"+QObject().tr(text).upper()+"</p></center>")
 
 
 class DestinationItem(QGraphicsRectItem):
@@ -1035,6 +1054,17 @@ class TakeDragGame(QWidget):
         # add invisible item to let the title been seen
         # self._invisible_last_item = QGraphicsRectItem(far_right_piece_pos[0]+10, far_right_piece_pos[1]+20, 0, 0)
         # self._scene.addItem(self._invisible_last_item)
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            print("Retranslating GameScreen")
+            self.retranslateUi()
+        super(TakeDragGame, self).changeEvent(event)
+
+    def retranslateUi(self):
+        if len(self._pieces) > 0:
+            for piece in self._pieces:
+                piece.title = piece.title
 
     def total_pieces(self):
         return len(self._pieces)

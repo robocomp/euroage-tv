@@ -1,0 +1,3 @@
+quick_execution: True
+default_language: "Portuguese"
+default_game_duration:  120 # in seconds

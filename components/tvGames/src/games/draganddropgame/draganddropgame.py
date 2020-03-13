@@ -968,6 +968,7 @@ class TakeDragGame(QWidget):
         self._destinations = {}
         self._already_set = []
         self._can_i_talk = True
+        self.__playing = False
 
 
         #TODO: generalize for the game
@@ -1195,6 +1196,7 @@ class TakeDragGame(QWidget):
 
 
     def adjust_to_nearest_destination(self, pointer_id):
+        self.__playing = True
         lowest_distance = sys.maxsize
         nearest_dest = None
         taken_widget = self._pointers[pointer_id].taken
@@ -1398,6 +1400,7 @@ class TakeDragGame(QWidget):
         # self._view.centerOn(self._view.mapFromScene(0, 0))
 
     def resizeEvent(self, event):
+        if not self.__playing:
         try:
             self.set_initial_pieces_positions()
         except:

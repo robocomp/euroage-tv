@@ -1036,6 +1036,8 @@ class TakeDragGame(QWidget):
         # self._invisible_last_item = QGraphicsRectItem(far_right_piece_pos[0]+10, far_right_piece_pos[1]+20, 0, 0)
         # self._scene.addItem(self._invisible_last_item)
 
+    def total_pieces(self):
+        return len(self._pieces)
 
     def clear_scene(self):
         print("Removing %d destinies"%len(self._destinations))
@@ -1117,6 +1119,9 @@ class TakeDragGame(QWidget):
                 piece = self._destinations[index].contained_piece
                 set_pieces.append(piece)
         return set_pieces
+
+    def non_set_pieces_count(self):
+        return len(self._pieces)- len(self.already_set_pieces())
 
     def add_new_pointer(self, pointer_id, xpos, ypos, grab, visible=False):
         # print "TakeDragGame.add_new_pointer: ID=%d"%pointer_id

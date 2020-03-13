@@ -36,7 +36,7 @@ from history import History
 from widgets import qusermanager, qvideodialog, adminwidgets, customqtimeedit
 from src.widgets.adminwidgets import MyQMessageBox
 try:
-    from bbdd import BBDD
+    from ddbbccmi import BBDD
 except:
     print("Database module not found")
     exit(1)
@@ -223,9 +223,6 @@ class SpecificWorker(GenericWorker):
         super(SpecificWorker, self).__init__(proxy_map)
         self.translator = None
         self.translate_to(config["default_language"])
-            self.translate_into_portuguese()
-            else:
-            self.translate_into_spanish()
 
         self.Period = 2000
         self.timer.start(self.Period)
@@ -570,12 +567,12 @@ class SpecificWorker(GenericWorker):
                 time = 60
             time_widget = customqtimeedit.CustomTimeEditDialog(self, time)
             if time_widget.exec_():
-            item = QListWidgetItem(selected_name_incombo)
+                item = QListWidgetItem(selected_name_incombo)
                 selected_game_incombo.duration = time_widget.seconds
-            item.setData(Qt.UserRole, selected_game_incombo)
-            self.ui.games_list.addItem(item)
-            self.ui.selgame_combobox.setCurrentIndex(0)
-            return True
+                item.setData(Qt.UserRole, selected_game_incombo)
+                self.ui.games_list.addItem(item)
+                self.ui.selgame_combobox.setCurrentIndex(0)
+                return True
         else:
             MyQMessageBox.information(self.focusWidget(), 'Error',
                                       self.tr('No se ha seleccionado ningún juego'),
@@ -801,12 +798,12 @@ class SpecificWorker(GenericWorker):
             traceback.print_exc()
             self.process_retry_exception(self.t_user_login_to_user_login)
         else:
-        list_of_users  = [therapist.username for therapist in therapists]
-        # completer = QCompleter(list_of_users)
-        # self.ui.username_lineedit.setCompleter(completer)
-        self.ui.username_lineedit.addItems(list_of_users)
-        self.ui.username_lineedit.setCurrentIndex(1)
-        self.login_executed.connect(self.update_login_status)
+            list_of_users  = [therapist.username for therapist in therapists]
+            # completer = QCompleter(list_of_users)
+            # self.ui.username_lineedit.setCompleter(completer)
+            self.ui.username_lineedit.addItems(list_of_users)
+            self.ui.username_lineedit.setCurrentIndex(0)
+            self.login_executed.connect(self.update_login_status)
 
     #
     # sm_create_player
@@ -874,7 +871,7 @@ class SpecificWorker(GenericWorker):
         if config['quick_execution']:
             QTimer.singleShot(3000, self.t_game_end_to_admin_games)
         else:
-        self.t_game_end_to_admin_games.emit()
+            self.t_game_end_to_admin_games.emit()
 
 
     #
@@ -951,9 +948,9 @@ class SpecificWorker(GenericWorker):
                 traceback.print_exc()
                 self.process_retry_exception(self.t_session_init_to_session_init)
             else:
-            patients_list = []
-            for p in patients:
-                self.ui.selplayer_combobox.addItem(p.username, p)
+                patients_list = []
+                for p in patients:
+                    self.ui.selplayer_combobox.addItem(p.username, p)
 
                 try:
                     games = self.ddbb.get_all_games()
@@ -962,8 +959,8 @@ class SpecificWorker(GenericWorker):
                     self.process_retry_exception(self.t_session_init_to_session_init)
                 else:
                     for game in games:
-                translated_name = QObject().tr(game.name)
-                self.ui.selgame_combobox.addItem(translated_name, game)
+                        translated_name = QObject().tr(game.name)
+                        self.ui.selgame_combobox.addItem(translated_name, game)
 
                 self.aux_sessionInit = True
                 self.aux_savedGames = False
@@ -1022,8 +1019,8 @@ class SpecificWorker(GenericWorker):
         """
         print("Entered state wait_play")
         if self.aux_firtsGameInSession or not config["quick_execution"]:
-        self.ui.start_game_button.setEnabled(True)
-        self.ui.end_session_button.setEnabled(True)
+            self.ui.start_game_button.setEnabled(True)
+            self.ui.end_session_button.setEnabled(True)
         else:
             self.admingame_proxy.adminStartGame(self.current_game.name, self.current_game.duration)
 
@@ -1096,16 +1093,16 @@ class SpecificWorker(GenericWorker):
                 self.compute_session_metrics()
 
                 try:
-                self.current_session.save_session_to_ddbb(self.ddbb)
+                    self.current_session.save_session_to_ddbb(self.ddbb)
                 except (ValueError, ConnectionError) as e:
                     traceback.print_exc()
                     self.process_retry_exception(self.t_session_end_to_session_end)
                 else:
-                self.sessions.append(self.current_session)
-        MyQMessageBox.information(self.focusWidget(), 'Adios',
-                                  self.tr('Se ha finalizado la sesion'),
-                                  QMessageBox.Ok)
-        self.t_session_end_to_session_init.emit()
+                    self.sessions.append(self.current_session)
+                    MyQMessageBox.information(self.focusWidget(), 'Adios',
+                                              self.tr('Se ha finalizado la sesion'),
+                                              QMessageBox.Ok)
+                    self.t_session_end_to_session_init.emit()
 
     # =================================================================
     # =================================================================

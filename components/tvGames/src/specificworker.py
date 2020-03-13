@@ -20,6 +20,7 @@
 #
 import json
 import traceback
+import yaml
 from datetime import datetime
 
 import cv2
@@ -35,6 +36,13 @@ from modules.CalibrationStateMachine import ManualCalibrationStateMachine
 from modules.HandMouse import MultiHandMouses
 from modules.QImageWidget import QImageWidget
 
+stream = open("src/config.yml", 'r')
+config = yaml.load(stream)
+
+LANGUAGES = {
+	"Spanish": "src/i18n/es_ES.qm",
+	"Portuguese": "src/i18n/pt_PT.qm"
+}
 
 FILE_PATH = os.path.dirname(__file__)
 
@@ -160,6 +168,7 @@ class SpecificWorker(GenericWorker):
 		super(SpecificWorker, self).__init__(proxy_map)
 		self.__language = None
 		self.__translator = None
+		self.translate_to(config["default_language"])
 		self._current_players = []
 		self.hands = []
 		self.font = cv2.FONT_HERSHEY_SIMPLEX
@@ -298,13 +307,18 @@ class SpecificWorker(GenericWorker):
 		self._mouse_release_point = point
 		print("Mouse released")
 
-	def translate_to(self, translation_file_path):
+	def translate_to(self, language):
 		app = QApplication.instance()
+		if language in LANGUAGES:
+			self.__language = language
+			translation_file = LANGUAGES[language]
+		else:
+			self.__language = "Spanish"
 		if self.__translator is None:
 			self.__translator = QTranslator()
 		else:
 			app.removeTranslator(self.__translator)
-		if self.__translator.load(translation_file_path):
+		if self.__translator.load(translation_file):
 			print("-------Loading translation")
 			if app is not None:
 				print("-------Translating")
@@ -881,11 +895,7 @@ class SpecificWorker(GenericWorker):
 		# implementCODE
 		#
 		print("Asked to change language to %s"%language)
-		self.__language = language
-		if language == "Portuguese":
-			self.translate_to("src/i18n/pt_PT.qm")
-		else:
-			self.translate_to("src/i18n/es_ES.qm")
+		self.translate_to(language)
 
 
 	#

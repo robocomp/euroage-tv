@@ -761,16 +761,19 @@ class DestinationItem(QGraphicsRectItem):
         self._text = str(index)
         self._index = index
         self._contained_piece = None
+        self.__text_size = rect.height()
+
 
     def paint(self, painter, option, widget):
         painter.save()
         painter.setBrush(QColor("black"))
         font = painter.font()
-        font.setPointSize(70)
+        font.setPointSize(self.__text_size)
         painter.setFont(font)
         painter.drawText(self.rect(), self._text, Qt.AlignCenter | Qt.AlignVCenter)
         painter.restore()
         super(DestinationItem, self).paint(painter,option, widget)
+
 
     def empty(self):
         if self._contained_piece is None:

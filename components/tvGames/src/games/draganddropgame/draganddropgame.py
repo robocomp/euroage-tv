@@ -258,7 +258,7 @@ class GameScreen(QWidget):
 
         self._main_layout.setCurrentIndex(1)
         self._game_frame.end_game()
-        QTimer.singleShot(2000, self.waiting_screen)
+        QTimer.singleShot(5000, self.waiting_screen)
         return result
 
     def waiting_screen(self):

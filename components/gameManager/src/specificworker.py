@@ -34,7 +34,6 @@ from PySide2.QtWidgets import QMessageBox, QCompleter, QAction, qApp, QApplicati
 from genericworker import *
 from history import History
 from widgets import qusermanager, qvideodialog, adminwidgets, customqtimeedit
-
 from src.widgets.adminwidgets import MyQMessageBox
 try:
     from bbdd import BBDD
@@ -223,7 +222,7 @@ class SpecificWorker(GenericWorker):
     def __init__(self, proxy_map):
         super(SpecificWorker, self).__init__(proxy_map)
         self.translator = None
-        if config["default_language"] == "Portuguese":
+        self.translate_to(config["default_language"])
             self.translate_into_portuguese()
             else:
             self.translate_into_spanish()
@@ -339,9 +338,9 @@ class SpecificWorker(GenericWorker):
         file_menu.addAction(exit_action)
 
         to_spanish_action = QAction('&Español', self)
-        to_spanish_action.triggered.connect(self.translate_into_spanish)
+        to_spanish_action.triggered.connect(lambda: self.translate_to("Spanish"))
         to_portuguese_action = QAction('&Português', self)
-        to_portuguese_action.triggered.connect(self.translate_into_portuguese)
+        to_portuguese_action.triggered.connect(lambda: self.translate_to("Portuguese"))
         language_menu.addAction(to_spanish_action)
         language_menu.addAction(to_portuguese_action)
 
@@ -398,16 +397,12 @@ class SpecificWorker(GenericWorker):
         self.ui.quit_button.clicked.connect(self.t_admin_to_app_end)
 
 
-    def translate_into_spanish(self):
-        self.translate_to("src/i18n/es_ES.qm")
-        self.admingame_proxy.adminChangeLanguage("Spanish")
 
-
-    def translate_into_portuguese(self):
-        self.translate_to("src/i18n/pt_PT.qm")
-        self.admingame_proxy.adminChangeLanguage("Portuguese")
-
-    def translate_to(self, translation_file_path):
+    def translate_to(self, language):
+        if language == "Portuguese":
+            translation_file_path = "src/i18n/pt_PT.qm"
+        else:
+            translation_file_path = "src/i18n/es_ES.qm"
         app = QApplication.instance()
         if self.translator is None:
             self.translator = QTranslator()
@@ -418,6 +413,10 @@ class SpecificWorker(GenericWorker):
             if app is not None:
                 print("-------Translating")
                 app.installTranslator(self.translator)
+                try:
+                    self.admingame_proxy.adminChangeLanguage(language)
+                except Ice.ConnectionRefusedException:
+                    traceback.print_exc()
             else:
                 print("-------Could not find app instance")
                 self.translator = None

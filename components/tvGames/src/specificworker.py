@@ -39,13 +39,14 @@ from modules.QImageWidget import QImageWidget
 stream = open("src/config.yml", 'r')
 config = yaml.load(stream)
 
+FILE_PATH = os.path.abspath(__file__)
+CURRENT_PATH = os.path.dirname(__file__)
+TRANSLATIONS_PATH = os.path.join(CURRENT_PATH, 'i18n')
+
 LANGUAGES = {
-	"Spanish": "src/i18n/es_ES.qm",
-	"Portuguese": "src/i18n/pt_PT.qm"
+	"Spanish": os.path.join(TRANSLATIONS_PATH, "es_ES.qm"),
+	"Portuguese": os.path.join(TRANSLATIONS_PATH, "pt_PT.qm")
 }
-
-FILE_PATH = os.path.dirname(__file__)
-
 
 class Player:
 	"""

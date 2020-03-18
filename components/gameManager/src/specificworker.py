@@ -46,6 +46,7 @@ config = yaml.load(stream)
 
 FILE_PATH = os.path.abspath(__file__)
 CURRENT_PATH = os.path.dirname(__file__)
+TRANSLATIONS_PATH = os.path.join(CURRENT_PATH,'i18n')
 
 list_of_users = []
 
@@ -397,9 +398,9 @@ class SpecificWorker(GenericWorker):
 
     def translate_to(self, language):
         if language == "Portuguese":
-            translation_file_path = "src/i18n/pt_PT.qm"
+            translation_file_path = os.path.join(TRANSLATIONS_PATH, "pt_PT.qm")
         else:
-            translation_file_path = "src/i18n/es_ES.qm"
+            translation_file_path = os.path.join(TRANSLATIONS_PATH, "es_ES.qm")
         app = QApplication.instance()
         if self.translator is None:
             self.translator = QTranslator()

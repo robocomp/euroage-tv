@@ -1103,7 +1103,7 @@ class SpecificWorker(GenericWorker):
                     MyQMessageBox.information(self.focusWidget(), 'Adios',
                                               self.tr('Se ha finalizado la sesion'),
                                               QMessageBox.Ok)
-                    self.t_session_end_to_session_init.emit()
+            self.t_session_end_to_session_init.emit()
 
     # =================================================================
     # =================================================================

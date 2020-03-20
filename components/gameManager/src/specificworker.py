@@ -422,6 +422,24 @@ class SpecificWorker(GenericWorker):
             print("-------couldn't load translation")
             self.translator = None
 
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            print("Retranslating GameScreen")
+            self.retranslateUi()
+        super(SpecificWorker, self).changeEvent(event)
+
+    def retranslateUi(self):
+        print("Entered state session_init")
+        if self.ui.stackedWidget.currentIndex() == 2:
+            for row in range(self.ui.selgame_combobox.count()):
+                data = self.ui.selgame_combobox.itemData(row)
+                if data is not None:
+                    translated_name = QObject().tr(data.name)
+                    self.ui.selgame_combobox.setItemText(row, translated_name)
+            for row in range(self.ui.games_list.count()):
+                selected_game = self.ui.games_list.item(row)
+                translated_name = QObject().tr(selected_game.data(Qt.UserRole).name)
+                selected_game.setText(translated_name)
 
     def ddbb_status_changed(self, string):
         """

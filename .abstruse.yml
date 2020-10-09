@@ -1,0 +1,14 @@
+image:
+  ubuntu_18_robocomp_dependences
+matrix:
+  - env: SCRIPT="robocomp_compilation"
+branches:
+  - development
+  - dev/*
+script:
+  - cmake .
+  - make -j $(nproc)
+  - sudo make install
+  - sudo sh -c "echo '/opt/robocomp/lib/' >> /etc/ld.so.conf"
+  - sudo ldconfig
+  - python3 -m unittest discover -s tools/robocompdsl/test

@@ -1,4 +1,4 @@
-# Endpoints for subscriptions
+# Endpoints for subscriptions interfaces
 GameMetricsTopic.Endpoints=tcp -p 10198
 
 

@@ -2,6 +2,7 @@ image:
   ubuntu19_robocomp_installed
 matrix:
   - env: SCRIPT="robocomp_compilation"
+  - env: ABSTRUSE_BUILD_DIR="~/robocomp/components/
 branches:
   - euroage*
 script:

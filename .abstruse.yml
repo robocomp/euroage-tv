@@ -1,14 +1,8 @@
 image:
-  ubuntu_18_robocomp_dependences
+  ubuntu19_robocomp_installed
 matrix:
   - env: SCRIPT="robocomp_compilation"
 branches:
-  - development
-  - dev/*
+  - euroage*
 script:
-  - cmake .
-  - make -j $(nproc)
-  - sudo make install
-  - sudo sh -c "echo '/opt/robocomp/lib/' >> /etc/ld.so.conf"
-  - sudo ldconfig
-  - python3 -m unittest discover -s tools/robocompdsl/test
+  - ls robocomp/components/euroage-tv/components/tvgames/

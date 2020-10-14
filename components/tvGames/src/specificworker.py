@@ -75,7 +75,7 @@ class Player:
 # 	};
 
 
-class GameMetrics(Metrics):
+class GameMetrics(EuroAgeGamesMetrics.Metrics):
 	"""
 	Class and method to take control of the tracked metrics of the game played.
 	This class directly inherit from the Metrics provided by ice interface GameMetrics.ice
@@ -89,7 +89,7 @@ class GameMetrics(Metrics):
 		self.numFails = 0
 		self.numHandClosed = 0
 		self.numScreenTouched = 0
-		self.pos = Position()
+		self.pos = EuroAgeGamesMetrics.Position()
 		self.pos.x = -1
 		self.pos.y = -1
 
@@ -383,7 +383,7 @@ class SpecificWorker(GenericWorker):
 		init_touchscreen_device()
 		# TODO: Test only. Remove on production
 		# self.t_session_start_wait_to_session_init.emit()
-		self.send_status_change(StatusType.waitingSession)
+		self.send_status_change(EuroAgeGamesMetrics.StatusType.waitingSession)
 
 
 	#
@@ -438,7 +438,7 @@ class SpecificWorker(GenericWorker):
 		self._game_metrics.currentDate = datetime.now().isoformat()
 		self.gamemetrics_proxy.metricsObtained(self._game_metrics)
 		print("Entered state game_loop")
-		self.send_status_change(StatusType.playingGame)
+		self.send_status_change(EuroAgeGamesMetrics.StatusType.playingGame)
 		QTimer.singleShot(200, self.t_game_loop_to_game_loop)
 
 	#
@@ -454,7 +454,7 @@ class SpecificWorker(GenericWorker):
 		"""
 		print("Entered state game_lost")
 		# TODO: Only for 1 screen playing. It lets the lost screen to last 3 seconds on screen.
-		QTimer.singleShot(3000, lambda: self.send_status_change(StatusType.lostGame))
+		QTimer.singleShot(3000, lambda: self.send_status_change(EuroAgeGamesMetrics.StatusType.lostGame))
 		QTimer.singleShot(200, self.t_game_lost_to_game_start_wait)
 
 
@@ -474,7 +474,7 @@ class SpecificWorker(GenericWorker):
 		"""
 		print("Entered state game_pause")
 		self._game.pause_game()
-		self.send_status_change(StatusType.pausedGame)
+		self.send_status_change(EuroAgeGamesMetrics.StatusType.pausedGame)
 
 
 	#
@@ -489,7 +489,7 @@ class SpecificWorker(GenericWorker):
 		"""
 		print("Entered state game_reset")
 		self._game.hide()
-		self.send_status_change(StatusType.resetedGame)
+		self.send_status_change(EuroAgeGamesMetrics.StatusType.resetedGame)
 		self.t_game_reset_to_game_start_wait.emit()
 
 	#
@@ -527,7 +527,7 @@ class SpecificWorker(GenericWorker):
 
 		# TODO: Test only. Remove on production
 		# self.t_game_start_wait_to_game_init.emit()
-		self.send_status_change(StatusType.waitingGame)
+		self.send_status_change(EuroAgeGamesMetrics.StatusType.waitingGame)
 		QTimer.singleShot(200, self.t_game_start_wait_to_game_start_wait)
 
 
@@ -545,7 +545,7 @@ class SpecificWorker(GenericWorker):
 		"""
 		print("Entered state game_won")
 		# TODO: Only for 1 screen playing. It lets the win screen to last 3 seconds on screen.
-		QTimer.singleShot(3000, lambda: self.send_status_change(StatusType.wonGame))
+		QTimer.singleShot(3000, lambda: self.send_status_change(EuroAgeGamesMetrics.StatusType.wonGame))
 		QTimer.singleShot(200, self.t_game_won_to_game_start_wait)
 
 
@@ -560,7 +560,7 @@ class SpecificWorker(GenericWorker):
 		:return:
 		"""
 		print("Entered state session_end")
-		self.send_status_change(StatusType.endSession)
+		self.send_status_change(EuroAgeGamesMetrics.StatusType.endSession)
 		self._game.pause_game()
 		self._game.hide()
 		self._game = None
@@ -578,7 +578,7 @@ class SpecificWorker(GenericWorker):
 		:return:
 		"""
 		print("Entered state session_init")
-		self.send_status_change(StatusType.initializingSession)
+		self.send_status_change(EuroAgeGamesMetrics.StatusType.initializingSession)
 
 
 
@@ -592,7 +592,7 @@ class SpecificWorker(GenericWorker):
 		:return:
 		"""
 		print("Entered state player_acquisition_init")
-		self.send_status_change(StatusType.initializingSession)
+		self.send_status_change(EuroAgeGamesMetrics.StatusType.initializingSession)
 		self.t_player_acquisition_init_to_player_acquisition_loop.emit()
 
 
@@ -635,7 +635,7 @@ class SpecificWorker(GenericWorker):
 		"""
 		print("Entered state player_acquisition_ended")
 		self.tv_image.hide()
-		self.send_status_change(StatusType.readySession)
+		self.send_status_change(EuroAgeGamesMetrics.StatusType.readySession)
 		# TODO: Testing only. remove on production
 		self.t_session_init_to_game_start_wait.emit()
 
@@ -1045,7 +1045,7 @@ class SpecificWorker(GenericWorker):
 	# getState
 	#
 	def CommonBehavior_getState(self):
-		ret = State()
+		ret = EuroAgeGamesMetrics.State()
 		#self.touchpoints_proxy.detectedTouchPoints(touch_points)
 		# implementCODE
 		#
@@ -1077,7 +1077,7 @@ class SpecificWorker(GenericWorker):
 	# getParameterList
 	#
 	def CommonBehavior_getParameterList(self):
-		ret = ParameterList()
+		ret = RoboCompCommonBehavior.ParameterList()
 		#
 		# implementCODE
 		#
@@ -1125,15 +1125,15 @@ class SpecificWorker(GenericWorker):
 		"""
 		print("tvGames detected %d"%len(touch_points))
 		if len(touch_points) > 0:
-			state_mapping = {Qt.TouchPointPressed: StateEnum.TouchPointPressed,
-							 Qt.TouchPointMoved: StateEnum.TouchPointMoved,
-							 Qt.TouchPointStationary: StateEnum.TouchPointPressed,
-							 Qt.TouchPointReleased: StateEnum.TouchPointReleased}
+			state_mapping = {Qt.TouchPointPressed: EuroAgeGamesMetrics.StateEnum.TouchPointPressed,
+							 Qt.TouchPointMoved: EuroAgeGamesMetrics.StateEnum.TouchPointMoved,
+							 Qt.TouchPointStationary: EuroAgeGamesMetrics.StateEnum.TouchPointPressed,
+							 Qt.TouchPointReleased: EuroAgeGamesMetrics.StateEnum.TouchPointReleased}
 			for tpoint in touch_points:
 				tpoint.state = state_mapping[tpoint.state]
 
 			# Send update of metrics throught gamemetrics component interface
-			if touch_points[-1].state == StateEnum.TouchPointPressed:
+			if touch_points[-1].state == EuroAgeGamesMetrics.StateEnum.TouchPointPressed:
 				self._game_metrics.numScreenTouched += 1
 			self._game_metrics.pos.x = touch_points[-1].fingertip[0]
 			self._game_metrics.pos.y = touch_points[-1].fingertip[1]
@@ -1149,9 +1149,27 @@ class SpecificWorker(GenericWorker):
 		:param status_type:
 		:return:
 		"""
-		initializing_status = Status()
+		initializing_status = EuroAgeGamesMetrics.Status()
 		initializing_status.currentStatus = status_type
 		initializing_status.date = datetime.now().isoformat()
 		print("Sending %s"%str(status_type))
 		self.gamemetrics_proxy.statusChanged(initializing_status)
+
+    ######################
+    # From the EuroAgeGamesMetrics you can use this types:
+    # EuroAgeGamesMetrics.Status
+    # EuroAgeGamesMetrics.Position
+    # EuroAgeGamesMetrics.Metrics
+
+    ######################
+    # From the RoboCompTouchPoints you can publish calling this methods:
+    # self.touchpoints_proxy.detectedTouchPoints(...)
+
+    ######################
+    # From the RoboCompTouchPoints you can use this types:
+    # RoboCompTouchPoints.TouchPoint
+
+    ######################
+    # From the RoboCompCommonBehavior you can use this types:
+    # RoboCompCommonBehavior.Parameter
 

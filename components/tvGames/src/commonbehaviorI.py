@@ -26,8 +26,7 @@ except:
 	print('$ROBOCOMP environment variable not set, using the default value /opt/robocomp')
 	ROBOCOMP = '/opt/robocomp'
 if len(ROBOCOMP)<1:
-	print('ROBOCOMP environment variable not set! Exiting.')
-	sys.exit()
+    raise RuntimeError('ROBOCOMP environment variable not set! Exiting.')
 
 additionalPathStr = ''
 icePaths = []
@@ -41,19 +40,8 @@ except:
 	print('SLICE_PATH environment variable was not exported. Using only the default paths')
 	pass
 
-ice_CommonBehavior = False
-for p in icePaths:
-	print('Trying', p, 'to load CommonBehavior.ice')
-	if os.path.isfile(p+'/CommonBehavior.ice'):
-		print('Using', p, 'to load CommonBehavior.ice')
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"CommonBehavior.ice"
-		Ice.loadSlice(wholeStr)
-		ice_CommonBehavior = True
-		break
-if not ice_CommonBehavior:
-	print('Couldn\'t load CommonBehavior')
-	sys.exit(-1)
+Ice.loadSlice("-I ./src/ --all ./src/CommonBehavior.ice")
+
 from RoboCompCommonBehavior import *
 
 class CommonBehaviorI(CommonBehavior):

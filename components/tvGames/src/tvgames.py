@@ -132,7 +132,7 @@ if __name__ == '__main__':
 			except:
 				print('Another client created the GameMetrics topic? ...')
 	pub = topic.getPublisher().ice_oneway()
-	gamemetricsTopic = GameMetricsPrx.uncheckedCast(pub)
+	gamemetricsTopic = EuroAgeGamesMetrics.GameMetricsPrx.uncheckedCast(pub)
 	mprx["GameMetricsPub"] = gamemetricsTopic
 
 
@@ -151,7 +151,7 @@ if __name__ == '__main__':
 			except:
 				print('Another client created the TouchPoints topic? ...')
 	pub = topic.getPublisher().ice_oneway()
-	touchpointsTopic = TouchPointsPrx.uncheckedCast(pub)
+	touchpointsTopic = RoboCompTouchPoints.TouchPointsPrx.uncheckedCast(pub)
 	mprx["TouchPointsPub"] = touchpointsTopic
 
 	if status == 0:
@@ -162,17 +162,17 @@ if __name__ == '__main__':
 		sys.exit(-1)
 
 	adapter = ic.createObjectAdapter('AdminGame')
-	adapter.add(AdminGameI(worker), ic.stringToIdentity('admingame'))
+	adapter.add(admingameI.AdminGameI(worker), ic.stringToIdentity('admingame'))
 	adapter.activate()
 
 
 	adapter = ic.createObjectAdapter('CommonBehavior')
-	adapter.add(CommonBehaviorI(worker), ic.stringToIdentity('commonbehavior'))
+	adapter.add(commonbehaviorI.CommonBehaviorI(worker), ic.stringToIdentity('commonbehavior'))
 	adapter.activate()
 
 
 	adapter = ic.createObjectAdapter('TvGames')
-	adapter.add(TvGamesI(worker), ic.stringToIdentity('tvgames'))
+	adapter.add(tvgamesI.TvGamesI(worker), ic.stringToIdentity('tvgames'))
 	adapter.activate()
 
 

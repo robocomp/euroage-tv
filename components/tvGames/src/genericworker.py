@@ -28,87 +28,25 @@ except KeyError:
 	print('$ROBOCOMP environment variable not set, using the default value /opt/robocomp')
 	ROBOCOMP = '/opt/robocomp'
 
-preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ --all /opt/robocomp/interfaces/"
-Ice.loadSlice(preStr+"CommonBehavior.ice")
+Ice.loadSlice("-I ./src/ --all ./src/CommonBehavior.ice")
 import RoboCompCommonBehavior
 
-additionalPathStr = ''
-icePaths = [ '/opt/robocomp/interfaces' ]
-try:
-	SLICE_PATH = os.environ['SLICE_PATH'].split(':')
-	for p in SLICE_PATH:
-		icePaths.append(p)
-		additionalPathStr += ' -I' + p + ' '
-	icePaths.append('/opt/robocomp/interfaces')
-except:
-	print('SLICE_PATH environment variable was not exported. Using only the default paths')
-	pass
-
-ice_TouchPoints = False
-for p in icePaths:
-	if os.path.isfile(p+'/TouchPoints.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TouchPoints.ice"
-		Ice.loadSlice(wholeStr)
-		ice_TouchPoints = True
-		break
-if not ice_TouchPoints:
-	print('Couln\'t load TouchPoints')
-	sys.exit(-1)
-from RoboCompTouchPoints import *
-ice_CommonBehavior = False
-for p in icePaths:
-	if os.path.isfile(p+'/CommonBehavior.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"CommonBehavior.ice"
-		Ice.loadSlice(wholeStr)
-		ice_CommonBehavior = True
-		break
-if not ice_CommonBehavior:
-	print('Couln\'t load CommonBehavior')
-	sys.exit(-1)
-from RoboCompCommonBehavior import *
-ice_TvGames = False
-for p in icePaths:
-	if os.path.isfile(p+'/TvGames.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TvGames.ice"
-		Ice.loadSlice(wholeStr)
-		ice_TvGames = True
-		break
-if not ice_TvGames:
-	print('Couln\'t load TvGames')
-	sys.exit(-1)
-from RoboCompTvGames import *
-ice_GameMetrics = False
-for p in icePaths:
-	if os.path.isfile(p+'/GameMetrics.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GameMetrics.ice"
-		Ice.loadSlice(wholeStr)
-		ice_GameMetrics = True
-		break
-if not ice_GameMetrics:
-	print('Couln\'t load GameMetrics')
-	sys.exit(-1)
-from EuroAgeGamesMetrics import *
-ice_AdminGame = False
-for p in icePaths:
-	if os.path.isfile(p+'/AdminGame.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"AdminGame.ice"
-		Ice.loadSlice(wholeStr)
-		ice_AdminGame = True
-		break
-if not ice_AdminGame:
-	print('Couln\'t load AdminGame')
-	sys.exit(-1)
-from EuroAgeGamesAdmin import *
+Ice.loadSlice("-I ./src/ --all ./src/AdminGame.ice")
+import EuroAgeGamesAdmin
+Ice.loadSlice("-I ./src/ --all ./src/CommonBehavior.ice")
+import RoboCompCommonBehavior
+Ice.loadSlice("-I ./src/ --all ./src/GameMetrics.ice")
+import EuroAgeGamesMetrics
+Ice.loadSlice("-I ./src/ --all ./src/TouchPoints.ice")
+import RoboCompTouchPoints
+Ice.loadSlice("-I ./src/ --all ./src/TvGames.ice")
+import RoboCompTvGames
 
 
-from admingameI import *
-from commonbehaviorI import *
-from tvgamesI import *
+import admingameI
+import commonbehaviorI
+import tvgamesI
+
 
 try:
 	from ui_mainUI import *

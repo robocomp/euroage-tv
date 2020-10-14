@@ -1393,15 +1393,15 @@ class TakeDragGame(QWidget):
         print("Before Layout: %d" %self.layout.scene_height)
         new_initial_positions = self.layout.initial_positions
         initial_destinations = self.layout.destination_positions
-            random_positions = list(new_initial_positions.values())
-            random.shuffle(random_positions)
-            for piece in self._pieces:
-                new_pos = random_positions.pop()
-                new_dest = initial_destinations[piece]
+        random_positions = list(new_initial_positions.values())
+        random.shuffle(random_positions)
+        for piece in self._pieces:
+            new_pos = random_positions.pop()
+            new_dest = initial_destinations[piece]
             piece.width = self.layout.piece_size[0]
-                piece.setPos(new_pos[0], new_pos[1])
-                piece.final_destination.setRect(piece.boundingRect())
-                piece.final_destination.setPos(new_dest[0], new_dest[1])
+            piece.setPos(new_pos[0], new_pos[1])
+            piece.final_destination.setRect(piece.boundingRect())
+            piece.final_destination.setPos(new_dest[0], new_dest[1])
 
 
 
@@ -1436,10 +1436,10 @@ class TakeDragGame(QWidget):
 
     def resizeEvent(self, event):
         if not self.__playing:
-        try:
-            self.set_initial_pieces_positions()
-        except:
-            print("Couldn't set initial_positions on resize event")
+            try:
+                self.set_initial_pieces_positions()
+            except:
+                print("Couldn't set initial_positions on resize event")
         self.adjust_view()
         super(TakeDragGame, self).resizeEvent(event)
 

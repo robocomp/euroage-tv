@@ -1,5 +1,5 @@
 image:
-  ubuntu19_robocomp_installed
+  robocomp_dependences_20.04
 matrix:
   - env: SCRIPT="robocomp_compilation" ABSTRUSE_BUILD_DIR="~/robocomp/components/"
 branches:

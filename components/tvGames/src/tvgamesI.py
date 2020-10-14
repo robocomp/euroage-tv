@@ -26,34 +26,11 @@ except:
 	print('$ROBOCOMP environment variable not set, using the default value /opt/robocomp')
 	ROBOCOMP = '/opt/robocomp'
 if len(ROBOCOMP)<1:
-	print('ROBOCOMP environment variable not set! Exiting.')
-	sys.exit()
+    raise RuntimeError('ROBOCOMP environment variable not set! Exiting.')
 
-additionalPathStr = ''
-icePaths = []
-try:
-	icePaths.append('/opt/robocomp/interfaces')
-	SLICE_PATH = os.environ['SLICE_PATH'].split(':')
-	for p in SLICE_PATH:
-		icePaths.append(p)
-		additionalPathStr += ' -I' + p + ' '
-except:
-	print('SLICE_PATH environment variable was not exported. Using only the default paths')
-	pass
 
-ice_TvGames = False
-for p in icePaths:
-	print('Trying', p, 'to load TvGames.ice')
-	if os.path.isfile(p+'/TvGames.ice'):
-		print('Using', p, 'to load TvGames.ice')
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"TvGames.ice"
-		Ice.loadSlice(wholeStr)
-		ice_TvGames = True
-		break
-if not ice_TvGames:
-	print('Couldn\'t load TvGames')
-	sys.exit(-1)
+Ice.loadSlice("-I ./src/ --all ./src/TvGames.ice")
+
 from RoboCompTvGames import *
 
 class TvGamesI(TvGames):

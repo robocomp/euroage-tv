@@ -10,18 +10,20 @@
     </message>
 
     <message>
-        <location filename="games/draganddropgame/draganddropgame.py" line="112"/>
         <source>REVISAR</source>
         <translation>REVISÃO</translation>
     </message>
     <message>
-        <location filename="games/draganddropgame/draganddropgame.py" line="110"/>
         <source>Espera un momento.
 ¡El próximo juego empezará
 en breve!</source>
         <translation>Espera um minuto.
 O próximo jogo vai começar
 em breve!</translation>
+    </message>
+    <message>
+        <source>Casi!&lt;br&gt;Solo te han faltado %d piezas.</source>
+        <translation >Quase!&lt;br&gt;Só te faltam %d peças.</translation>
     </message>
 </context>
 <context>
@@ -356,6 +358,14 @@ em breve!</translation>
     <message>
         <source>Sacar leche caliente</source>
         <translation>Retire o leite quente</translation>
+    </message>
+    <message>
+        <source>¡Has ganado!</source>
+        <translation>Ganhaste!</translation>
+    </message>
+    <message>
+        <source>¡Has perdido!</source>
+        <translation>Você perdeu!</translation>
     </message>
 </context>
 </TS>

@@ -21,7 +21,7 @@ class History(QDialog):
         self.setLayout(self.mylayout)
         self.bbdd = bbdd
         loader = QUiLoader()
-        file = QFile(os.path.join(UIS_FOLDER, "history.ui"))
+        file = QFile(os.path.join(UIS_FOLDER, "big", "history.ui"))
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         self.mylayout.addWidget(self.ui)

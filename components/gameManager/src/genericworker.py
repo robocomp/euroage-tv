@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2020 by YOUR NAME HERE
+#    Copyright (C) 2020 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -28,49 +28,17 @@ except KeyError:
 	print('$ROBOCOMP environment variable not set, using the default value /opt/robocomp')
 	ROBOCOMP = '/opt/robocomp'
 
-preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ --all /opt/robocomp/interfaces/"
-Ice.loadSlice(preStr+"CommonBehavior.ice")
+Ice.loadSlice("-I ./src/ --all ./src/CommonBehavior.ice")
 import RoboCompCommonBehavior
 
-additionalPathStr = ''
-icePaths = [ '/opt/robocomp/interfaces' ]
-try:
-	SLICE_PATH = os.environ['SLICE_PATH'].split(':')
-	for p in SLICE_PATH:
-		icePaths.append(p)
-		additionalPathStr += ' -I' + p + ' '
-	icePaths.append('/opt/robocomp/interfaces')
-except:
-	print('SLICE_PATH environment variable was not exported. Using only the default paths')
-	pass
-
-ice_GameMetrics = False
-for p in icePaths:
-	if os.path.isfile(p+'/GameMetrics.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GameMetrics.ice"
-		Ice.loadSlice(wholeStr)
-		ice_GameMetrics = True
-		break
-if not ice_GameMetrics:
-	print('Couln\'t load GameMetrics')
-	sys.exit(-1)
-from EuroAgeGamesMetrics import *
-ice_AdminGame = False
-for p in icePaths:
-	if os.path.isfile(p+'/AdminGame.ice'):
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"AdminGame.ice"
-		Ice.loadSlice(wholeStr)
-		ice_AdminGame = True
-		break
-if not ice_AdminGame:
-	print('Couln\'t load AdminGame')
-	sys.exit(-1)
-from EuroAgeGamesAdmin import *
+Ice.loadSlice("-I ./src/ --all ./src/AdminGame.ice")
+import EuroAgeGamesAdmin
+Ice.loadSlice("-I ./src/ --all ./src/GameMetrics.ice")
+import EuroAgeGamesMetrics
 
 
-from gamemetricsI import *
+import gamemetricsI
+
 
 try:
 	from ui_mainUI import *
@@ -194,6 +162,7 @@ class GenericWorker(QtWidgets.QMainWindow):
 #------------------
 
 #Slots funtion State Machine
+
 	@QtCore.Slot()
 	def sm_admin(self):
 		print("Error: lack sm_admin in Specificworker")

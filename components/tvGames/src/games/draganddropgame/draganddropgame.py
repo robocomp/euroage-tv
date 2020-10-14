@@ -8,8 +8,12 @@ import random
 import subprocess
 import sys
 
-from PySide2.QtCore import Signal, Qt, QObject, QTimer, QEvent, QPointF, QSize, QRectF, QUrl, QTranslator, QLocale
-from PySide2.QtGui import QImage, QPixmap, QPainter, QFont, QPen, QBrush, QColor, QPalette
+import cv2
+import numpy as np
+from PySide2.QtCore import Qt, QSize, QPoint
+from PySide2.QtCore import Signal, QObject, QTimer, QEvent, QPointF, QUrl, QTranslator
+from PySide2.QtGui import QColor, QPixmap, QPainter, QFont
+from PySide2.QtGui import QImage, QBrush
 from PySide2.QtMultimedia import QMediaPlayer
 from PySide2.QtMultimediaWidgets import QGraphicsVideoItem
 from PySide2.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout
@@ -109,7 +113,7 @@ class GameScreen(QWidget):
         self._game_layout.addWidget(self._logos,2,13,1,6,Qt.AlignLeft )
 
         self._video_player = ActionsVideoPlayer()
-        self._video_player.setWindowTitle("Ayuda")
+        self._video_player.setWindowTitle(self.tr("Ayuda"))
 
         # palette = self.palette()
         # brush = QBrush(QImage(os.path.join(CURRENT_PATH,"resources","kitchen-2165756_1920.jpg")))
@@ -125,7 +129,7 @@ class GameScreen(QWidget):
         self.initial_message.setFont(QFont("Arial", 90, QFont.Bold))
         self.initial_message.setAlignment(Qt.AlignCenter)
 
-        self.end_message = QLabel(self.tr(u"¡Has perdido!"))
+        self.end_message = QLabel(self.tr(u"¡Casi!<br>Solo te han faltado %d piezas."))
         self.end_message.setFont(QFont("Arial", 90, QFont.Bold))
         self.end_message.setAlignment(Qt.AlignCenter)
 
@@ -166,6 +170,11 @@ class GameScreen(QWidget):
         self._help_button.setText(self.tr("AYUDA"))
         self._check_button.setText(self.tr("REVISAR"))
         self.initial_message.setText(self.tr(u"Espera un momento.\n¡El próximo juego empezará\nen breve!"))
+        self.end_message.setText(self.tr(u"Casi!<br>Solo te han faltado %d piezas."))
+        self._video_player.setWindowTitle(self.tr("Ayuda"))
+        the_title = QObject().tr(self._game_config["title"])
+        self._top_bar.set_game_name(the_title)
+
     def show_big_scores(self, right_value, wrong_value):
         """
         Show the big widget with the scores on the center of the screen.
@@ -235,13 +244,15 @@ class GameScreen(QWidget):
         result = False
         if self._game_frame.check_win():
             result = True
-            self.end_message.setText(u"<font color='green'>¡Has ganado!</font>")
+            self.end_message.setText(u"<font color='green'>"+QObject().tr("¡Has ganado!")+"</font>")
             index = randint(0, len(WINNING_SOUNDS))
             sound_file = WINNING_SOUNDS[index]
             subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, sound_file) + "\"", stdout=DEVNULL, shell=True)
             self.game_win.emit()
         else:
-            self.end_message.setText(u"<font color='red'>¡Has perdido!</font>")
+            non_set_count = self.game_frame.non_set_pieces_count()
+            translated = self.tr(u"Casi!<br>Solo te han faltado %d piezas.")%non_set_count
+            self.end_message.setText(u"<font color='red'>"+translated+u"</font>")
             index = randint(0, len(LOST_SOUNDS))
             sound_file = LOST_SOUNDS[index]
             subprocess.Popen("mplayer " + "\"" + os.path.join(CURRENT_PATH, sound_file) + "\"", stdout=DEVNULL, shell=True)
@@ -250,7 +261,7 @@ class GameScreen(QWidget):
 
         self._main_layout.setCurrentIndex(1)
         self._game_frame.end_game()
-        QTimer.singleShot(2000, self.waiting_screen)
+        QTimer.singleShot(5000, self.waiting_screen)
         return result
 
     def waiting_screen(self):
@@ -500,7 +511,6 @@ class PieceItem(DraggableItem):
     def __init__(self, id, image_path, clip_path, width, height, title, parent=None):
         super(PieceItem, self).__init__(id, image_path, width, height, parent)
         self._clip_path = clip_path
-
         self._media_player = QMediaPlayer()
         self._media_player.setMuted(True)
         self._video_background = QGraphicsRectItem(self.boundingRect(), self)
@@ -512,9 +522,8 @@ class PieceItem(DraggableItem):
         self._media_player.mediaStatusChanged.connect(self._update_media_status)
         self._media_player.stateChanged.connect(self._update_state)
         self._hide_video()
-
         self._label = QGraphicsTextItem(self) # Label
-        self._set_label(title.upper(), "margin:10px; font-weight: bold; font-size: " +str(self.width()/18)+"pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;") # Nombre
+        self.title = title
         self._label.setY(self.height()-10) # Posicionar abajo
         # self._label.setY(-20) # Posicionar arriba
         self._label.setTextWidth(self.width())
@@ -551,6 +560,14 @@ class PieceItem(DraggableItem):
     def clip_path(self, path):
         self._clip_path = path
 
+    @property
+    def title(self):
+        return self.__title
+
+    @title.setter
+    def title(self, new_title):
+        self.__title = new_title
+        self.__set_label(self.__title.upper(), "margin:10px; font-weight: bold; font-size: " + str(self.width() / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")
 
     def play_item(self):
         self._media_player.play()
@@ -569,7 +586,7 @@ class PieceItem(DraggableItem):
         self._video_background.update()
         self._video_widget.setSize(QSize(10, 10))
 
-    def _set_label(self, text, style):
+    def __set_label(self, text, style):
         self._label.setHtml("<div style='"+style+"'><center><p>"+text+"</p></center>")
 
     def is_playing(self):
@@ -617,10 +634,11 @@ class QOpencvGraphicsVideoItem(DraggableItem):
         self._play_timer = QTimer()
         self._play_timer.timeout.connect(self.show_next_frame)
         self._old_image = None
-        self._title = QObject().tr(title)
         self._label = QGraphicsTextItem(self)  # Label
-        self._set_label(self._title.upper(), "margin:10px; font-weight: bold; font-size: " + str(
-            self.width / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")  # Nombre
+        self.__title = title
+        self.__set_label(self.__title, "margin:10px; font-weight: bold; font-size: " + str(int(
+            self.width / 18)) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")
+
         self._label.setY(self.height - 10)  # Posicionar abajo
         # self._label.setY(-20) # Posicionar arriba
         self._label.setTextWidth(self.width)
@@ -646,7 +664,7 @@ class QOpencvGraphicsVideoItem(DraggableItem):
     @width.setter
     def width(self, value):
         super(QOpencvGraphicsVideoItem, self.__class__).width.fset(self, value)
-        self._set_label(self._title.upper(), "margin:10px; font-weight: bold; font-size: " + str(
+        self.__set_label(self.__title, "margin:10px; font-weight: bold; font-size: " + str(
             self.width / 18) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")
         self._label.setY(self.height - 10)
         self._label.setTextWidth(self.width)
@@ -675,6 +693,15 @@ class QOpencvGraphicsVideoItem(DraggableItem):
     def clip_path(self, path):
         self._video_path = path
 
+    @property
+    def title(self):
+        return self.__title
+
+    @title.setter
+    def title(self, new_title):
+        self.__title = new_title
+        self.__set_label(self.__title, "margin:10px; font-weight: bold; font-size: " + str(int(
+            self.width / 18)) + "pt;  background-color:#91C69A; border-radius: 20pt; border-top-right-radius: 5px; border-bottom-left-radius: 5px;")
 
     def set_video_path(self, path):
         assert os.path.isfile(path), "No valid path provided %s" % str(path)
@@ -743,8 +770,8 @@ class QOpencvGraphicsVideoItem(DraggableItem):
     def is_playing(self):
         return self._play_timer.isActive()
 
-    def _set_label(self, text, style):
-        self._label.setHtml("<div style='"+style+"'><center><p>"+text+"</p></center>")
+    def __set_label(self, text, style):
+        self._label.setHtml("<div style='"+style+"'><center><p>"+QObject().tr(text).upper()+"</p></center>")
 
 
 class DestinationItem(QGraphicsRectItem):
@@ -753,16 +780,19 @@ class DestinationItem(QGraphicsRectItem):
         self._text = str(index)
         self._index = index
         self._contained_piece = None
+        self.__text_size = rect.height()
+
 
     def paint(self, painter, option, widget):
         painter.save()
         painter.setBrush(QColor("black"))
         font = painter.font()
-        font.setPointSize(70)
+        font.setPointSize(self.__text_size)
         painter.setFont(font)
         painter.drawText(self.rect(), self._text, Qt.AlignCenter | Qt.AlignVCenter)
         painter.restore()
         super(DestinationItem, self).paint(painter,option, widget)
+
 
     def empty(self):
         if self._contained_piece is None:
@@ -957,6 +987,7 @@ class TakeDragGame(QWidget):
         self._destinations = {}
         self._already_set = []
         self._can_i_talk = True
+        self.__playing = False
 
 
         #TODO: generalize for the game
@@ -1024,6 +1055,19 @@ class TakeDragGame(QWidget):
         # self._invisible_last_item = QGraphicsRectItem(far_right_piece_pos[0]+10, far_right_piece_pos[1]+20, 0, 0)
         # self._scene.addItem(self._invisible_last_item)
 
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            print("Retranslating GameScreen")
+            self.retranslateUi()
+        super(TakeDragGame, self).changeEvent(event)
+
+    def retranslateUi(self):
+        if len(self._pieces) > 0:
+            for piece in self._pieces:
+                piece.title = piece.title
+
+    def total_pieces(self):
+        return len(self._pieces)
 
     def clear_scene(self):
         print("Removing %d destinies"%len(self._destinations))
@@ -1084,7 +1128,10 @@ class TakeDragGame(QWidget):
         self.end_game()
 
     def check_scores(self):
-        self._update_scores()
+        if self.check_win():
+            self.game_win.emit()
+        else:
+            self._update_scores()
 
     def _update_scores(self):
         right, wrong = self.right_wrong_pieces()
@@ -1102,6 +1149,9 @@ class TakeDragGame(QWidget):
                 piece = self._destinations[index].contained_piece
                 set_pieces.append(piece)
         return set_pieces
+
+    def non_set_pieces_count(self):
+        return len(self._pieces)- len(self.already_set_pieces())
 
     def add_new_pointer(self, pointer_id, xpos, ypos, grab, visible=False):
         # print "TakeDragGame.add_new_pointer: ID=%d"%pointer_id
@@ -1181,6 +1231,7 @@ class TakeDragGame(QWidget):
 
 
     def adjust_to_nearest_destination(self, pointer_id):
+        self.__playing = True
         lowest_distance = sys.maxsize
         nearest_dest = None
         taken_widget = self._pointers[pointer_id].taken
@@ -1208,8 +1259,8 @@ class TakeDragGame(QWidget):
                 self._scene.update()
 
                 # TODO: remove If we only want to check win whn Comprobar button is clicked
-                if self.check_win():
-                    self.game_win.emit()
+                # if self.check_win():
+                #    self.game_win.emit()
             else:
                 print("Piece %s NOT added to destination %s becuase occupied by %s" % (taken_widget.id, nearest_dest.index, nearest_dest.contained_piece.id))
                 #If already occupied, set to center but displaced
@@ -1342,15 +1393,15 @@ class TakeDragGame(QWidget):
         print("Before Layout: %d" %self.layout.scene_height)
         new_initial_positions = self.layout.initial_positions
         initial_destinations = self.layout.destination_positions
-            random_positions = list(new_initial_positions.values())
-            random.shuffle(random_positions)
-            for piece in self._pieces:
-                new_pos = random_positions.pop()
-                new_dest = initial_destinations[piece]
+        random_positions = list(new_initial_positions.values())
+        random.shuffle(random_positions)
+        for piece in self._pieces:
+            new_pos = random_positions.pop()
+            new_dest = initial_destinations[piece]
             piece.width = self.layout.piece_size[0]
-                piece.setPos(new_pos[0], new_pos[1])
-                piece.final_destination.setRect(piece.boundingRect())
-                piece.final_destination.setPos(new_dest[0], new_dest[1])
+            piece.setPos(new_pos[0], new_pos[1])
+            piece.final_destination.setRect(piece.boundingRect())
+            piece.final_destination.setPos(new_dest[0], new_dest[1])
 
 
 
@@ -1384,10 +1435,11 @@ class TakeDragGame(QWidget):
         # self._view.centerOn(self._view.mapFromScene(0, 0))
 
     def resizeEvent(self, event):
-        try:
-            self.set_initial_pieces_positions()
-        except:
-            print("Couldn't set initial_positions on resize event")
+        if not self.__playing:
+            try:
+                self.set_initial_pieces_positions()
+            except:
+                print("Couldn't set initial_positions on resize event")
         self.adjust_view()
         super(TakeDragGame, self).resizeEvent(event)
 

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020 by YOUR NAME HERE
+#    Copyright (C) 2020 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -26,34 +26,11 @@ except:
 	print('$ROBOCOMP environment variable not set, using the default value /opt/robocomp')
 	ROBOCOMP = '/opt/robocomp'
 if len(ROBOCOMP)<1:
-	print('ROBOCOMP environment variable not set! Exiting.')
-	sys.exit()
+    raise RuntimeError('ROBOCOMP environment variable not set! Exiting.')
 
-additionalPathStr = ''
-icePaths = []
-try:
-	icePaths.append('/opt/robocomp/interfaces')
-	SLICE_PATH = os.environ['SLICE_PATH'].split(':')
-	for p in SLICE_PATH:
-		icePaths.append(p)
-		additionalPathStr += ' -I' + p + ' '
-except:
-	print('SLICE_PATH environment variable was not exported. Using only the default paths')
-	pass
 
-ice_GameMetrics = False
-for p in icePaths:
-	print('Trying', p, 'to load GameMetrics.ice')
-	if os.path.isfile(p+'/GameMetrics.ice'):
-		print('Using', p, 'to load GameMetrics.ice')
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"GameMetrics.ice"
-		Ice.loadSlice(wholeStr)
-		ice_GameMetrics = True
-		break
-if not ice_GameMetrics:
-	print('Couldn\'t load GameMetrics')
-	sys.exit(-1)
+Ice.loadSlice("-I ./src/ --all ./src/GameMetrics.ice")
+
 from EuroAgeGamesMetrics import *
 
 class GameMetricsI(GameMetrics):

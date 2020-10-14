@@ -27,17 +27,16 @@ from datetime import datetime
 
 import yaml
 import passwordmeter
+import PySide2
 from PySide2.QtCore import Signal, QObject, Qt, QTranslator, QFile, QTimer, QEvent
 from PySide2.QtGui import QKeySequence, QIcon
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QMessageBox, QCompleter, QAction, qApp, QApplication, QShortcut, QListWidgetItem
+from PySide2.QtWidgets import QMessageBox, QCompleter, QAction, QApplication, QShortcut, QListWidgetItem
 from genericworker import *
 from history import History
 from widgets import qusermanager, qvideodialog, adminwidgets, customqtimeedit
-
-from src.widgets.adminwidgets import MyQMessageBox
 try:
-    from bbdd import BBDD
+    from ddbbccmi import BBDD
 except:
     print("Database module not found")
     exit(1)
@@ -47,6 +46,7 @@ config = yaml.load(stream)
 
 FILE_PATH = os.path.abspath(__file__)
 CURRENT_PATH = os.path.dirname(__file__)
+TRANSLATIONS_PATH = os.path.join(CURRENT_PATH,'i18n')
 
 list_of_users = []
 
@@ -220,48 +220,48 @@ class SpecificWorker(GenericWorker):
     login_executed = Signal(bool)
     updateUISig = Signal()
 
-    def __init__(self, proxy_map):
+    def __init__(self, proxy_map, startup_check=False):
         super(SpecificWorker, self).__init__(proxy_map)
         self.translator = None
-        if config["default_language"] == "Portuguese":
-            self.translate_into_portuguese()
-            else:
-            self.translate_into_spanish()
+        self.translate_to(config["default_language"])
 
         self.Period = 2000
-        self.timer.start(self.Period)
+        if startup_check:
+            self.startup_check()
+        else:
+            self.timer.start(self.Period)
 
-        self.init_ui()
-        self.setCentralWidget(self.ui)
+            self.init_ui()
+            self.setCentralWidget(self.ui)
 
-        self.sessions = []
-        self.__current_therapist = None
-        self.current_session = None
+            self.sessions = []
+            self.__current_therapist = None
+            self.current_session = None
 
-        self.aux_sessionInit = False
-        self.aux_datePaused = None
-        self.aux_currentDate = None
-        self.aux_currentStatus = None
-        self.aux_wonGame = False
-        self.aux_firtsGameInSession = True
-        self.aux_reseted = False
-        self.aux_prevPos = None
-        self.aux_firstMetricReceived = True
-        self.aux_savedGames = False
-        self.__ready_session_received = False
+            self.aux_sessionInit = False
+            self.aux_datePaused = None
+            self.aux_currentDate = None
+            self.aux_currentStatus = None
+            self.aux_wonGame = False
+            self.aux_firtsGameInSession = True
+            self.aux_reseted = False
+            self.aux_prevPos = None
+            self.aux_firstMetricReceived = True
+            self.aux_savedGames = False
+            self.__ready_session_received = False
 
-        # TODO: Move to the session. Should have a list of games to play and played games.
-        self.list_games_toplay = []
+            # TODO: Move to the session. Should have a list of games to play and played games.
+            self.list_games_toplay = []
 
-        self.ddbb = BBDD()
-        self.ddbb.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba1.db")
-        self.user_login_manager = qusermanager.QUserManager(ddbb=self.ddbb)
-        self.history = History(self.ddbb, self)
+            self.ddbb = BBDD()
+            self.ddbb.open_database("/home/robocomp/robocomp/components/euroage-tv/components/bbdd/prueba1.db")
+            self.user_login_manager = qusermanager.QUserManager(ddbb=self.ddbb)
+            self.history = History(self.ddbb, self)
 
 
-        self.updateUISig.connect(self.updateUI)
+            self.updateUISig.connect(self.updateUI)
 
-        self.manager_machine.start()
+            self.manager_machine.start()
 
     @property
     def current_game(self):
@@ -320,6 +320,7 @@ class SpecificWorker(GenericWorker):
         loader.registerCustomWidget(adminwidgets.UsersWindow)
         loader.registerCustomWidget(adminwidgets.PlayersWindow)
         loader.registerCustomWidget(adminwidgets.GameWindow)
+        file = QFile("/home/robocomp/robocomp/components/euroage-tv/components/gameManager/src/uis/big/stackedUI.ui")
         file.open(QFile.ReadOnly)
         self.ui = loader.load(file, self.parent())
         file.close()
@@ -338,9 +339,9 @@ class SpecificWorker(GenericWorker):
         file_menu.addAction(exit_action)
 
         to_spanish_action = QAction('&Español', self)
-        to_spanish_action.triggered.connect(self.translate_into_spanish)
+        to_spanish_action.triggered.connect(lambda: self.translate_to("Spanish"))
         to_portuguese_action = QAction('&Português', self)
-        to_portuguese_action.triggered.connect(self.translate_into_portuguese)
+        to_portuguese_action.triggered.connect(lambda: self.translate_to("Portuguese"))
         language_menu.addAction(to_spanish_action)
         language_menu.addAction(to_portuguese_action)
 
@@ -370,8 +371,9 @@ class SpecificWorker(GenericWorker):
         self.ui.createuser_button_reg.clicked.connect(self.create_new_user)
         self.ui.back_button_reg.clicked.connect(self.t_create_user_to_user_login.emit)
 
-        ## User window
-        self.ui.selplayer_combobox.currentIndexChanged.connect(self.selected_player_changed)
+        # User window
+        # TODO: Commented for DEMO uncomment on production
+        # self.ui.selplayer_combobox.currentIndexChanged.connect(self.selected_player_changed)
         self.ui.history_button.clicked.connect(self.view_history_clicked)
         self.ui.addgame_button.clicked.connect(self.add_game_to_list)
         self.ui.deletegame_button.clicked.connect(self.delete_game_from_list)
@@ -396,16 +398,12 @@ class SpecificWorker(GenericWorker):
         self.ui.quit_button.clicked.connect(self.t_admin_to_app_end)
 
 
-    def translate_into_spanish(self):
-        self.translate_to("src/i18n/es_ES.qm")
-        self.admingame_proxy.adminChangeLanguage("Spanish")
 
-
-    def translate_into_portuguese(self):
-        self.translate_to("src/i18n/pt_PT.qm")
-        self.admingame_proxy.adminChangeLanguage("Portuguese")
-
-    def translate_to(self, translation_file_path):
+    def translate_to(self, language):
+        if language == "Portuguese":
+            translation_file_path = os.path.join(TRANSLATIONS_PATH, "pt_PT.qm")
+        else:
+            translation_file_path = os.path.join(TRANSLATIONS_PATH, "es_ES.qm")
         app = QApplication.instance()
         if self.translator is None:
             self.translator = QTranslator()
@@ -416,6 +414,10 @@ class SpecificWorker(GenericWorker):
             if app is not None:
                 print("-------Translating")
                 app.installTranslator(self.translator)
+                try:
+                    self.admingame_proxy.adminChangeLanguage(language)
+                except Ice.ConnectionRefusedException:
+                    traceback.print_exc()
             else:
                 print("-------Could not find app instance")
                 self.translator = None
@@ -423,6 +425,24 @@ class SpecificWorker(GenericWorker):
             print("-------couldn't load translation")
             self.translator = None
 
+    def changeEvent(self, event):
+        if event.type() == QEvent.LanguageChange:
+            print("Retranslating GameScreen")
+            self.retranslateUi()
+        super(SpecificWorker, self).changeEvent(event)
+
+    def retranslateUi(self):
+        print("Entered state session_init")
+        if self.ui.stackedWidget.currentIndex() == 2:
+            for row in range(self.ui.selgame_combobox.count()):
+                data = self.ui.selgame_combobox.itemData(row)
+                if data is not None:
+                    translated_name = QObject().tr(data.name)
+                    self.ui.selgame_combobox.setItemText(row, translated_name)
+            for row in range(self.ui.games_list.count()):
+                selected_game = self.ui.games_list.item(row)
+                translated_name = QObject().tr(selected_game.data(Qt.UserRole).name)
+                selected_game.setText(translated_name)
 
     def ddbb_status_changed(self, string):
         """
@@ -439,18 +459,19 @@ class SpecificWorker(GenericWorker):
         """
         print("[INFO] Checking login ...")
 
-        username = unicode(self.ui.username_lineedit.text())
+        username = str(self.ui.username_lineedit.currentText())
         # username = username.strip().lower() ##The username is stored and checked in lower case
-        password = unicode(self.ui.password_lineedit.text())
+        password = str(self.ui.password_lineedit.text())
 
-        if self.user_login_manager.check_user_password(username, password):
+        # TODO: Only for DEMO restore on production
+        if True: # self.user_login_manager.check_user_password(username, password):
             self.current_therapist = self.ddbb.get_therapist_by_username(username)
             self.loginShortcut.activated.disconnect(self.check_login)
             self.login_executed.emit(True)
             self.t_user_login_to_session_init.emit()
 
         else:
-            MyQMessageBox.information(self.focusWidget(), 'Error',
+            adminwidgets.MyQMessageBox.information(self.focusWidget(), 'Error',
                                       self.tr('El usuario o la contraseña son incorrectos'),
                                       QMessageBox.Ok)
 
@@ -507,7 +528,7 @@ class SpecificWorker(GenericWorker):
                 return False
             else:
                 self.user_login_manager.set_username_password(username, password)
-                MyQMessageBox.information(self.focusWidget(), '',
+                adminwidgets.MyQMessageBox.information(self.focusWidget(), '',
                                           self.tr('Usuario creado correctamente'),
                                           QMessageBox.Ok)
 
@@ -536,7 +557,7 @@ class SpecificWorker(GenericWorker):
         :return:
         """
         if self.ui.selplayer_combobox.currentIndex() == 1:  # New player selected
-            reply = MyQMessageBox.question(self.focusWidget(), '',
+            reply = adminwidgets.MyQMessageBox.question(self.focusWidget(), '',
                                          self.tr('¿Quiere añadir a un nuevo jugador?'), QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.No:
                 self.ui.selplayer_combobox.setCurrentIndex(0)
@@ -568,14 +589,14 @@ class SpecificWorker(GenericWorker):
                 time = 60
             time_widget = customqtimeedit.CustomTimeEditDialog(self, time)
             if time_widget.exec_():
-            item = QListWidgetItem(selected_name_incombo)
+                item = QListWidgetItem(selected_name_incombo)
                 selected_game_incombo.duration = time_widget.seconds
-            item.setData(Qt.UserRole, selected_game_incombo)
-            self.ui.games_list.addItem(item)
-            self.ui.selgame_combobox.setCurrentIndex(0)
-            return True
+                item.setData(Qt.UserRole, selected_game_incombo)
+                self.ui.games_list.addItem(item)
+                self.ui.selgame_combobox.setCurrentIndex(0)
+                return True
         else:
-            MyQMessageBox.information(self.focusWidget(), 'Error',
+            adminwidgets.MyQMessageBox.information(self.focusWidget(), 'Error',
                                       self.tr('No se ha seleccionado ningún juego'),
                                       QMessageBox.Ok)
             return False
@@ -627,7 +648,7 @@ class SpecificWorker(GenericWorker):
         self.ui.games_list.setCurrentRow(new_index)
 
     def connection_ddbb_error_retry(self):
-        reply = MyQMessageBox.question(self.focusWidget(), '',
+        reply = adminwidgets.MyQMessageBox.question(self.focusWidget(), '',
                                      self.tr('Problemas al establecer la conexión con el servidor.\n'
                                              'Compruebe que el dispositivo se encuentra conectado a internet.'
                                              '¿Desea reintentar?'), QMessageBox.Yes, QMessageBox.No)
@@ -674,7 +695,7 @@ class SpecificWorker(GenericWorker):
         """
         Slot to send the adminStopGame command to the game
         """
-        reply = MyQMessageBox.question(self.focusWidget(), '',
+        reply = adminwidgets.MyQMessageBox.question(self.focusWidget(), '',
                                      self.tr('¿Desea finalizar juego?'), QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.admingame_proxy.adminStopGame()
@@ -683,7 +704,7 @@ class SpecificWorker(GenericWorker):
         """
         Slot to send the adminResetGame command to the game
         """
-        reply = MyQMessageBox.question(self.focusWidget(), '',
+        reply = adminwidgets.MyQMessageBox.question(self.focusWidget(), '',
                                      self.tr('¿Desea volver a empezar? Los datos del juego no se guardarán'), QMessageBox.Yes,
                                      QMessageBox.No)
         if reply == QMessageBox.Yes:
@@ -696,7 +717,7 @@ class SpecificWorker(GenericWorker):
         """
         patient = self.ui.selplayer_combobox.currentData()
         if patient == None:
-            MyQMessageBox.information(self.focusWidget(), 'Error',
+            adminwidgets.MyQMessageBox.information(self.focusWidget(), 'Error',
                                       self.tr('No se ha seleccionado ningun jugador'),
                                       QMessageBox.Ok)
             return
@@ -707,11 +728,11 @@ class SpecificWorker(GenericWorker):
             self.list_games_toplay.append(self.ui.games_list.item(index).data(Qt.UserRole))
 
         if player_name == "":
-            MyQMessageBox.information(self.focusWidget(), 'Error',
+            adminwidgets.MyQMessageBox.information(self.focusWidget(), 'Error',
                                       self.tr('No se ha seleccionado ningun jugador'),
                                       QMessageBox.Ok)
         elif len(self.list_games_toplay) == 0:
-            MyQMessageBox.information(self.focusWidget(), 'Error',
+            adminwidgets.MyQMessageBox.information(self.focusWidget(), 'Error',
                                       self.tr('No se ha seleccionado ningún juego'),
                                       QMessageBox.Ok)
         else:
@@ -723,7 +744,7 @@ class SpecificWorker(GenericWorker):
         """
         Slot to finish the current session and send the adminEndSession command to the game.
         """
-        reply = MyQMessageBox.question(self.focusWidget(), '',
+        reply = adminwidgets.MyQMessageBox.question(self.focusWidget(), '',
                                      self.tr('¿Desea finalizar la sesión?'), QMessageBox.Yes, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
@@ -741,6 +762,9 @@ class SpecificWorker(GenericWorker):
             singal_to_emit.emit()
         else:
             QApplication.quit()
+
+    def startup_check(self):
+            QTimer.singleShot(200, QApplication.instance().quit)
 
     # =============== Slots methods for State Machine ===================
     # ===================================================================
@@ -799,12 +823,12 @@ class SpecificWorker(GenericWorker):
             traceback.print_exc()
             self.process_retry_exception(self.t_user_login_to_user_login)
         else:
-        list_of_users  = [therapist.username for therapist in therapists]
-        # completer = QCompleter(list_of_users)
-        # self.ui.username_lineedit.setCompleter(completer)
-        self.ui.username_lineedit.addItems(list_of_users)
-        self.ui.username_lineedit.setCurrentIndex(1)
-        self.login_executed.connect(self.update_login_status)
+            list_of_users  = [therapist.username for therapist in therapists]
+            # completer = QCompleter(list_of_users)
+            # self.ui.username_lineedit.setCompleter(completer)
+            self.ui.username_lineedit.addItems(list_of_users)
+            self.ui.username_lineedit.setCurrentIndex(0)
+            self.login_executed.connect(self.update_login_status)
 
     #
     # sm_create_player
@@ -850,7 +874,7 @@ class SpecificWorker(GenericWorker):
         print("Entered state game_end")
         reply = QMessageBox.Yes
         if not config['quick_execution']:
-            reply = MyQMessageBox.question(self.focusWidget(), 'Juego terminado',
+            reply = adminwidgets.MyQMessageBox.question(self.focusWidget(), 'Juego terminado',
                                          self.tr('¿Desea guardar los datos del juego?'), QMessageBox.Yes, QMessageBox.No)
         if  config['quick_execution'] or reply == QMessageBox.Yes:
             self.current_game.end()
@@ -872,7 +896,8 @@ class SpecificWorker(GenericWorker):
         if config['quick_execution']:
             QTimer.singleShot(3000, self.t_game_end_to_admin_games)
         else:
-        self.t_game_end_to_admin_games.emit()
+            self.t_game_end_to_admin_games.emit()
+
 
 
     #
@@ -949,9 +974,9 @@ class SpecificWorker(GenericWorker):
                 traceback.print_exc()
                 self.process_retry_exception(self.t_session_init_to_session_init)
             else:
-            patients_list = []
-            for p in patients:
-                self.ui.selplayer_combobox.addItem(p.username, p)
+                patients_list = []
+                for p in patients:
+                    self.ui.selplayer_combobox.addItem(p.username, p)
 
                 try:
                     games = self.ddbb.get_all_games()
@@ -960,8 +985,8 @@ class SpecificWorker(GenericWorker):
                     self.process_retry_exception(self.t_session_init_to_session_init)
                 else:
                     for game in games:
-                translated_name = QObject().tr(game.name)
-                self.ui.selgame_combobox.addItem(translated_name, game)
+                        translated_name = QObject().tr(game.name)
+                        self.ui.selgame_combobox.addItem(translated_name, game)
 
                 self.aux_sessionInit = True
                 self.aux_savedGames = False
@@ -1020,8 +1045,8 @@ class SpecificWorker(GenericWorker):
         """
         print("Entered state wait_play")
         if self.aux_firtsGameInSession or not config["quick_execution"]:
-        self.ui.start_game_button.setEnabled(True)
-        self.ui.end_session_button.setEnabled(True)
+            self.ui.start_game_button.setEnabled(True)
+            self.ui.end_session_button.setEnabled(True)
         else:
             self.admingame_proxy.adminStartGame(self.current_game.name, self.current_game.duration)
 
@@ -1058,7 +1083,7 @@ class SpecificWorker(GenericWorker):
 
         self.aux_firtsGameInSession = True
 
-        MyQMessageBox.information(self.focusWidget(), 'Info',
+        adminwidgets.MyQMessageBox.information(self.focusWidget(), 'Info',
                                   self.tr('Coloque la mano del paciente sobre la mesa. Cuando se haya detectado correctamente podrá empezar el juego'),
                                   QMessageBox.Ok)
 
@@ -1083,7 +1108,7 @@ class SpecificWorker(GenericWorker):
         print("Entered state session_end")
 
         if (self.aux_savedGames):
-            reply = MyQMessageBox.question(self.focusWidget(), 'Juegos finalizados',
+            reply = adminwidgets.MyQMessageBox.question(self.focusWidget(), 'Juegos finalizados',
                                          self.tr('¿Desea guardar los datos de la sesion actual?'), QMessageBox.Yes,
                                          QMessageBox.No)
             if reply == QMessageBox.Yes:
@@ -1094,16 +1119,16 @@ class SpecificWorker(GenericWorker):
                 self.compute_session_metrics()
 
                 try:
-                self.current_session.save_session_to_ddbb(self.ddbb)
+                    self.current_session.save_session_to_ddbb(self.ddbb)
                 except (ValueError, ConnectionError) as e:
                     traceback.print_exc()
                     self.process_retry_exception(self.t_session_end_to_session_end)
                 else:
-                self.sessions.append(self.current_session)
-        MyQMessageBox.information(self.focusWidget(), 'Adios',
-                                  self.tr('Se ha finalizado la sesion'),
-                                  QMessageBox.Ok)
-        self.t_session_end_to_session_init.emit()
+                    self.sessions.append(self.current_session)
+                    adminwidgets.MyQMessageBox.information(self.focusWidget(), 'Adios',
+                                              self.tr('Se ha finalizado la sesion'),
+                                              QMessageBox.Ok)
+            self.t_session_end_to_session_init.emit()
 
     # =================================================================
     # =================================================================

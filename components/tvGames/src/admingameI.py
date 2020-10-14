@@ -29,31 +29,9 @@ if len(ROBOCOMP)<1:
 	print('ROBOCOMP environment variable not set! Exiting.')
 	sys.exit()
 
-additionalPathStr = ''
-icePaths = []
-try:
-	icePaths.append('/opt/robocomp/interfaces')
-	SLICE_PATH = os.environ['SLICE_PATH'].split(':')
-	for p in SLICE_PATH:
-		icePaths.append(p)
-		additionalPathStr += ' -I' + p + ' '
-except:
-	print('SLICE_PATH environment variable was not exported. Using only the default paths')
-	pass
 
-ice_AdminGame = False
-for p in icePaths:
-	print('Trying', p, 'to load AdminGame.ice')
-	if os.path.isfile(p+'/AdminGame.ice'):
-		print('Using', p, 'to load AdminGame.ice')
-		preStr = "-I/opt/robocomp/interfaces/ -I"+ROBOCOMP+"/interfaces/ " + additionalPathStr + " --all "+p+'/'
-		wholeStr = preStr+"AdminGame.ice"
-		Ice.loadSlice(wholeStr)
-		ice_AdminGame = True
-		break
-if not ice_AdminGame:
-	print('Couldn\'t load AdminGame')
-	sys.exit(-1)
+Ice.loadSlice("-I ./src/ --all ./src/AdminGame.ice")
+
 from EuroAgeGamesAdmin import *
 
 class AdminGameI(AdminGame):

@@ -57,20 +57,4 @@ components/integratedHand/Makefile
 
 venv/
 
-*.db
-
-*.sql
-
-*.db_
-
-*ui_mainUI.py
-
-components/gameManager/src/php_ccmi/
-
-*CMakeFiles/
-
 *cmake_install.cmake
-
-*CMakeCache.txt
-
-*Makefile

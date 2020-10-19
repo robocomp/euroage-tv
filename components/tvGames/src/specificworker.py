@@ -659,7 +659,7 @@ class SpecificWorker(GenericWorker):
 			for file in files:
 				if file.endswith(".json"):
 					full_file_path = os.path.join(root, file)
-					with open(full_file_path) as file_path:
+					with open(full_file_path, encoding='utf-8') as file_path:
 						game_config = json.load(file_path)
 						if "title" in game_config:
 							self._available_games[game_config["title"]] = full_file_path

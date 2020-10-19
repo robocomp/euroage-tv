@@ -3,7 +3,7 @@ GameMetricsTopic.Endpoints=tcp -p 10198
 
 
 # Proxies for required interfaces
-AdminGameProxy = admingame:tcp -h localhost -p 18888
+AdminGameProxy = admingame:tcp -h 127.0.0.1 -p 18888
 
 
 

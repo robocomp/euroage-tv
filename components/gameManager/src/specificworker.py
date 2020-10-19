@@ -37,8 +37,9 @@ from history import History
 from widgets import qusermanager, qvideodialog, adminwidgets, customqtimeedit
 try:
     from ddbbccmi import BBDD
-except:
-    print("Database module not found")
+except Exception as e:
+    print("SpecificWorker: Database module not found")
+    print(e)
     exit(1)
 
 stream = open("src/config.yml", 'r')
@@ -54,17 +55,6 @@ list_of_users = []
 class DDBBStatus:
     connected = 1
     disconneted = 2
-
-
-class Singleton(type(QObject), type):
-    def __init__(cls, name, bases, dict):
-        super(Singleton, cls).__init__(name, bases, dict)
-        cls.instance = None
-
-    def __call__(cls, *args, **kw):
-        if cls.instance is None:
-            cls.instance = super(Singleton, cls).__call__(*args, **kw)
-        return cls.instance
 
 
 class Session:
